@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"python.defaultInterpreterPath": "C:\\Users\\itspe\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+		"terminal.integrated.env.windows": {
+			"PATH": "C:\\Users\\itspe\\AppData\\Local\\Programs\\Python\\Python314\\Scripts;C:\\Users\\itspe\\AppData\\Local\\Programs\\Python\\Python314;C:\\Users\\itspe\\AppData\\Local\\Programs\\git-lfs;${env:PATH}"
+		}
+	}
+}

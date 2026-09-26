@@ -1,0 +1,7 @@
+# Godot 4+ editor cache
+.godot/
+
+# Compiled GDExtension binaries; keep only the .gdextension descriptor
+bin/*
+!bin/*.gdextension
+!bin/*.gdextension.uid

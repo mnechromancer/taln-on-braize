@@ -1,0 +1,5 @@
+# SCons build artifacts
+.sconsign*.dblite
+*.obj
+*.o
+*.os
