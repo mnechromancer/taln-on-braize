@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="WellPoolTuning" format=3]
+
+[ext_resource type="Script" path="res://scripts/tuning/well_pool_tuning.gd" id="1_pool"]
+
+[resource]
+script = ExtResource("1_pool")
+pool_radius = 3.0

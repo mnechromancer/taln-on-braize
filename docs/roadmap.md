@@ -25,7 +25,7 @@
 | Peakspren name (deferred from Narrative Bible §5.2) | Decision | ✅ Done — Toa'uma (2026-09-25) |
 | Core Systems Spec (Agony/Investiture math, catalyst cost curves, movement/camera values, damage/health model) | Doc | ✅ Done — approved v1.0, all 12 decisions ruled (2026-09-25) |
 | Repo + Godot project + GDExtension scaffold | Setup | ⬜ Not Started |
-| Gray-box arena | Feature | ⬜ Not Started |
+| Gray-box arena | Feature | 🔶 In Progress — P2-01: arena + movement/camera/stance |
 | Player movement + one Stoneward ability | Feature | ⬜ Not Started |
 | Basic enemy spawner | Feature | ⬜ Not Started |
 | Agony meter + "Welcome the Agony" prompt (no real Cataclysm payoff yet) | Feature | ⬜ Not Started |

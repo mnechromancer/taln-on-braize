@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="TalnTuning" format=3]
+
+[ext_resource type="Script" path="res://scripts/tuning/taln_tuning.gd" id="1_taln"]
+
+[resource]
+script = ExtResource("1_taln")
+capsule_height = 2.0
+capsule_radius = 0.45
+move_speed = 6.0
+acceleration = 40.0
+deceleration = 55.0
+turn_rate_deg = 720.0
+max_slope_deg = 40.0
+step_height = 0.35
+gravity = 20.0
+max_health = 150.0
+shoulder_distance = 4.5
+shoulder_duration = 0.25
+shoulder_cooldown = 3.0
+shoulder_max_gap = 1.0
+shoulder_wall_stop_angle_deg = 60.0
+anchor_delay = 0.6
+anchored_armor_bonus = 40.0
+stop_speed = 0.05
+fracture_radius = 3.0
+fracture_warning_time = 6.0
+fracture_active_time = 9.0
+fracture_base_rate = 0.03
+fracture_rate_ramp = 0.01
+fracture_pulse_interval = 1.0
+fracture_reset_time = 3.0

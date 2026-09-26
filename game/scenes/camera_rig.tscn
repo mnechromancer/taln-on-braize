@@ -1,0 +1,17 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/camera/camera_rig.gd" id="1_rig"]
+[ext_resource type="Resource" path="res://data/tuning/camera_tuning.tres" id="2_tune"]
+
+[node name="CameraRig" type="Node3D"]
+top_level = true
+script = ExtResource("1_rig")
+tuning = ExtResource("2_tune")
+
+[node name="PitchPivot" type="Node3D" parent="."]
+
+[node name="SpringArm3D" type="SpringArm3D" parent="PitchPivot"]
+collision_mask = 0
+
+[node name="Camera3D" type="Camera3D" parent="PitchPivot/SpringArm3D"]
+current = true

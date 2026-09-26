@@ -1,0 +1,32 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/station/well_pool.gd" id="1_pool"]
+[ext_resource type="Resource" path="res://data/tuning/well_pool_tuning.tres" id="2_tune"]
+
+[sub_resource type="CylinderShape3D" id="Shape_pool"]
+height = 2.0
+radius = 3.0
+
+[sub_resource type="StandardMaterial3D" id="Mat_pool"]
+albedo_color = Color(0.4353, 0.4549, 0.5255, 1)
+roughness = 1.0
+
+[sub_resource type="CylinderMesh" id="Mesh_pool"]
+material = SubResource("Mat_pool")
+top_radius = 3.0
+bottom_radius = 3.0
+height = 0.04
+radial_segments = 48
+rings = 0
+
+[node name="WellPool" type="Area3D"]
+script = ExtResource("1_pool")
+tuning = ExtResource("2_tune")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("Shape_pool")
+
+[node name="Disc" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
+mesh = SubResource("Mesh_pool")

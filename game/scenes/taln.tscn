@@ -1,0 +1,106 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/taln/taln.gd" id="1_taln"]
+[ext_resource type="Resource" path="res://data/tuning/taln_tuning.tres" id="2_tune"]
+[ext_resource type="Script" path="res://scripts/taln/health.gd" id="3_health"]
+[ext_resource type="Script" path="res://scripts/taln/shoulder.gd" id="4_shoulder"]
+[ext_resource type="Script" path="res://scripts/taln/anchored.gd" id="5_anchored"]
+[ext_resource type="Script" path="res://scripts/taln/fracture.gd" id="6_fracture"]
+
+[sub_resource type="CapsuleShape3D" id="Shape_body"]
+radius = 0.45
+height = 2.0
+
+[sub_resource type="StandardMaterial3D" id="Mat_body"]
+albedo_color = Color(0.651, 0.6196, 0.5608, 1)
+
+[sub_resource type="CapsuleMesh" id="Mesh_body"]
+material = SubResource("Mat_body")
+radius = 0.45
+height = 2.0
+
+[sub_resource type="StandardMaterial3D" id="Mat_front"]
+albedo_color = Color(0.549, 0.4157, 0.2627, 1)
+
+[sub_resource type="BoxMesh" id="Mesh_front"]
+material = SubResource("Mat_front")
+size = Vector3(0.5, 0.35, 0.25)
+
+[sub_resource type="StandardMaterial3D" id="Mat_anchor"]
+shading_mode = 0
+albedo_color = Color(0.851, 0.647, 0.357, 1)
+
+[sub_resource type="CylinderMesh" id="Mesh_anchor"]
+material = SubResource("Mat_anchor")
+top_radius = 0.9
+bottom_radius = 0.9
+height = 0.02
+radial_segments = 32
+rings = 0
+
+[sub_resource type="StandardMaterial3D" id="Mat_fracture"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.043, 0.043, 0.055, 0.75)
+
+[sub_resource type="CylinderMesh" id="Mesh_fracture"]
+material = SubResource("Mat_fracture")
+top_radius = 1.0
+bottom_radius = 1.0
+height = 0.01
+radial_segments = 48
+rings = 0
+
+[node name="Taln" type="CharacterBody3D" groups=["taln"]]
+script = ExtResource("1_taln")
+tuning = ExtResource("2_tune")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("Shape_body")
+
+[node name="Body" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+cast_shadow = 0
+mesh = SubResource("Mesh_body")
+
+[node name="FacingMarker" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, -0.45)
+cast_shadow = 0
+mesh = SubResource("Mesh_front")
+
+[node name="TalnLight" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+light_color = Color(0.851, 0.647, 0.357, 1)
+light_energy = 1.5
+shadow_enabled = true
+omni_range = 14.0
+
+[node name="Health" type="Node" parent="."]
+script = ExtResource("3_health")
+tuning = ExtResource("2_tune")
+
+[node name="Shoulder" type="Node" parent="."]
+script = ExtResource("4_shoulder")
+tuning = ExtResource("2_tune")
+
+[node name="Anchored" type="Node" parent="."]
+script = ExtResource("5_anchored")
+tuning = ExtResource("2_tune")
+
+[node name="AnchorDisc" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0)
+visible = false
+cast_shadow = 0
+mesh = SubResource("Mesh_anchor")
+
+[node name="Fracture" type="Node3D" parent="." node_paths=PackedStringArray("health")]
+script = ExtResource("6_fracture")
+tuning = ExtResource("2_tune")
+health = NodePath("../Health")
+
+[node name="Zone" type="MeshInstance3D" parent="Fracture"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.015, 0)
+visible = false
+cast_shadow = 0
+mesh = SubResource("Mesh_fracture")
