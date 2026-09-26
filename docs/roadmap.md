@@ -24,9 +24,9 @@
 |---|---|---|
 | Peakspren name (deferred from Narrative Bible §5.2) | Decision | ✅ Done — Toa'uma (2026-09-25) |
 | Core Systems Spec (Agony/Investiture math, catalyst cost curves, movement/camera values, damage/health model) | Doc | ✅ Done — approved v1.0, all 12 decisions ruled (2026-09-25) |
-| Repo + Godot project + GDExtension scaffold | Setup | ⬜ Not Started |
-| Gray-box arena | Feature | 🔶 In Progress — P2-01: arena + movement/camera/stance |
-| Player movement + one Stoneward ability | Feature | ⬜ Not Started |
+| Repo + Godot project + GDExtension scaffold | Setup | ✅ Done — Godot 4.7 project, godot-cpp, swarm GDExtension (2026-09-25) |
+| Gray-box arena | Feature | ✅ Done — P2-01: arena + movement/camera/stance, branch `phase-2` (2026-09-26) |
+| Player movement + one Stoneward ability | Feature | 🔶 In Progress — movement done in P2-01; Stoneward ability not started |
 | Basic enemy spawner | Feature | ⬜ Not Started |
 | Agony meter + "Welcome the Agony" prompt (no real Cataclysm payoff yet) | Feature | ⬜ Not Started |
 
@@ -104,4 +104,4 @@
 
 ---
 
-*Current position: Phase 2 open. Core Systems Spec v1.0 approved. Next up: repo + Godot project + GDExtension scaffold (outside OneDrive), the handoff point to Claude Code in VS Code; then gray-box per spec §13 build order. Project files: unbroken-design-doc-draft.md, claude/unbroken-narrative-bible.md, claude/unbroken-art-direction.md (live Art Direction doc, authoritative: https://claude.ai/code/artifact/a2b626e6-f594-4f80-a75f-ca3a70e59fec), claude/unbroken-core-systems-spec.md.*
+*Current position: Phase 2 open. Core Systems Spec v1.1 (P2-01 playtest revisions in §15). Repo + Godot project + GDExtension scaffold done; gray-box arena done (P2-01, branch `phase-2`). Next up: SwarmServer v0 per spec §13 step 2, then the rest of the §13 build order. Work is built in Claude Code from step-by-step handoffs given in chat (no handoff files in the repo). Project files: unbroken-design-doc-draft.md, claude/unbroken-narrative-bible.md, claude/unbroken-art-direction.md (live Art Direction doc, authoritative: https://claude.ai/code/artifact/a2b626e6-f594-4f80-a75f-ca3a70e59fec), claude/unbroken-core-systems-spec.md.*

@@ -1,5 +1,5 @@
 # Unbroken: Taln on Braize
-### Core Systems Spec — v1.0 (Approved)
+### Core Systems Spec — v1.1 (Approved)
 
 *Phase 2 deliverable. Parent documents: Design Doc v1.1 (governs mechanics intent), Narrative Bible v1.1 (governs fiction), Art Direction v1.1 (governs visuals). This document turns their intent into numbers, state machines and system boundaries that the prototype can be built against. Every number here is a **starting value for the prototype**, not a balance commitment; the Phase 4 Balancing doc supersedes them.*
 
@@ -272,7 +272,7 @@ Per-cycle value, 0–9 [NINE]. **No decay within a cycle**; resets to 0 at cycle
 
 - **Enter:** no movement input for **0.6 s**.
 - **While Anchored:** +40 Armor; immune to knockback; Well-pool draw 4/s (§2.3); Stoneward skills may key off the state.
-- **Exit:** any movement input. Re-entering requires another 0.6 s.
+- **Exit:** any movement input or a Shoulder charge. Re-entering requires another 0.6 s, counted from when input stops or the charge ends.
 
 ### 6.4 Fracture — Braize punishes stillness
 
@@ -295,7 +295,8 @@ The Fracture timer resets after Taln has been > 3 m from the spot for 3 s. Net r
 | Distance | 4.5 m over 0.25 s |
 | Cooldown | 3.0 s |
 | Effect | Knocks back swarm-Mass enemies in path (force 12); 0.25 s invulnerability during charge |
-| Terrain | Stops at walls; cannot cross gaps wider than 1 m |
+| Terrain | Walls hit within 60° of head-on stop the charge; shallower hits slide along the wall. Crosses gaps up to 1 m; over a wider gap the charge ends just past the edge and Taln falls in. Off a drop (no ground at the same level beyond the edge) the charge carries on through the air |
+| End | Taln stops dead when the charge ends. Momentum carry is reserved for upgrades |
 
 ### 6.6 Return (death)
 
@@ -521,6 +522,20 @@ All twelve approved 2026-09-25 as recommended.
 | 10 | Anchored bonus + Fracture punishment as the stance rhythm | Yes (§6.3–6.4) |
 | 11 | Heraldic skill working name "Bearer of Agonies" | Placeholder |
 | 12 | Godot 4.7 / Forward+ / GDScript + C++ boundary as §11 | Yes |
+
+---
+
+## 15. Revisions
+
+### v1.1 — 2026-09-26 (from the P2-01 gray-box playtest)
+
+| # | Change | Where | Why |
+|---|---|---|---|
+| 1 | Shoulder no longer stops at every edge: off a drop it carries on through the air; over a gap wider than 1 m it ends just past the edge and Taln falls in. Gaps up to 1 m are still crossed | §6.5 | Taln should use the environment to fling himself around |
+| 2 | Shoulder stops only at walls hit within 60° of head-on (`shoulder_wall_stop_angle_deg`); shallower hits slide along the wall | §6.5 | A little sliding reads better than dead stops on glancing contact |
+| 3 | Clarified: the charge stops dead when it ends. Momentum carry is an upgrade surface, not base behavior | §6.5 | Movement feel is meant to be a build-defining axis |
+| 4 | Anchored also ends on a Shoulder charge; its 0.6 s timer restarts when the charge ends | §6.3 | Came from the P2-01 handoff; accepted in playtest |
+| 5 | Clarified: Fracture damage lands in once-per-second pulses (3% at 9 s, then +1% each pulse) rather than continuously. Base behavior; expected to be modified by upgrades | §6.4 | Keeps damage events and Health signals readable |
 
 ---
 
