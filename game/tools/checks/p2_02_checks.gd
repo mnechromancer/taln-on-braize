@@ -625,8 +625,10 @@ func _check_wave_density() -> void:
 	_check("Spawn scaling at the last wave", spawner.wave == last and is_equal_approx(spawner.hp_multiplier(), 1.0 + 0.12 * last)
 			and is_equal_approx(spawner.damage_multiplier(), 1.0 + 0.05 * last),
 			"wave index %d: hp ×%.2f, dmg ×%.2f" % [spawner.wave, spawner.hp_multiplier(), spawner.damage_multiplier()])
-	await _ticks(roundi(fast.wave_length * 60.0 * 1.5))
-	_check("Wave index holds at the last wave (v0)", spawner.wave == last, "wave index %d" % spawner.wave)
+	# Since P2-07 the last wave leads into the lull between stations (then the next station).
+	await _ticks(roundi(fast.wave_length * 60.0))
+	_check("Wave index holds at the last wave through the lull", spawner.wave == last and spawner.lull,
+			"wave index %d, lull %s" % [spawner.wave, spawner.lull])
 
 
 func _check_bank_cap() -> void:

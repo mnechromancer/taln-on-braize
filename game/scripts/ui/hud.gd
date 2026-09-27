@@ -44,6 +44,7 @@ var _draw_fill: ColorRect
 var _pips: Array[ColorRect] = []
 var _pip_fills: Array[Panel] = []
 var _wave: Label
+var _returns: Label
 var _segments: Array[ColorRect] = []
 var _segment_fills: Array[ColorRect] = []
 var _notice: Label
@@ -92,7 +93,9 @@ func _process(delta: float) -> void:
 	for i in _pips.size():
 		var f: float = clampf(toauma.strain - i, 0.0, 1.0)
 		_pip_fills[i].size.x = PIP_SIZE.x * f
-	_wave.text = UiText.WAVE % [spawner.wave + 1, spawner.tuning.waves]
+	var stations: String = UiText.STATION % [spawner.station_index + 1, _cycle_stations()]
+	_wave.text = "%s   %s" % [stations, UiText.LULL if spawner.lull else UiText.WAVE % [spawner.wave + 1, spawner.tuning.waves]]
+	_returns.text = UiText.RETURNS % Cycle.director().returns
 
 
 ## Nine segments filling in Agony hue; the last full ones brighten. During
@@ -108,6 +111,10 @@ func _show_agony() -> void:
 		_segment_fills[i].size.x = SEGMENT_SIZE.x * f
 		var consumed: bool = i >= _segments.size() - spent
 		_segment_fills[i].color = AGONY_SPENT if consumed else (AGONY_LIT if meter.is_locked else AGONY)
+
+
+func _cycle_stations() -> int:
+	return Cycle.director().tuning.stations
 
 
 func _show_timer(state: Label, fill: ColorRect, left: float, total: float) -> void:
@@ -205,6 +212,7 @@ func _build_status(root: Control) -> void:
 		segment.add_child(fill)
 		_segments.append(segment)
 		_segment_fills.append(fill)
+	_returns = _label(box, "", TEXT)
 	var inv: HBoxContainer = _row(box)
 	_label(inv, UiText.INVESTITURE, TEXT)
 	_investiture_value = _label(inv, "", HONOR, 24)

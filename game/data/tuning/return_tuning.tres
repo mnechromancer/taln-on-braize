@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ReturnTuning" format=3]
+
+[ext_resource type="Script" path="res://scripts/tuning/return_tuning.gd" id="1_return"]
+
+[resource]
+script = ExtResource("1_return")
+duration = 4.5
+skip_after = 1.5
+ash_end = 0.3
+black_start = 0.45
+black_hold_end = 0.6
+reassembled = 0.85
+shockwave_radius = 9.0
+shockwave_max_mass = 1.0
+shockwave_force = 12.0
+return_agony = 300.0
+braize_share = 0.3333333

@@ -36,14 +36,19 @@ func damage(raw: float, type: Damage.Type, ignore_invulnerability: bool = false)
 	# Past 0 nothing more is lost (so Agony counts only real Health).
 	var taken: float = minf(raw * 100.0 / (100.0 + get_armor()), current)
 	_hit_invulnerable_left = tuning.hit_invulnerability_time
+	var was_up: bool = current > 0.0
 	_set_current(current - taken)
 	damaged.emit(taken, type)
-	if current <= 0.0:
-		# TODO(spec §6.6): the Return sequence replaces this refill.
-		print("Health depleted; refilling to max until Return is implemented.")
+	# The Return (spec §6.6) listens; it refills Health on reform.
+	if was_up and current <= 0.0:
 		depleted.emit()
-		_set_current(tuning.max_health)
 	return taken
+
+
+## Back to max Health (the Return's reform; a new cycle).
+func refill() -> void:
+	_hit_invulnerable_left = 0.0
+	_set_current(tuning.max_health)
 
 
 ## Restores up to amount, never past max Health.

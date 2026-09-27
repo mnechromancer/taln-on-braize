@@ -142,6 +142,15 @@ func level_up(id: StringName) -> bool:
 	return true
 
 
+## Every owned skill back to level 1 (a new cycle).
+func reset_levels() -> void:
+	for skill: SkillDef in owned():
+		_levels[skill.id] = 1
+		var behavior: SkillBehavior = get_behavior(skill.id)
+		if behavior:
+			behavior.set_level(1)
+
+
 func get_skill(id: StringName) -> SkillDef:
 	for skill: SkillDef in owned():
 		if skill.id == id:

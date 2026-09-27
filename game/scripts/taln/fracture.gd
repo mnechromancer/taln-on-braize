@@ -78,6 +78,15 @@ func update(taln_position: Vector3, horizontal_speed: float, delta: float) -> vo
 		_set_state(State.NONE)
 
 
+## Back to no anchor, no timers (a new cycle).
+func reset() -> void:
+	_has_anchor = false
+	_still_time = 0.0
+	_away_time = 0.0
+	_pulses = 0
+	_set_state(State.NONE)
+
+
 func _set_state(value: State) -> void:
 	if value == state:
 		return

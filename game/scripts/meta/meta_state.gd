@@ -77,6 +77,14 @@ func bank_agony(points: int) -> void:
 	_changed()
 
 
+## Debug: spendable points that were never banked (banked_total unchanged).
+func grant(points: int) -> void:
+	if points <= 0:
+		return
+	banked_agony += points
+	_changed()
+
+
 func unlock_catalysis() -> void:
 	if not catalysis_unlocked:
 		catalysis_unlocked = true

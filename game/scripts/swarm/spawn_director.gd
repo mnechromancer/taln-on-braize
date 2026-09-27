@@ -6,11 +6,15 @@ extends Node
 ## cap. Spawns land on a ring around the target, off blocked cells and, where
 ## possible, out of the camera's view.
 ##
-## v0: one swarm type, station index fixed at 0, no Returns yet. The wave index
-## advances every wave_length seconds and holds on the last wave; the spec's
-## post-wave lull (§1.2) arrives with Special Rooms and breakers.
+## One swarm type. The wave index advances every wave_length seconds; after
+## the last wave waves_done fires once and the wave index holds. In a lull
+## (between stand-in stations, spec §1.2) there's no wave clock and the budget
+## is lull_budget_fraction of the last wave's. begin_station() starts a
+## station's waves over. Frozen (the Return sequence), nothing happens.
 
 signal wave_changed(wave: int)
+## The station's last wave ran its full length.
+signal waves_done
 signal spawned(slot: int, position: Vector3)
 ## A pack spawned outside the budget (e.g. a Notice), with its slots.
 signal pack_spawned(type_id: StringName, slots: Array[int])
@@ -23,8 +27,11 @@ signal pack_spawned(type_id: StringName, slots: Array[int])
 
 var station_index: int = 0
 var returns_this_station: int = 0
-## Spawning (and the wave clock) stop while paused.
+## Spawning (and the wave clock) stop while paused (debug) or frozen (the Return).
 var paused: bool = false
+var frozen: bool = false
+## Between stations: a trickle at the wave-9 budget's lull share, no wave clock.
+var lull: bool = false
 ## Debug stress mode: stress alive cap and budget scale from tuning.
 var stress: bool = false
 
@@ -41,6 +48,8 @@ var bank: float:
 
 var _wave: int = 0
 var _wave_time: float = 0.0
+var _station_time: float = 0.0
+var _done: bool = false
 var _bank: float = 0.0
 var _rng := RandomNumberGenerator.new()
 
@@ -50,14 +59,19 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if paused or not ground.is_ground_data_ready():
+	if paused or frozen or not ground.is_ground_data_ready():
 		return
-	_wave_time += delta
-	while _wave_time >= tuning.wave_length:
-		_wave_time -= tuning.wave_length
-		if _wave < tuning.waves - 1:
-			_wave += 1
-			wave_changed.emit(_wave)
+	if not lull:
+		_wave_time += delta
+		_station_time += delta
+		while _wave_time >= tuning.wave_length:
+			_wave_time -= tuning.wave_length
+			if _wave < tuning.waves - 1:
+				_wave += 1
+				wave_changed.emit(_wave)
+		if not _done and _station_time >= tuning.wave_length * tuning.waves - 0.0001:
+			_done = true
+			waves_done.emit()
 
 	var rate: float = budget_per_second()
 	_bank = minf(_bank + rate * delta, rate * tuning.bank_cap_seconds)
@@ -98,15 +112,31 @@ func spawn_pack(type: SwarmType, count: int) -> Array[int]:
 	return slots
 
 
-## True while a wave is running (the spawner isn't paused).
+## True while a wave is running (not paused, frozen or in a lull).
 func is_in_wave() -> bool:
-	return not paused and ground.is_ground_data_ready()
+	return not paused and not frozen and not lull and ground.is_ground_data_ready()
+
+
+## A station's waves from the start: wave 0, no Returns yet, out of any lull.
+func begin_station(index: int) -> void:
+	station_index = index
+	returns_this_station = 0
+	lull = false
+	_done = false
+	_wave = 0
+	_wave_time = 0.0
+	_station_time = 0.0
+	_bank = 0.0
+	wave_changed.emit(0)
 
 
 ## B = B0 × (1 + wave_slope × w) × P_s × return_pressure^returns (spec §8.4).
 func budget_per_second() -> float:
-	var rate: float = tuning.base_budget * (1.0 + tuning.wave_slope * _wave) \
+	var w: int = tuning.waves - 1 if lull else _wave
+	var rate: float = tuning.base_budget * (1.0 + tuning.wave_slope * w) \
 			* tuning.station_pressure[station_index] * pow(tuning.return_pressure, returns_this_station)
+	if lull:
+		rate *= tuning.lull_budget_fraction
 	return rate * tuning.stress_budget_scale if stress else rate
 
 

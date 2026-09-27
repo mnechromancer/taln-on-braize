@@ -6,13 +6,22 @@ extends Node3D
 ## ground, and the Investiture loop (P2-05): the station value, and motes from
 ## rewarded kills paying Taln on pickup.
 ##
+## It also runs the Phase 2 stand-in cycle (P2-07, ruled): on load it begins a
+## cycle with the CycleDirector; each station is nine waves, then a lull, then
+## the next station (up to the cycle's three); after the last station's ninth
+## wave the cycle ends Held.
+##
 ## Debug keys: Ctrl+1 hits every enemy near Taln hard, Ctrl+2 toggles spawner
 ## stress mode, Ctrl+3 pauses the spawner, Ctrl+4 grants Investiture, Ctrl+5
-## toggles the Honorblade, Ctrl+6 adds Strain, Ctrl+7 resets Strain.
+## toggles the Honorblade, Ctrl+6 adds Strain, Ctrl+7 resets Strain, Ctrl+8
+## grants 9 banked Agony and Ctrl+9 held for a second wipes MetaState (both
+## handled by the between-run screen, so they work there too), Ctrl+0 ends
+## the cycle Held.
 
 ## Ctrl+1: radius and damage of the debug blast around Taln.
 const DEBUG_BLAST_RADIUS := 6.0
 const DEBUG_BLAST_DAMAGE := 50.0
+
 
 ## Print a line for every enemy_died.
 @export var verbose_kill_log := false
@@ -22,6 +31,8 @@ const DEBUG_BLAST_DAMAGE := 50.0
 var kills: int = 0
 ## Base Investiture in motes that sank before Taln reached them.
 var motes_lost: float = 0.0
+## Seconds left in the lull between stations; 0 outside one.
+var lull_left: float = 0.0
 
 @onready var _inspect_light: DirectionalLight3D = $InspectLight
 @onready var _taln: Taln = $Taln
@@ -32,6 +43,7 @@ var motes_lost: float = 0.0
 @onready var _context: StationContext = $StationContext
 @onready var _motes: MoteServer = $MoteServer
 @onready var _catalysis: Catalysis = $Catalysis
+@onready var _well: Well = $Well
 
 
 func _ready() -> void:
@@ -56,9 +68,65 @@ func _ready() -> void:
 	_swarm.taln_contacted.connect(_on_taln_contacted)
 	_swarm.enemy_died.connect(_on_enemy_died)
 	_taln.toauma.notice.connect(_on_notice)
+	_spawner.waves_done.connect(_on_waves_done)
+	Cycle.director().begin_cycle(self)
 
 
-func _physics_process(_delta: float) -> void:
+func station_index() -> int:
+	return _context.station_index
+
+
+## Everything in-run back to a cycle's start, and every random stream seeded
+## from the cycle's seed (spec §11.5). Called by the CycleDirector on a
+## freshly loaded station (it doesn't unwind a running Return or cooldowns).
+func reset_for_cycle() -> void:
+	var cycle: Cycle = Cycle.director()
+	_spawner._rng.seed = cycle.seed_for("spawner")
+	_swarm.set_seed(cycle.seed_for("swarm"))
+	_motes.set_seed(cycle.seed_for("motes"))
+	_well.rng.seed = cycle.seed_for("well")
+	_taln.toauma.rng.seed = cycle.seed_for("toauma")
+	_taln.leveling.rng.seed = cycle.seed_for("leveling")
+	_catalysis.force_bank()
+	_catalysis.history.clear()
+	_swarm.clear_all()
+	_motes.clear_all()
+	_taln.investiture.reset()
+	_taln.leveling.reset()
+	_taln.loadout.reset_levels()
+	_taln.toauma.reset_strain()
+	_taln.agony.reset()
+	_taln.fracture.reset()
+	_taln.health.refill()
+	_context.station_index = 0
+	_spawner.begin_station(0)
+	kills = 0
+	motes_lost = 0.0
+	lull_left = 0.0
+
+
+func _on_waves_done() -> void:
+	var cycle: Cycle = Cycle.director()
+	if _context.station_index + 1 >= cycle.tuning.stations:
+		cycle.end_cycle(Cycle.Outcome.HELD)
+		return
+	_spawner.lull = true
+	lull_left = cycle.tuning.lull_seconds
+	cycle.lull_began.emit(_context.station_index)
+
+
+func _next_station() -> void:
+	_context.station_index += 1
+	_spawner.begin_station(_context.station_index)
+	Cycle.director().station_began.emit(_context.station_index)
+
+
+func _physics_process(delta: float) -> void:
+	if lull_left > 0.0 and not _spawner.frozen and not _spawner.paused:
+		lull_left -= delta
+		if lull_left <= 0.0:
+			lull_left = 0.0
+			_next_station()
 	if _taln.shoulder.is_charging:
 		_swarm.apply_impulse_in_radius(_taln.global_position,
 				_taln.tuning.shoulder_knockback_radius, _taln.tuning.shoulder_knockback_force)
@@ -124,3 +192,5 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("debug_reset_strain"):
 		_taln.toauma.reset_strain()
 		print("Strain reset")
+	elif event.is_action_pressed("debug_end_cycle"):
+		Cycle.director().end_cycle(Cycle.Outcome.HELD)

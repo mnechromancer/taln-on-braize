@@ -26,7 +26,8 @@ enum State { IDLE, PROMPT, CATALYZE }
 
 ## After every fill resolves. choice: &"auto_bank" (Case A), &"bank",
 ## &"timeout_bank" (prompt ran out), &"catalyze_bank" (Catalyze ran out with
-## nothing committed), &"fire". fired lists the Cataclysms, in firing order.
+## nothing committed), &"return_bank" (Taln died deciding), &"fire". fired
+## lists the Cataclysms, in firing order.
 signal resolved(choice: StringName, fired: Array[SkillDef])
 signal prompt_opened
 signal welcomed
@@ -135,6 +136,15 @@ func welcome() -> bool:
 	return true
 
 
+## Closes an open window by banking, whatever was committed (Taln died
+## deciding: accepting is never a trap, and neither is dying).
+func force_bank() -> bool:
+	if state == State.IDLE:
+		return false
+	_bank(&"return_bank")
+	return true
+
+
 ## Prompt: Bank.
 func bank_now() -> bool:
 	if state != State.PROMPT:
@@ -210,7 +220,9 @@ func _resolve_fill() -> void:
 	# Invest menu it waits for the menu to close.
 	if state != State.IDLE or not taln.agony.is_locked:
 		return
-	if menu.is_open or get_tree().paused:
+	# Over the paused Invest menu, or from a killing blow (the Return is about
+	# to hold it): wait.
+	if menu.is_open or get_tree().paused or taln.health.current <= 0.0:
 		_pending = true
 		return
 	if not can_catalyze():

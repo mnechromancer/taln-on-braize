@@ -9,7 +9,8 @@ extends Node
 ## - Draws whenever Draw is off cooldown while Strain < draw_strain_limit;
 ## - stands Anchored in a pool when no enemy is within safe_radius;
 ## - at a Welcome the Agony prompt, Welcomes every welcome_every-th prompt
-##   (Banks the rest) and then holds A on the first (cheapest) catalyst.
+##   (Banks the rest) and then holds A on the first (cheapest) catalyst;
+## - skips the Return as soon as it may (once it has been seen in full).
 ## These are bot habits, not gameplay numbers, so they live here as exports.
 ## Add it as a child of a station, with the station's nodes set.
 
@@ -21,6 +22,8 @@ extends Node
 @export var well: Well
 ## Optional: without it the bot leaves every prompt to time out (a bank).
 @export var catalysis: Catalysis
+## Optional: without it the bot sits through every Return.
+@export var sequence: ReturnSequence
 
 ## Keep this far from the swarm's centroid while kiting.
 @export var kite_radius: float = 11.0
@@ -67,6 +70,12 @@ func _exit_tree() -> void:
 
 
 func _process(_delta: float) -> void:
+	if sequence and sequence.active:
+		_release_taps()
+		_steer(Vector3.ZERO)
+		if sequence.can_skip():
+			_tap(&"shoulder")
+		return
 	# The windows slow physics down, so answer them every frame.
 	if catalysis == null or not catalysis.is_open():
 		Input.action_release(&"catalyze_commit")
@@ -84,7 +93,7 @@ func _process(_delta: float) -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if catalysis and catalysis.is_open():
+	if (catalysis and catalysis.is_open()) or (sequence and sequence.active):
 		return
 	_release_taps()
 	if menu.is_open:

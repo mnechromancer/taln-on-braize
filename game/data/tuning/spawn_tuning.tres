@@ -10,6 +10,7 @@ station_pressure = Array[float]([1.0, 1.6, 2.2])
 return_pressure = 1.09
 bank_cap_seconds = 5.0
 alive_cap = 400
+lull_budget_fraction = 0.15
 wave_length = 45.0
 waves = 9
 ring_min = 18.0

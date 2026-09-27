@@ -15,7 +15,7 @@ extends CanvasLayer
 ## outrank the prompt (Art Direction, VFX priority).
 const PANEL := Color("2a2825", 0.6)
 ## The panels sit this far above the screen's bottom edge, over the HUD.
-const PANEL_LIFT := 150.0
+const PANEL_LIFT := 110.0
 const TEXT := Color("a69e8f")
 const DIM := Color("5a564f")
 const AGONY := Color("e0581f")
@@ -25,6 +25,7 @@ const ICON_SIZE := Vector2(190.0, 64.0)
 
 @export var catalysis: Catalysis
 
+var _dock: VBoxContainer
 var _prompt: PanelContainer
 var _prompt_timer: ColorRect
 var _welcome: Button
@@ -207,15 +208,21 @@ func _on_icon_input(event: InputEvent, skill: SkillDef) -> void:
 
 ## A panel docked low in the middle, and the box its contents go in.
 func _panel() -> Array[Control]:
+	if _dock == null:
+		# Full screen, bottom-aligned, with PANEL_LIFT of space under the panels.
+		_dock = VBoxContainer.new()
+		_dock.alignment = BoxContainer.ALIGNMENT_END
+		_dock.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(_dock)
+		_dock.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		_dock.offset_bottom = -PANEL_LIFT
 	var panel := PanelContainer.new()
 	var style := StyleBoxFlat.new()
 	style.bg_color = PANEL
 	style.set_content_margin_all(18.0)
 	panel.add_theme_stylebox_override(&"panel", style)
-	add_child(panel)
-	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM, Control.PRESET_MODE_MINSIZE, int(PANEL_LIFT))
-	panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	panel.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_dock.add_child(panel)
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override(&"separation", 10)
 	panel.add_child(box)

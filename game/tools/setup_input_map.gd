@@ -47,6 +47,9 @@ func _init() -> void:
 		"debug_honorblade": [_key(KEY_5, true)],
 		"debug_add_strain": [_key(KEY_6, true)],
 		"debug_reset_strain": [_key(KEY_7, true)],
+		"debug_grant_agony": [_key(KEY_8, true)],
+		"debug_wipe_meta": [_key(KEY_9, true)],
+		"debug_end_cycle": [_key(KEY_0, true)],
 	}
 
 	for property: Dictionary in ProjectSettings.get_property_list():

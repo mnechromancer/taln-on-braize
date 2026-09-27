@@ -58,6 +58,14 @@ public:
 	int apply_root_in_cone(const Vector3 &p_origin, const Vector3 &p_direction, double p_angle_deg, double p_range,
 			double p_duration);
 	int apply_slow_in_radius(const Vector3 &p_center, double p_radius, double p_factor, double p_duration);
+	// Kills every live enemy of mass up to p_max_mass within p_radius at once,
+	// unrewarded (enemy_died(..., false), no mote): the Return's reform
+	// shockwave (spec §6.6). Returns how many died.
+	int kill_in_radius(const Vector3 &p_center, double p_radius, double p_max_mass);
+	// While frozen nothing steps: no movement, contact damage, root or slow
+	// timers or lifetimes. Drawing continues (the Return sequence).
+	void set_frozen(bool p_frozen);
+	bool is_frozen() const;
 	// The enemy in this slot expires after p_seconds (0 clears it): it is
 	// removed with enemy_died(..., rewarded = false), since nothing killed it.
 	void set_enemy_lifetime(int p_index, double p_seconds);
@@ -212,6 +220,7 @@ private:
 	double last_flow_build_ms = 0.0;
 	int flow_builds = 0;
 
+	bool frozen = false;
 	double accumulator = 0.0;
 	double last_step_ms = 0.0;
 	double last_tick_ms = 0.0;

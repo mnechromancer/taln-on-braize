@@ -49,6 +49,15 @@ void SwarmServer::_physics_process(double p_delta) {
 	if (tuning.is_null() || tuning->get_step_rate() <= 0.0) {
 		return;
 	}
+	if (frozen) {
+		// Hold the drawn positions still: nothing between two steps to blend.
+		for (int i = 0; i < capacity; ++i) {
+			previous_position[i] = position[i];
+		}
+		accumulator = 0.0;
+		last_tick_ms = 0.0;
+		return;
+	}
 	const uint64_t start = Time::get_singleton()->get_ticks_usec();
 	const double step = _step_length();
 	// Rebuild the flow field only on ticks with no step, so the two costs never
@@ -282,6 +291,31 @@ int SwarmServer::apply_slow_in_radius(const Vector3 &p_center, double p_radius, 
 		++slowed;
 	});
 	return slowed;
+}
+
+int SwarmServer::kill_in_radius(const Vector3 &p_center, double p_radius, double p_max_mass) {
+	std::vector<Death> deaths;
+	_for_each_near(p_center.x, p_center.z, real_t(p_radius) + max_radius, [&](int i) {
+		const Ref<SwarmType> &type = types[type_index[i]].type;
+		const real_t reach = real_t(p_radius) + _radius(i);
+		const Vector2 d(position[i].x - p_center.x, position[i].z - p_center.z);
+		if (hp[i] > 0.0 && type->get_mass() <= p_max_mass && d.length_squared() <= reach * reach) {
+			deaths.push_back({ type->get_id(), position[i], false });
+			_free(i);
+		}
+	});
+	for (const Death &death : deaths) {
+		emit_signal("enemy_died", death.type_id, death.position, death.rewarded);
+	}
+	return int(deaths.size());
+}
+
+void SwarmServer::set_frozen(bool p_frozen) {
+	frozen = p_frozen;
+}
+
+bool SwarmServer::is_frozen() const {
+	return frozen;
 }
 
 void SwarmServer::set_enemy_lifetime(int p_index, double p_seconds) {
@@ -954,6 +988,9 @@ void SwarmServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("apply_slow_in_radius", "center", "radius", "factor", "duration"),
 			&SwarmServer::apply_slow_in_radius);
 	ClassDB::bind_method(D_METHOD("set_enemy_lifetime", "index", "seconds"), &SwarmServer::set_enemy_lifetime);
+	ClassDB::bind_method(D_METHOD("kill_in_radius", "center", "radius", "max_mass"), &SwarmServer::kill_in_radius);
+	ClassDB::bind_method(D_METHOD("set_frozen", "frozen"), &SwarmServer::set_frozen);
+	ClassDB::bind_method(D_METHOD("is_frozen"), &SwarmServer::is_frozen);
 	ClassDB::bind_method(D_METHOD("get_rooted_count"), &SwarmServer::get_rooted_count);
 	ClassDB::bind_method(D_METHOD("find_nearest", "center", "radius"), &SwarmServer::find_nearest);
 	ClassDB::bind_method(

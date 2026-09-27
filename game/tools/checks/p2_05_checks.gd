@@ -610,7 +610,7 @@ func _check_hud() -> void:
 			and hud._surge_name.text == "Settle  25" and hud._surge_state.text == "ready" \
 			and hud._draw_state.text.ends_with(" s") and hud._pips.size() == 9 \
 			and is_equal_approx(hud._pip_fills[0].size.x, 14.0) and is_equal_approx(hud._pip_fills[2].size.x, 7.0) \
-			and hud._pip_fills[3].size.x == 0.0 and hud._wave.text == "Wave 1 / 9"
+			and hud._pip_fills[3].size.x == 0.0 and hud._wave.text == "Station 1 / 3   Wave 1 / 9"
 	taln.investiture.spend(20.0, &"checks")
 	await process_frame
 	var not_ready: bool = not hud._ready_mark.visible

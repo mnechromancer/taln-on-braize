@@ -321,6 +321,28 @@ func _add_taln_and_camera(spawn: Vector3) -> void:
 	catalyze_ui.set("catalysis", catalysis)
 	_own(catalyze_ui, _root)
 
+	# P2-07: the Return and the between-run screen.
+	var return_sequence := CanvasLayer.new()
+	return_sequence.name = "ReturnSequence"
+	return_sequence.set_script(load("res://scripts/cycle/return_sequence.gd"))
+	return_sequence.set("tuning", load("res://data/tuning/return_tuning.tres"))
+	return_sequence.set("taln", taln)
+	return_sequence.set("swarm", swarm)
+	return_sequence.set("motes", motes)
+	return_sequence.set("spawner", spawner)
+	return_sequence.set("well", well)
+	return_sequence.set("catalysis", catalysis)
+	return_sequence.set("menu", menu)
+	return_sequence.set("ground", _root.get_node("StationGround"))
+	_own(return_sequence, _root)
+	var screen := CanvasLayer.new()
+	screen.name = "BetweenRunScreen"
+	screen.set_script(load("res://scripts/ui/between_run_screen.gd"))
+	var cap_skills: Array[SkillDef] = [load("res://data/skills/breaking_stroke.tres"), load("res://data/skills/settle.tres"),
+			load("res://data/skills/bearer_of_agonies.tres")]
+	screen.set("cap_skills", cap_skills)
+	_own(screen, _root)
+
 	var overlay: Node = (load("res://scenes/debug_overlay.tscn") as PackedScene).instantiate()
 	overlay.set("taln", taln)
 	overlay.set("camera_rig", rig)

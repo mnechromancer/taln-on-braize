@@ -1,11 +1,15 @@
 extends SceneTree
-## Headless economy runs with KiteBot playing (P2-05): one full station (nine
-## waves) at station_index 0 per seed. Prints income by source, spending,
-## level-ups and their times, kills and kill rate, and the spec §2.4 station 1
-## targets beside them. Meta state goes to user://bot_meta.json, never the
-## player's file. Reports only; tunes nothing.
+## Headless runs with KiteBot playing. Meta state goes to
+## user://bot_meta.json, never the player's file. Reports only; tunes nothing.
 ##
-## Run: Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path game --script res://tools/bots/run_bot.gd -- --seeds=1,2,3
+## Station mode (default, P2-05/P2-06): one full station (nine waves) at
+## station_index 0 per seed; prints income by source, spending, level-ups and
+## their times, kills and kill rate, Agony fills, and the spec §2.4 station 1
+## targets beside them.
+## Cycle mode (--cycle): full stand-in cycles until Held or Closed.
+## Each seed is the cycle's seed (the CycleDirector seeds every stream from it).
+##
+## Run: Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path game --script res://tools/bots/run_bot.gd -- --seeds=1,2,3 [--cycle] [--level-first]
 
 const STATION := "res://scenes/graybox_station.tscn"
 ## Spec §2.4, station 1: gross income, net for leveling, levels; kill rate (§2.4 note).
@@ -17,10 +21,14 @@ const TARGET_KILLS_PER_MIN := 100.0
 ## (waves, rooms, breaker) and ~9 per cycle. A waves-only run is shorter.
 const FILL_SECONDS := 180.0
 const TARGET_FILLS_PER_STATION := 3.0
+## Cycle mode gives up on a cycle after this much play (it should end well before).
+const CYCLE_LIMIT_SECONDS := 3600.0
 
 var seeds: Array[int] = [1, 2, 3]
 ## --level-first: the bot variant that won't cast Settle below the next level cost.
 var level_first: bool = false
+## --cycle: full cycles instead of one station.
+var cycle_mode: bool = false
 
 
 func _init() -> void:
@@ -31,6 +39,8 @@ func _init() -> void:
 				seeds.append(int(part))
 		elif arg == "--level-first":
 			level_first = true
+		elif arg == "--cycle":
+			cycle_mode = true
 	_run()
 
 
@@ -40,77 +50,86 @@ func _run() -> void:
 	Meta.state().wipe()
 	var runs: Array[Dictionary] = []
 	for seed in seeds:
-		runs.append(await _run_station(seed))
-	_report(runs)
+		runs.append(await _run_one(seed))
+	if cycle_mode:
+		_report_cycles(runs)
+	else:
+		_report(runs)
 	quit()
 
 
-func _run_station(seed: int) -> Dictionary:
+func _run_one(seed: int) -> Dictionary:
+	var cycle: Cycle = Cycle.director()
+	cycle.next_seed = seed
 	var station: GrayboxStation = (load(STATION) as PackedScene).instantiate()
 	root.add_child(station)
 	var taln: Taln = station.get_node("Taln")
 	var spawner: SpawnDirector = station.get_node("SpawnDirector")
 	var swarm: SwarmServer = station.get_node("SwarmServer")
-	var well: Well = station.get_node("Well")
 	spawner.paused = true
-	_seed(station, seed)
 	var bot := KiteBot.new()
 	bot.taln = taln
 	bot.swarm = swarm
 	bot.ground = station.get_node("StationGround")
 	bot.camera_rig = station.get_node("CameraRig")
 	bot.menu = station.get_node("LevelUpMenu")
-	bot.well = well
+	bot.well = station.get_node("Well")
 	bot.catalysis = station.get_node("Catalysis")
+	bot.sequence = station.get_node("ReturnSequence")
 	bot.level_first = level_first
 	station.add_child(bot)
 	await (station.get_node("StationGround") as StationGround).ground_changed
 
 	var levels: Array = []
-	var depletions: Array[int] = [0]
 	var clock: Array[float] = [0.0]
 	taln.leveling.leveled.connect(func(n: int, skill: SkillDef, cost: float) -> void:
 		levels.append([clock[0], n, skill.id if skill else &"consolidate", cost]))
-	taln.health.depleted.connect(func() -> void: depletions[0] += 1)
+	var done: Array[bool] = [false]
+	var outcome: Array[String] = ["unfinished"]
+	cycle.cycle_ended.connect(func(o: Cycle.Outcome, _s: Dictionary) -> void:
+		done[0] = true
+		outcome[0] = Cycle.Outcome.keys()[o], CONNECT_ONE_SHOT)
+	if not cycle_mode:
+		spawner.waves_done.connect(func() -> void: done[0] = true, CONNECT_ONE_SHOT)
 	spawner.paused = false
-	var length: float = spawner.tuning.wave_length * spawner.tuning.waves
-	var ticks: int = roundi(length * Engine.physics_ticks_per_second)
-	var step: float = 1.0 / Engine.physics_ticks_per_second
-	var t := 0
-	while t < ticks:
+	while not done[0] and cycle.play_time < CYCLE_LIMIT_SECONDS:
 		await physics_frame
-		if not paused:
-			t += 1
-			clock[0] = t * step
+		clock[0] = cycle.play_time
 	spawner.paused = true
 	var run: Dictionary = {
 		"seed": seed,
-		"seconds": length,
+		"seconds": spawner.tuning.wave_length * spawner.tuning.waves if not cycle_mode else cycle.play_time,
+		"play_seconds": cycle.play_time,
+		"outcome": outcome[0],
 		"kills": station.kills,
 		"income": taln.investiture.income_by_source.duplicate(),
 		"spent": taln.investiture.spent_by_reason.duplicate(),
 		"held": taln.investiture.current,
 		"levels": levels,
-		"depletions": depletions[0],
+		"returns": cycle.returns,
 		"motes_lost": station.motes_lost,
 		"strain": taln.toauma.strain,
 		"fills": (station.get_node("Catalysis") as Catalysis).history.map(func(h: Dictionary) -> String: return h.choice),
 		"agony": taln.agony.gained_by_source.duplicate(),
+		"station_reached": station.station_index() + 1,
 		"bot": {"casts": bot.casts, "draws": bot.draws, "invests": bot.invests, "pool_s": bot.pool_seconds},
 	}
+	paused = false
 	station.queue_free()
 	await physics_frame
 	return run
 
 
-func _seed(station: GrayboxStation, seed: int) -> void:
-	var taln: Taln = station.get_node("Taln")
-	(station.get_node("SpawnDirector") as SpawnDirector)._rng.seed = hash([seed, "spawner"])
-	(station.get_node("SwarmServer") as SwarmServer).set_seed(hash([seed, "swarm"]))
-	(station.get_node("MoteServer") as MoteServer).set_seed(hash([seed, "motes"]))
-	(station.get_node("Well") as Well).rng.seed = hash([seed, "well"])
-	taln.toauma.rng.seed = hash([seed, "toauma"])
-	taln.leveling.rng.seed = hash([seed, "leveling"])
+func _report_cycles(runs: Array[Dictionary]) -> void:
+	print("")
+	print("Economy bot%s: full stand-in cycles, %d seed(s)" % [" (level-first variant)" if level_first else "", runs.size()])
+	for run in runs:
+		var gross: float = 0.0
+		for source: StringName in run.income:
+			gross += run.income[source]
+		print("seed %d: %s at station %d after %d:%02d; %d Returns, %d level-ups, %d fills (%s), %d kills, income %.0f"
+				% [run.seed, run.outcome, run.station_reached, int(run.play_seconds) / 60, int(run.play_seconds) % 60,
+				run.returns, run.levels.size(), run.fills.size(), ", ".join(run.fills), run.kills, gross])
 
 
 func _report(runs: Array[Dictionary]) -> void:
@@ -127,8 +146,8 @@ func _report(runs: Array[Dictionary]) -> void:
 		var minutes: float = run.seconds / 60.0
 		var spent: Dictionary = run.spent
 		print("")
-		print("seed %d: %d kills (%.0f/min), %d level-ups, %d Health depletions, Strain %.2f at the end" % [run.seed,
-				run.kills, run.kills / minutes, run.levels.size(), run.depletions, run.strain])
+		print("seed %d: %d kills (%.0f/min), %d level-ups, %d Returns, Strain %.2f at the end" % [run.seed,
+				run.kills, run.kills / minutes, run.levels.size(), run.returns, run.strain])
 		var parts: Array[String] = []
 		for s in sources:
 			parts.append("%s %.0f" % [s, income.get(s, 0.0)])

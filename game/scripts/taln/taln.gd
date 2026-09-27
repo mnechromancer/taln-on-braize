@@ -20,6 +20,8 @@ var move_direction: Vector3 = Vector3.ZERO
 ## While set (the Welcome and Catalyze windows) Taln can still walk but can't
 ## Shoulder, cast Surges or Draw.
 var control_locked: bool = false
+## While set (the Return sequence) Taln doesn't move at all and Fracture holds.
+var frozen: bool = false
 ## Walking-speed multipliers by source (e.g. Lurch); they multiply together.
 var _speed_multipliers: Dictionary[StringName, float] = {}
 
@@ -58,6 +60,9 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if frozen:
+		velocity = Vector3.ZERO
+		return
 	fracture.update(global_position, Vector2(velocity.x, velocity.z).length(), delta)
 	move_direction = _read_move_direction()
 

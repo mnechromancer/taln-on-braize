@@ -16,6 +16,10 @@ extends Resource
 @export_range(0.0, 60.0, 0.5, "suffix:s") var bank_cap_seconds: float = 0.0
 @export_range(0, 4000, 1) var alive_cap: int = 0
 
+@export_group("Lull")
+## Between stations the spawner runs at this share of the wave-9 budget (spec §1.2).
+@export_range(0.0, 1.0, 0.01) var lull_budget_fraction: float = 0.0
+
 @export_group("Waves")
 @export_range(0.0, 600.0, 1.0, "suffix:s") var wave_length: float = 0.0
 ## Wave indices run 0 to waves - 1, then hold on the last.

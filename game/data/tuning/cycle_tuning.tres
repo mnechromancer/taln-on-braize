@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="CycleTuning" format=3]
+
+[ext_resource type="Script" path="res://scripts/tuning/cycle_tuning.gd" id="1_cycle"]
+
+[resource]
+script = ExtResource("1_cycle")
+stations = 3
+returns_to_close = 9
+lull_seconds = 15.0
+station_scene = "res://scenes/graybox_station.tscn"
