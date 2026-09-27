@@ -1,5 +1,5 @@
 # Unbroken: Taln on Braize
-### Core Systems Spec — v1.2 (Approved)
+### Core Systems Spec — v1.3 (v1.0–v1.2 approved; v1.3 rows in §15 for review at the Phase 2 gate)
 
 *Phase 2 deliverable. Parent documents: Design Doc v1.1 (governs mechanics intent), Narrative Bible v1.1 (governs fiction), Art Direction v1.1 (governs visuals). This document turns their intent into numbers, state machines and system boundaries that the prototype can be built against. Every number here is a **starting value for the prototype**, not a balance commitment; the Phase 4 Balancing doc supersedes them.*
 
@@ -548,6 +548,16 @@ All twelve approved 2026-09-25 as recommended.
 | 3 | Notice pack sizes are placeholders: 3 hunters at Strain 3, 5 at Strain 6, 9 at Strain 9. The Enemy Design doc replaces them | §5.3 | Notice needs a pack size to spawn before the Enemy Design doc exists |
 | 4 | Clarified: Misfire turns the Surge within ±45° of its aim, a 90° cone | §5.3 | "Within 90° of aim" could be read as ±90° |
 | 5 | Hunters from the Strain 3 and 6 Notices die after 30 s if not killed (not a kill: no kill rewards). Strain 9 hunters still persist until killed | §5.3 | The spec said only Strain 9 hunters persist, without saying when the others go. 30 s is about 6 s to close from 26 m plus ~24 s of hunting, and shorter than a wave, so packs rarely stack |
+
+### v1.3 — 2026-09-26 (P2-04 to P2-08)
+
+Rows marked **(ruled)** restate design rulings given in the P2-04–P2-08 handoff; the rest are clarifications made while building.
+
+| # | Change | Where | Why |
+|---|---|---|---|
+| 1 | **(ruled)** Flow field: a Dijkstra field over the station ground's cells toward Taln's cell, 8 neighbors, no diagonal corner-cutting past closed cells. Rebuilds when Taln changes cell, at most 10 Hz (`flow_rebuild_interval`), and on every ground change. Enemies follow it; within 3 m of Taln (`flow_direct_range`), or with a clear grid line of sight to his cell, they seek directly; where his cell can't be reached they seek directly. Notice hunters follow it too; rooted enemies ignore it | §11.1 | The spec named the field but not its rules; the P2-04 handoff set them |
+| 2 | Clarified: "rebuilt locally when Cohesion edits terrain" is met by a full rebuild on every ground change. A full 128×128 rebuild costs ~0.6 ms in the unoptimized dev build; a Dijkstra field can't be patched locally anyway, since one edit can change distances anywhere. Rebuilds run on a physics tick with no simulation step, so the two costs never share a tick | §11.1 | The handoff's full rebuild and the spec's "locally" read as a conflict; they aren't, once "locally" means in place at runtime |
+| 3 | Clarified: the 3 m direct-seek range is measured along the field (path distance), not in a straight line. A closed cell Taln stands on still seeds the field | §11.1 | Straight-line, an enemy at the foot of a cliff Taln stands on is "within 3 m" and would seek into the cliff; along the field it walks to a ramp. Path distance is never shorter than straight-line, so this only removes direct seeks that can't work |
 
 ---
 

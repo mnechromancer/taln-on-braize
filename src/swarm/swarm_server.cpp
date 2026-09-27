@@ -49,7 +49,11 @@ void SwarmServer::_physics_process(double p_delta) {
 	if (tuning.is_null() || tuning->get_step_rate() <= 0.0) {
 		return;
 	}
+	const uint64_t start = Time::get_singleton()->get_ticks_usec();
 	const double step = _step_length();
+	// Rebuild the flow field only on ticks with no step, so the two costs never
+	// land in the same tick (steps run at half the physics rate).
+	_update_flow(p_delta, accumulator + p_delta + 1e-9 >= step);
 	accumulator += p_delta;
 	int steps = 0;
 	while (accumulator + 1e-9 >= step && steps < kMaxStepsPerFrame) {
@@ -60,6 +64,7 @@ void SwarmServer::_physics_process(double p_delta) {
 	if (accumulator >= step) {
 		accumulator = std::fmod(accumulator, step);
 	}
+	last_tick_ms = double(Time::get_singleton()->get_ticks_usec() - start) / 1000.0;
 }
 
 void SwarmServer::_process(double p_delta) {
@@ -143,10 +148,13 @@ void SwarmServer::set_ground(const PackedFloat32Array &p_heights, const PackedBy
 		slot.multimesh->set_custom_aabb(ground_bounds);
 	}
 	grid_dirty = true;
+	flow.set_grid(ground_blocked.data(), ground_width, ground_depth, ground_cell_size, ground_origin);
+	flow_dirty = true;
 }
 
 void SwarmServer::set_target(Node3D *p_target) {
 	target_id = p_target ? ObjectID(p_target->get_instance_id()) : ObjectID();
+	flow_dirty = true;
 }
 
 Node3D *SwarmServer::get_target() const {
@@ -394,6 +402,43 @@ double SwarmServer::get_last_step_ms() const {
 	return last_step_ms;
 }
 
+void SwarmServer::rebuild_flow_field() {
+	Node3D *target = get_target();
+	ERR_FAIL_COND_MSG(target == nullptr || !target->is_inside_tree() || !has_ground,
+			"The flow field needs a target in the tree and ground.");
+	_build_flow(target->get_global_position());
+}
+
+double SwarmServer::get_last_tick_ms() const {
+	return last_tick_ms;
+}
+
+double SwarmServer::get_last_flow_build_ms() const {
+	return last_flow_build_ms;
+}
+
+int SwarmServer::get_flow_build_count() const {
+	return flow_builds;
+}
+
+Vector2i SwarmServer::get_flow_goal_cell() const {
+	const int cell = flow.goal_cell();
+	return cell >= 0 ? Vector2i(cell % ground_width, cell / ground_width) : Vector2i(-1, -1);
+}
+
+double SwarmServer::get_flow_distance(const Vector3 &p_position) const {
+	return flow.distance(flow.cell_at(p_position.x, p_position.z));
+}
+
+Vector3 SwarmServer::get_flow_direction(const Vector3 &p_position) const {
+	const Vector2 dir = flow.direction(p_position.x, p_position.z);
+	return Vector3(dir.x, 0.0f, dir.y);
+}
+
+bool SwarmServer::is_flow_line_clear(const Vector3 &p_position) {
+	return flow.line_clear(flow.cell_at(p_position.x, p_position.z));
+}
+
 void SwarmServer::set_capacity(int p_capacity) {
 	ERR_FAIL_COND_MSG(p_capacity < 0, "Capacity can't be negative.");
 	capacity = p_capacity;
@@ -402,6 +447,11 @@ void SwarmServer::set_capacity(int p_capacity) {
 
 int SwarmServer::get_capacity() const {
 	return capacity;
+}
+
+bool SwarmServer::is_enemy_alive(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, capacity, false);
+	return alive[p_index] != 0;
 }
 
 Vector3 SwarmServer::get_enemy_position(int p_index) const {
@@ -456,14 +506,7 @@ void SwarmServer::_step(double p_dt) {
 		}
 
 		const real_t max_speed = real_t(std::min(speed[i], top_speed) * slow_mult[i]);
-		Vector2 seek;
-		if (has_target) {
-			const Vector2 to(goal.x - position[i].x, goal.z - position[i].z);
-			const real_t dist = to.length();
-			if (dist > kTiny) {
-				seek = to / dist;
-			}
-		}
+		const Vector2 seek = has_target ? _seek_direction(position[i], goal) : Vector2();
 		const real_t weight = real_t(types[type_index[i]].type->get_separation_weight());
 		const Vector2 steer = ((seek + _separation(i) * weight) * max_speed).limit_length(max_speed);
 		velocity[i] = Vector3(steer.x, 0.0f, steer.y) + impulse[i];
@@ -536,6 +579,52 @@ void SwarmServer::_step(double p_dt) {
 	for (const Death &expiry : expiries) {
 		emit_signal("enemy_expired", expiry.type_id, expiry.position);
 	}
+}
+
+void SwarmServer::_update_flow(double p_delta, bool p_step_due) {
+	flow_since_build += p_delta;
+	Node3D *target = get_target();
+	if (p_step_due || !has_ground || target == nullptr || !target->is_inside_tree()) {
+		return;
+	}
+	const Vector3 goal = target->get_global_position();
+	int x = 0;
+	int z = 0;
+	flow.clamped_cell(goal.x, goal.z, x, z);
+	const bool moved = z * ground_width + x != flow.goal_cell();
+	if (flow_dirty || (moved && flow_since_build + 1e-9 >= tuning->get_flow_rebuild_interval())) {
+		_build_flow(goal);
+	}
+}
+
+void SwarmServer::_build_flow(const Vector3 &p_goal) {
+	const uint64_t start = Time::get_singleton()->get_ticks_usec();
+	int x = 0;
+	int z = 0;
+	flow.clamped_cell(p_goal.x, p_goal.z, x, z);
+	flow.build(x, z);
+	flow_dirty = false;
+	flow_since_build = 0.0;
+	++flow_builds;
+	last_flow_build_ms = double(Time::get_singleton()->get_ticks_usec() - start) / 1000.0;
+}
+
+Vector2 SwarmServer::_seek_direction(const Vector3 &p_position, const Vector3 &p_goal) {
+	const Vector2 to(p_goal.x - p_position.x, p_goal.z - p_position.z);
+	const real_t dist = to.length();
+	const Vector2 direct = dist > kTiny ? to / dist : Vector2();
+	const int cell = flow.is_built() ? flow.cell_at(p_position.x, p_position.z) : -1;
+	if (cell < 0) {
+		return direct;
+	}
+	// Close along the field (not just in a straight line, which could be up a
+	// cliff), in plain sight, or unable to reach Taln: head straight for him.
+	const real_t along = flow.distance(cell);
+	if (along < 0.0f || along <= real_t(tuning->get_flow_direct_range()) || flow.line_clear(cell)) {
+		return direct;
+	}
+	const Vector2 follow = flow.direction(p_position.x, p_position.z);
+	return follow.is_zero_approx() ? direct : follow;
 }
 
 Vector2 SwarmServer::_separation(int p_index) {
@@ -841,6 +930,15 @@ void SwarmServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_alive_count"), &SwarmServer::get_alive_count);
 	ClassDB::bind_method(D_METHOD("clear_all"), &SwarmServer::clear_all);
 	ClassDB::bind_method(D_METHOD("get_last_step_ms"), &SwarmServer::get_last_step_ms);
+	ClassDB::bind_method(D_METHOD("rebuild_flow_field"), &SwarmServer::rebuild_flow_field);
+	ClassDB::bind_method(D_METHOD("get_last_tick_ms"), &SwarmServer::get_last_tick_ms);
+	ClassDB::bind_method(D_METHOD("get_last_flow_build_ms"), &SwarmServer::get_last_flow_build_ms);
+	ClassDB::bind_method(D_METHOD("get_flow_build_count"), &SwarmServer::get_flow_build_count);
+	ClassDB::bind_method(D_METHOD("get_flow_goal_cell"), &SwarmServer::get_flow_goal_cell);
+	ClassDB::bind_method(D_METHOD("get_flow_distance", "position"), &SwarmServer::get_flow_distance);
+	ClassDB::bind_method(D_METHOD("get_flow_direction", "position"), &SwarmServer::get_flow_direction);
+	ClassDB::bind_method(D_METHOD("is_flow_line_clear", "position"), &SwarmServer::is_flow_line_clear);
+	ClassDB::bind_method(D_METHOD("is_enemy_alive", "index"), &SwarmServer::is_enemy_alive);
 	ClassDB::bind_method(D_METHOD("get_enemy_position", "index"), &SwarmServer::get_enemy_position);
 	ClassDB::bind_method(D_METHOD("get_enemy_root_time", "index"), &SwarmServer::get_enemy_root_time);
 	ClassDB::bind_method(D_METHOD("get_enemy_slow_time", "index"), &SwarmServer::get_enemy_slow_time);

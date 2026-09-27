@@ -8,6 +8,7 @@
 #include <godot_cpp/classes/multi_mesh_instance3d.hpp>
 #include <godot_cpp/classes/node3d.hpp>
 
+#include "flow_field.h"
 #include "swarm_tuning.h"
 #include "swarm_type.h"
 
@@ -21,6 +22,14 @@ using namespace godot;
 //
 // The ground comes from StationGround via set_ground(): per-cell heights and a
 // blocked mask. Enemies never step into blocked cells and stand on the heights.
+//
+// A flow field over the same cells (spec §11.1) routes enemies around walls
+// and cliffs toward Taln. It rebuilds when Taln changes cell (at most once per
+// flow_rebuild_interval) and whenever the ground or target changes, on the
+// next physics tick that runs no simulation step. Enemies follow it
+// unless they're within flow_direct_range of Taln along it, can see his cell
+// in a straight grid line, or can't reach him at all; then they seek directly.
+// Rooted enemies don't steer, so they ignore it.
 class SwarmServer : public Node3D {
 	GDCLASS(SwarmServer, Node3D);
 
@@ -55,7 +64,22 @@ public:
 	int get_alive_count() const;
 	void clear_all();
 	double get_last_step_ms() const;
-	// Debugging and checks: where the enemy in this slot stands (zero if the slot is free).
+	// Everything the last physics tick cost: steps plus any flow rebuild.
+	double get_last_tick_ms() const;
+	// Flow field: rebuild now toward the target's cell; time and count of
+	// rebuilds; path distance in meters from the cell under a point to the
+	// goal (negative if unreachable); the flow there; whether that cell sees
+	// the goal in a straight grid line. For checks and debugging.
+	void rebuild_flow_field();
+	double get_last_flow_build_ms() const;
+	int get_flow_build_count() const;
+	Vector2i get_flow_goal_cell() const;
+	double get_flow_distance(const Vector3 &p_position) const;
+	Vector3 get_flow_direction(const Vector3 &p_position) const;
+	bool is_flow_line_clear(const Vector3 &p_position);
+	// Debugging and checks: whether the slot holds a live enemy, and where it
+	// stands (zero if the slot is free).
+	bool is_enemy_alive(int p_index) const;
 	Vector3 get_enemy_position(int p_index) const;
 	// Checks: seconds of root and slow left on the enemy in this slot.
 	double get_enemy_root_time(int p_index) const;
@@ -93,6 +117,12 @@ private:
 	int _type_index(const Ref<SwarmType> &p_type);
 	void _size_multimesh(TypeSlot &p_slot);
 	void _step(double p_dt);
+	// p_step_due: a step runs this tick, so any rebuild waits for the next one.
+	void _update_flow(double p_delta, bool p_step_due);
+	void _build_flow(const Vector3 &p_goal);
+	// Unit direction an enemy at p_position steers toward p_goal: the flow,
+	// or straight at it (see the class comment).
+	Vector2 _seek_direction(const Vector3 &p_position, const Vector3 &p_goal);
 	void _free(int p_index);
 	void _hit(int p_index, double p_amount, int p_type);
 	// Inside the range, and either within the angle or overlapping the origin.
@@ -166,7 +196,14 @@ private:
 	std::vector<int> grid_cell_of;
 	bool grid_dirty = true;
 
+	FlowField flow;
+	bool flow_dirty = true;
+	double flow_since_build = 0.0;
+	double last_flow_build_ms = 0.0;
+	int flow_builds = 0;
+
 	double accumulator = 0.0;
 	double last_step_ms = 0.0;
+	double last_tick_ms = 0.0;
 	std::mt19937 rng;
 };

@@ -9,3 +9,5 @@ impulse_decay = 8.0
 contact_cooldown = 0.75
 hit_flash_time = 0.1
 root_fade_time = 0.3
+flow_rebuild_interval = 0.1
+flow_direct_range = 3.0

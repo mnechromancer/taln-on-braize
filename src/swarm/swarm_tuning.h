@@ -20,6 +20,8 @@ public:
 	SWARM_ACCESSORS(double, contact_cooldown)
 	SWARM_ACCESSORS(double, hit_flash_time)
 	SWARM_ACCESSORS(double, root_fade_time)
+	SWARM_ACCESSORS(double, flow_rebuild_interval)
+	SWARM_ACCESSORS(double, flow_direct_range)
 
 protected:
 	static void _bind_methods();
@@ -40,4 +42,9 @@ private:
 	double hit_flash_time = 0.0;
 	// The shader's rooted amount eases from 1 to 0 over a root's last this-many seconds.
 	double root_fade_time = 0.0;
+	// The flow field (spec §11.1) rebuilds when Taln changes cell, at most
+	// once per this many seconds; a ground change rebuilds it at once.
+	double flow_rebuild_interval = 0.0;
+	// Enemies this far or closer along the field seek Taln directly.
+	double flow_direct_range = 0.0;
 };

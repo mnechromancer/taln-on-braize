@@ -28,7 +28,11 @@
 | Gray-box arena | Feature | ✅ Done — P2-01: arena + movement/camera/stance, branch `phase-2` (2026-09-26) |
 | Player movement + one Stoneward ability | Feature | ✅ Done — movement in P2-01; Breaking Stroke weapon + Settle Surge routed through Toa'uma with Strain in P2-03 (2026-09-26) |
 | Basic enemy spawner | Feature | ✅ Done — P2-02: SwarmServer v0 (C++) + SpawnDirector; Notice hunter packs in P2-03 (2026-09-26) |
-| Agony meter + "Welcome the Agony" prompt (no real Cataclysm payoff yet) | Feature | ⬜ Not Started |
+| Flow-field pathing (spec §11.1) | Feature | ✅ Done — P2-04: C++ Dijkstra field in SwarmServer; swarm and hunters route around walls, cliffs and ramps (2026-09-26) |
+| Investiture loop + leveling + placeholder HUD + economy bot (spec §2, §13 step 4) | Feature | ⬜ Not Started — P2-05 |
+| Agony meter + Welcome the Agony + Catalyze with placeholder Cataclysms + Bearer of Agonies (spec §3–4). Pulled forward: working Cataclysm payoff, so the gate can judge the Welcome/Bank choice | Feature | ⬜ Not Started — P2-06 |
+| Return + cycle structure + between-run cap spending (spec §1.3, §6.6, §9). Pulled forward from Phase 4: 3-station stand-in cycle on the gray-box map and meta cap spending, so the gate can judge the full loop | Feature | ⬜ Not Started — P2-07 |
+| Telemetry + report tool + gate build (spec §13 step 7) | Feature | ⬜ Not Started — P2-08 |
 
 **Phase complete when**: the core loop is provably fun with placeholder art — this is the internal go/no-go gate.
 
@@ -104,4 +108,4 @@
 
 ---
 
-*Current position: Phase 2 open. Core Systems Spec v1.2 (revisions in §15). Repo + Godot project + GDExtension scaffold done; gray-box arena (P2-01), SwarmServer v0 + spawner (P2-02), and weapon + Stoneward Surge + Toa'uma/Strain (P2-03) done on branch `phase-2`. Next up: P2-04, the Investiture loop per spec §13 step 4, then the rest of the §13 build order. Manual checks are tested together via rendered recordings (see CLAUDE.md). Work is built in Claude Code from step-by-step handoffs given in chat (no handoff files in the repo). Project files: unbroken-design-doc-draft.md, claude/unbroken-narrative-bible.md, claude/unbroken-art-direction.md (live Art Direction doc, authoritative: https://claude.ai/code/artifact/a2b626e6-f594-4f80-a75f-ca3a70e59fec), claude/unbroken-core-systems-spec.md.*
+*Current position: Phase 2 open. Core Systems Spec v1.3 (revisions in §15). Repo + Godot project + GDExtension scaffold done; gray-box arena (P2-01), SwarmServer v0 + spawner (P2-02), and weapon + Stoneward Surge + Toa'uma/Strain (P2-03) done on branch `phase-2`; flow field (P2-04) done. Next up: P2-05 through P2-08 (Investiture loop, Agony/Catalyze, Return + cycle + between-run, telemetry + gate build), then the Phase 2 go/no-go gate. The roadmap and spec are living docs, expanded as the work needs (see CLAUDE.md). Manual checks are tested together via rendered recordings (see CLAUDE.md). Work is built in Claude Code from step-by-step handoffs given in chat (no handoff files in the repo). Project files: unbroken-design-doc-draft.md, claude/unbroken-narrative-bible.md, claude/unbroken-art-direction.md (live Art Direction doc, authoritative: https://claude.ai/code/artifact/a2b626e6-f594-4f80-a75f-ca3a70e59fec), claude/unbroken-core-systems-spec.md.*

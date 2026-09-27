@@ -4,6 +4,14 @@
 
 `docs/core-systems-spec.md` is authoritative for gameplay numbers and system behavior. If a handoff step disagrees with the spec, flag the conflict instead of picking one.
 
+## Living docs
+
+`docs/roadmap.md` and `docs/core-systems-spec.md` are living documents. Expand them as the work needs, through the whole project lifecycle; don't treat either as a fixed scope list.
+
+- When work needs something the roadmap doesn't list, add a row in the right phase (with its milestone ID and status) in the same commit as the work. Pulling later-phase work forward is fine when the current phase's gate needs it; say so in the row.
+- When work needs behavior or numbers the spec doesn't define, or changes ones it does, add a §15 revision row (Change | Where | Why) in the same commit. Start a new version heading for each new batch of revisions.
+- This covers scope and clarifications. A change to design intent, or a contradiction with the spec, Art Direction or Narrative Bible, still goes to the user as a flagged decision rather than being written in.
+
 ## Conventions
 
 - Use statically typed GDScript everywhere.
@@ -25,7 +33,8 @@ Godot 4.7.2 lives at `D:/users/itspe/Godot_v4.7.2-stable_win64.exe/` (a folder, 
   - P2-02's (SwarmServer v0) checks live in `game/tools/checks/p2_02_checks.gd`. Rerun them after changing StationGround, the station layout, ground or swarm tuning, or the C++.
   - Test anything the headless checks list as MANUAL (visuals, flicker, rendered fps) with a rendered recording. The user watches the window come up and tests alongside. Write a throwaway SceneTree script that sets up the scenario, then run the console exe *without* `--headless`: `--path game --resolution 640x360 --fixed-fps 144 --write-movie <scratchpad>/frames/f.png --script res://tools/checks/_capture.gd`. Use 144 fps against 60 Hz physics so frames land between ticks, as on a high-refresh monitor. Analyze the PNGs with Python (PIL and numpy are installed), view key frames directly, and delete the throwaway script afterwards.
   - P2-03's (weapon, Surge, Toa'uma, Strain) checks live in `game/tools/checks/p2_03_checks.gd`. Rerun them after changing Investiture, the Loadout, those systems, or the C++.
+  - P2-04's (flow field) checks live in `game/tools/checks/p2_04_checks.gd`. Rerun them after changing the flow field, SwarmServer steering, StationGround, the station layout or swarm tuning, or the C++.
 
 ## C++ (GDExtension)
 
-SwarmServer, SwarmType and SwarmTuning live in `src/swarm/`. For debug builds, run `scons target=template_debug dev_build=yes` from that folder. It writes `game/bin/libswarm.windows.template_debug.x86_64.dll`; the SConstruct drops dev_build's `.dev` suffix so `swarm.gdextension` finds one name. Keep `reloadable = true` in `swarm.gdextension`. If Windows refuses to overwrite the DLL while the editor is open, close the editor, build, and reopen. Don't try to work around it.
+SwarmServer (with its FlowField), SwarmType and SwarmTuning live in `src/swarm/`. For debug builds, run `scons target=template_debug dev_build=yes` from that folder. It writes `game/bin/libswarm.windows.template_debug.x86_64.dll`; the SConstruct drops dev_build's `.dev` suffix so `swarm.gdextension` finds one name. Keep `reloadable = true` in `swarm.gdextension`. If Windows refuses to overwrite the DLL while the editor is open, close the editor, build, and reopen. Don't try to work around it.
