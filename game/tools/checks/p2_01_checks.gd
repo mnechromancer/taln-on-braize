@@ -70,6 +70,8 @@ func _fresh() -> void:
 		await _ticks(1)
 	station = (load(STATION) as PackedScene).instantiate()
 	root.add_child(station)
+	# These checks cover Taln alone; the swarm (P2-02) stays out of them.
+	(station.get_node("SpawnDirector") as SpawnDirector).paused = true
 	taln = station.get_node("Taln")
 	rig = station.get_node("CameraRig")
 	overlay = station.get_node("DebugOverlay")

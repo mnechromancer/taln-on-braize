@@ -120,6 +120,7 @@ func _add_ground() -> void:
 	ground.set_script(load("res://scripts/station/station_ground.gd"))
 	ground.set("size_m", GROUND_SIZE)
 	ground.set("material", _flat_material(GROUND_COLOR))
+	ground.set("tuning", load("res://data/tuning/station_ground_tuning.tres"))
 	_own(ground, _root)
 
 
@@ -163,9 +164,14 @@ func _add_raised_geometry() -> void:
 	_add_box(raised, "StepPlatform040", Vector3(4.0, 1.6, 4.0), Vector3(-34.2, 0.8, 0.0))
 	_add_stairs(raised, "Steps040", 4, 0.4, Vector3(-36.2 - 4 * STAIR_TREAD, 0.0, STAIR_WIDTH / 2.0))
 
-	_add_box(raised, "WallLong", Vector3(12.0, 3.0, 1.0), Vector3(0.0, 1.5, -36.0))
-	_add_box(raised, "WallEast", Vector3(1.0, 3.0, 8.0), Vector3(24.0, 1.5, -30.0))
-	_add_box(raised, "WallBlock", Vector3(4.0, 3.0, 4.0), Vector3(-24.0, 1.5, -30.0))
+	# Walls block the ground under them for swarm navigation (StationGround).
+	var walls: Array[CSGBox3D] = [
+		_add_box(raised, "WallLong", Vector3(12.0, 3.0, 1.0), Vector3(0.0, 1.5, -36.0)),
+		_add_box(raised, "WallEast", Vector3(1.0, 3.0, 8.0), Vector3(24.0, 1.5, -30.0)),
+		_add_box(raised, "WallBlock", Vector3(4.0, 3.0, 4.0), Vector3(-24.0, 1.5, -30.0)),
+	]
+	for wall in walls:
+		wall.add_to_group(StationGround.WALL_BLOCK_GROUP, true)
 
 
 ## A wedge ramp of the given angle rising to height at top_edge (the middle of
@@ -186,12 +192,13 @@ func _add_ramp(parent: Node, ramp_name: String, angle: float, height: float,
 	_own(ramp, parent)
 
 
-func _add_box(parent: Node, box_name: String, size: Vector3, center: Vector3) -> void:
+func _add_box(parent: Node, box_name: String, size: Vector3, center: Vector3) -> CSGBox3D:
 	var box := CSGBox3D.new()
 	box.name = box_name
 	box.size = size
 	box.position = center
 	_own(box, parent)
+	return box
 
 
 ## Stairs climbing +X from origin; the last tread runs OVERLAP past the top
@@ -251,9 +258,28 @@ func _add_taln_and_camera(spawn: Vector3) -> void:
 	var rig: Node3D = (load("res://scenes/camera_rig.tscn") as PackedScene).instantiate()
 	rig.set("target", taln)
 	_own(rig, _root)
+
+	# SwarmServer v0: the swarm and the director that spawns it around Taln.
+	var swarm := SwarmServer.new()
+	swarm.name = "SwarmServer"
+	swarm.tuning = load("res://data/tuning/swarm_tuning.tres")
+	_own(swarm, _root)
+	var spawner := Node.new()
+	spawner.name = "SpawnDirector"
+	spawner.set_script(load("res://scripts/swarm/spawn_director.gd"))
+	spawner.set("tuning", load("res://data/tuning/spawn_tuning.tres"))
+	spawner.set("swarm_type", load("res://data/swarm/ash_walker.tres"))
+	spawner.set("swarm", swarm)
+	spawner.set("ground", _root.get_node("StationGround"))
+	spawner.set("target", taln)
+	_own(spawner, _root)
+
 	var overlay: Node = (load("res://scenes/debug_overlay.tscn") as PackedScene).instantiate()
 	overlay.set("taln", taln)
 	overlay.set("camera_rig", rig)
+	overlay.set("swarm", swarm)
+	overlay.set("spawner", spawner)
+	overlay.set("agony_tuning", load("res://data/tuning/agony_tuning.tres"))
 	_own(overlay, _root)
 
 

@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="StationGroundTuning" format=3]
+
+[ext_resource type="Script" path="res://scripts/tuning/station_ground_tuning.gd" id="1_ground"]
+
+[resource]
+script = ExtResource("1_ground")
+max_slope_deg = 40.0
+max_step_m = 0.35

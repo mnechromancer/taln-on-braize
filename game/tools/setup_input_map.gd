@@ -26,6 +26,9 @@ func _init() -> void:
 		"mouse_release": [_key(KEY_ESCAPE)],
 		"debug_overlay": [_key(KEY_F3)],
 		"debug_inspect_light": [_key(KEY_F4)],
+		"debug_blast": [_key(KEY_F5)],
+		"debug_stress": [_key(KEY_F6)],
+		"debug_pause_spawner": [_key(KEY_F7)],
 	}
 
 	for property: Dictionary in ProjectSettings.get_property_list():

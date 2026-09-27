@@ -22,3 +22,8 @@ Godot 4.7.2 lives at `D:/users/itspe/Godot_v4.7.2-stable_win64.exe/` (a folder, 
   - After adding or renaming a `class_name`, refresh the class cache with `--headless --editor --quit --path game` (`--import` never exits).
   - Run a check script with `--headless --fixed-fps 60 --path game --script res://<file>.gd`.
   - P2-01's checks live in `game/tools/checks/p2_01_checks.gd` (exit code = failure count). Rerun them after changing Taln, the camera, the station or tuning.
+  - P2-02's (SwarmServer v0) checks live in `game/tools/checks/p2_02_checks.gd`. Rerun them after changing StationGround, the station layout, ground or swarm tuning, or the C++.
+
+## C++ (GDExtension)
+
+SwarmServer, SwarmType and SwarmTuning live in `src/swarm/`. For debug builds, run `scons target=template_debug dev_build=yes` from that folder. It writes `game/bin/libswarm.windows.template_debug.x86_64.dll`; the SConstruct drops dev_build's `.dev` suffix so `swarm.gdextension` finds one name. Keep `reloadable = true` in `swarm.gdextension`. If Windows refuses to overwrite the DLL while the editor is open, close the editor, build, and reopen. Don't try to work around it.

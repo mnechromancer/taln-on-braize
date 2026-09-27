@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="AgonyTuning" format=3]
+
+[ext_resource type="Script" path="res://scripts/tuning/agony_tuning.gd" id="1_agony"]
+
+[resource]
+script = ExtResource("1_agony")
+pressed_radius = 6.0
+pressed_min_enemies = 9

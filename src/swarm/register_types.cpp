@@ -7,6 +7,8 @@
 #include <godot_cpp/godot.hpp>
 
 #include "swarm_server.h"
+#include "swarm_tuning.h"
+#include "swarm_type.h"
 
 using namespace godot;
 
@@ -15,6 +17,8 @@ void initialize_swarm_module(ModuleInitializationLevel p_level) {
 		return;
 	}
 
+	GDREGISTER_CLASS(SwarmType);
+	GDREGISTER_CLASS(SwarmTuning);
 	GDREGISTER_CLASS(SwarmServer);
 }
 

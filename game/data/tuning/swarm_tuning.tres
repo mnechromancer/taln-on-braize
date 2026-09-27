@@ -1,0 +1,10 @@
+[gd_resource type="SwarmTuning" format=3]
+
+[resource]
+step_rate = 30.0
+grid_cell_size = 2.0
+max_speed_ratio = 0.8
+separation_range = 2.0
+impulse_decay = 8.0
+contact_cooldown = 0.75
+hit_flash_time = 0.1

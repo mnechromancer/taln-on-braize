@@ -13,6 +13,8 @@ signal depleted
 var current: float = 0.0
 var _armor_bonuses: Dictionary[StringName, float] = {}
 var _invulnerable_sources: Dictionary[StringName, bool] = {}
+## Time left on the global invulnerability that follows every hit (spec §6.2).
+var _hit_invulnerable_left: float = 0.0
 
 
 func _ready() -> void:
@@ -20,6 +22,7 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	_hit_invulnerable_left = maxf(_hit_invulnerable_left - delta, 0.0)
 	if tuning.health_regen > 0.0 and current < tuning.max_health:
 		_set_current(minf(current + tuning.health_regen * delta, tuning.max_health))
 
@@ -29,6 +32,7 @@ func damage(raw: float, type: Damage.Type) -> float:
 	if raw <= 0.0 or is_invulnerable():
 		return 0.0
 	var taken: float = raw * 100.0 / (100.0 + get_armor())
+	_hit_invulnerable_left = tuning.hit_invulnerability_time
 	_set_current(current - taken)
 	damaged.emit(taken, type)
 	if current <= 0.0:
@@ -63,7 +67,7 @@ func set_invulnerable(source: StringName, on: bool) -> void:
 
 
 func is_invulnerable() -> bool:
-	return not _invulnerable_sources.is_empty()
+	return _hit_invulnerable_left > 0.0 or not _invulnerable_sources.is_empty()
 
 
 func _set_current(value: float) -> void:

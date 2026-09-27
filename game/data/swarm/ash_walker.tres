@@ -1,0 +1,23 @@
+[gd_resource type="SwarmType" format=3]
+
+[ext_resource type="CylinderMesh" path="res://data/swarm/swarm_placeholder_mesh.tres" id="1_mesh"]
+[ext_resource type="ShaderMaterial" path="res://data/swarm/swarm_placeholder_material.tres" id="2_mat"]
+
+[resource]
+id = &"ash_walker"
+family = 0
+hp = 12.0
+contact_damage = 6.0
+contact_damage_type = 0
+speed_min = 3.2
+speed_max = 4.6
+mass = 1.0
+radius = 0.35
+separation_weight = 1.5
+resist_kinetic = 1.0
+resist_void = 1.0
+resist_blight = 1.0
+spawn_cost = 1
+behavior = 0
+mesh = ExtResource("1_mesh")
+material = ExtResource("2_mat")

@@ -5,6 +5,9 @@ extends CanvasLayer
 
 @export var taln: Taln
 @export var camera_rig: CameraRig
+@export var swarm: SwarmServer
+@export var spawner: SpawnDirector
+@export var agony_tuning: AgonyTuning
 
 @onready var _label: Label = $Panel/Label
 
@@ -35,6 +38,11 @@ func _process(_delta: float) -> void:
 		"Shoulder   %s" % _shoulder_status(shoulder),
 		"Well pool  %s" % _pool_status(),
 		"Camera     %.1f m, pitch %.1f°" % [camera_rig.distance, camera_rig.pitch_deg],
+		"Swarm      %d alive, step %.2f ms" % [swarm.get_alive_count(), swarm.get_last_step_ms()],
+		"Wave       %d / %d  (%.1f / %.0f s)%s" % [spawner.wave + 1, spawner.tuning.waves,
+				spawner.wave_time, spawner.tuning.wave_length, _spawner_flags()],
+		"Budget     %.2f /s, bank %.2f" % [spawner.budget_per_second(), spawner.bank],
+		"Nearby     %s" % _pressed_status(),
 	])
 
 
@@ -59,3 +67,18 @@ func _pool_status() -> String:
 		if pool.is_taln_inside:
 			return "in pool (%s)" % pool.name
 	return "no"
+
+
+func _spawner_flags() -> String:
+	var flags: Array[String] = []
+	if spawner.stress:
+		flags.append("STRESS")
+	if spawner.paused:
+		flags.append("PAUSED")
+	return "  " + " ".join(flags) if not flags.is_empty() else ""
+
+
+func _pressed_status() -> String:
+	var near: int = swarm.query_count_in_radius(taln.global_position, agony_tuning.pressed_radius)
+	var pressed: String = "  Pressed" if near >= agony_tuning.pressed_min_enemies else ""
+	return "%d within %.0f m%s" % [near, agony_tuning.pressed_radius, pressed]

@@ -3,4 +3,5 @@
 *.obj
 *.o
 *.os
+*.pdb
 settings.json

@@ -20,6 +20,8 @@ extends Resource
 @export_range(0.0, 10000.0, 1.0) var max_health: float = 0.0
 @export_range(0.0, 100.0, 0.1, "suffix:/s") var health_regen: float = 0.0
 @export_range(0.0, 1000.0, 1.0) var base_armor: float = 0.0
+## Global invulnerability after any hit (spec §6.2).
+@export_range(0.0, 2.0, 0.01, "suffix:s") var hit_invulnerability_time: float = 0.0
 
 @export_group("Shoulder")
 @export_range(0.0, 20.0, 0.1, "suffix:m") var shoulder_distance: float = 0.0
@@ -29,6 +31,10 @@ extends Resource
 @export_range(0.0, 5.0, 0.1, "suffix:m") var shoulder_max_gap: float = 0.0
 ## Walls hit within this angle of head-on stop the charge; shallower hits slide.
 @export_range(0.0, 90.0, 1.0, "suffix:°") var shoulder_wall_stop_angle_deg: float = 0.0
+## Swarm enemies within this radius of Taln are knocked away every tick of a charge.
+@export_range(0.0, 10.0, 0.1, "suffix:m") var shoulder_knockback_radius: float = 0.0
+## Knockback force; distance = force / Mass (spec §6.2, §6.5).
+@export_range(0.0, 100.0, 0.5) var shoulder_knockback_force: float = 0.0
 
 @export_group("Anchored")
 ## Time since movement input stopped (not since Taln stopped moving).

@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SpawnTuning" format=3]
+
+[ext_resource type="Script" path="res://scripts/tuning/spawn_tuning.gd" id="1_spawn"]
+
+[resource]
+script = ExtResource("1_spawn")
+base_budget = 2.0
+wave_slope = 0.15
+station_pressure = Array[float]([1.0, 1.6, 2.2])
+return_pressure = 1.09
+bank_cap_seconds = 5.0
+alive_cap = 400
+wave_length = 45.0
+waves = 9
+ring_min = 18.0
+ring_max = 26.0
+spawn_attempts = 8
+hp_slope = 0.12
+dmg_slope = 0.05
+station_hp_mults = Array[float]([1.0, 2.2, 4.5])
+station_dmg_mults = Array[float]([1.0, 1.5, 2.1])
+stress_alive_cap = 800
+stress_budget_scale = 10.0

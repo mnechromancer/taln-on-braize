@@ -5,8 +5,12 @@ env = SConscript("../../extern/godot-cpp/SConstruct", {"api_version": "4.7"})
 env.Append(CPPPATH=["."])
 sources = Glob("*.cpp")
 
+# dev_build adds ".dev" to the suffix; drop it so swarm.gdextension finds
+# the DLL under one name for dev and plain debug builds.
+suffix = env["suffix"].replace(".dev", "")
+
 library = env.SharedLibrary(
-    "../../game/bin/libswarm{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
+    "../../game/bin/libswarm{}{}".format(suffix, env["SHLIBSUFFIX"]),
     source=sources,
 )
 
