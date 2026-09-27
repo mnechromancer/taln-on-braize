@@ -6,10 +6,11 @@ extends SceneTree
 ## station_index 0 per seed; prints income by source, spending, level-ups and
 ## their times, kills and kill rate, Agony fills, and the spec §2.4 station 1
 ## targets beside them.
-## Cycle mode (--cycle): full stand-in cycles until Held or Closed.
+## Cycle mode (--cycle, P2-08): full stand-in cycles until Held or Closed;
+## TelemetryRecorder writes each cycle's file for tools/telemetry_report.gd.
 ## Each seed is the cycle's seed (the CycleDirector seeds every stream from it).
 ##
-## Run: Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path game --script res://tools/bots/run_bot.gd -- --seeds=1,2,3 [--cycle] [--level-first]
+## Run: Godot_v4.7.2-stable_win64_console.exe --headless --fixed-fps 60 --path game --script res://tools/bots/run_bot.gd -- --seeds=1,2,3 [--cycle] [--level-first] [--telemetry-dir=user://telemetry_gate]
 
 const STATION := "res://scenes/graybox_station.tscn"
 ## Spec §2.4, station 1: gross income, net for leveling, levels; kill rate (§2.4 note).
@@ -29,6 +30,8 @@ var seeds: Array[int] = [1, 2, 3]
 var level_first: bool = false
 ## --cycle: full cycles instead of one station.
 var cycle_mode: bool = false
+## --telemetry-dir: where cycle files go (default user://telemetry_bot).
+var telemetry_dir: String = ""
 
 
 func _init() -> void:
@@ -41,15 +44,20 @@ func _init() -> void:
 			level_first = true
 		elif arg == "--cycle":
 			cycle_mode = true
+		elif arg.begins_with("--telemetry-dir="):
+			telemetry_dir = arg.trim_prefix("--telemetry-dir=")
 	_run()
 
 
 func _run() -> void:
 	await physics_frame
 	Meta.state().redirect("user://bot_meta.json")
-	Meta.state().wipe()
+	# Bot files stay out of the playtest folder (the report's default).
+	Telemetry.recorder().directory = telemetry_dir if telemetry_dir != "" else "user://telemetry_bot"
 	var runs: Array[Dictionary] = []
 	for seed in seeds:
+		# Every seed starts from a first-ever meta state, so seeds compare.
+		Meta.state().wipe()
 		runs.append(await _run_one(seed))
 	if cycle_mode:
 		_report_cycles(runs)
@@ -130,6 +138,8 @@ func _report_cycles(runs: Array[Dictionary]) -> void:
 		print("seed %d: %s at station %d after %d:%02d; %d Returns, %d level-ups, %d fills (%s), %d kills, income %.0f"
 				% [run.seed, run.outcome, run.station_reached, int(run.play_seconds) / 60, int(run.play_seconds) % 60,
 				run.returns, run.levels.size(), run.fills.size(), ", ".join(run.fills), run.kills, gross])
+	print("Telemetry files are in %s; tools/telemetry_report.gd reads them." % ProjectSettings.globalize_path(
+			Telemetry.recorder().directory))
 
 
 func _report(runs: Array[Dictionary]) -> void:

@@ -193,4 +193,4 @@ func _unhandled_input(event: InputEvent) -> void:
 		_taln.toauma.reset_strain()
 		print("Strain reset")
 	elif event.is_action_pressed("debug_end_cycle"):
-		Cycle.director().end_cycle(Cycle.Outcome.HELD)
+		Cycle.director().end_cycle(Cycle.Outcome.HELD, true)

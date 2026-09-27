@@ -52,7 +52,7 @@ func _ready() -> void:
 	catalysis.prompt_opened.connect(_show_prompt)
 	catalysis.welcomed.connect(_show_catalyze)
 	catalysis.committed.connect(func(_skill: SkillDef, _left: int) -> void: _pad_armed = false)
-	catalysis.resolved.connect(func(_choice: StringName, _fired: Array[SkillDef]) -> void: _hide())
+	catalysis.resolved.connect(func(_choice: StringName, _fired: Array[SkillDef], _held: Array[SkillDef]) -> void: _hide())
 	_hide()
 
 

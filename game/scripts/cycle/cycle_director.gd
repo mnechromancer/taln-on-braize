@@ -74,14 +74,17 @@ func is_closing_return() -> bool:
 	return returns >= tuning.returns_to_close
 
 
-func end_cycle(how: Outcome) -> void:
+## debug: ended by Ctrl+0 (marked in the stats and telemetry).
+func end_cycle(how: Outcome, debug: bool = false) -> void:
 	if outcome != Outcome.NONE or station == null:
 		return
 	# A fill still being decided banks first, so the summary counts it and no
 	# window runs on under the between-run screen.
 	(station.get_node(^"Catalysis") as Catalysis).force_bank()
 	outcome = how
-	cycle_ended.emit(how, summary())
+	var stats: Dictionary = summary()
+	stats["debug_end"] = debug
+	cycle_ended.emit(how, stats)
 
 
 ## What the between-run screen shows (and telemetry records). "welcomed"

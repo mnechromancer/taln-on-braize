@@ -27,8 +27,9 @@ enum State { IDLE, PROMPT, CATALYZE }
 ## After every fill resolves. choice: &"auto_bank" (Case A), &"bank",
 ## &"timeout_bank" (prompt ran out), &"catalyze_bank" (Catalyze ran out with
 ## nothing committed), &"return_bank" (Taln died deciding), &"fire". fired
-## lists the Cataclysms, in firing order.
-signal resolved(choice: StringName, fired: Array[SkillDef])
+## lists the Cataclysms, in firing order; committed, what was committed when
+## the fill resolved (fired, or banked anyway).
+signal resolved(choice: StringName, fired: Array[SkillDef], committed: Array[SkillDef])
 signal prompt_opened
 signal welcomed
 ## A point went to MetaState. first: it was the first ever (Catalysis unlocked).
@@ -247,9 +248,11 @@ func _bank(choice: StringName) -> void:
 
 
 func _record(choice: StringName, fired: Array[SkillDef]) -> void:
+	var held: Array[SkillDef] = committed_skills.duplicate() if choice != &"auto_bank" else ([] as Array[SkillDef])
+	committed_skills.clear()
 	history.append({"choice": choice, "fired": fired.map(func(s: SkillDef) -> StringName: return s.id),
-			"msec": Time.get_ticks_msec()})
-	resolved.emit(choice, fired)
+			"committed": held.map(func(s: SkillDef) -> StringName: return s.id), "msec": Time.get_ticks_msec()})
+	resolved.emit(choice, fired, held)
 
 
 func _open_window() -> void:
