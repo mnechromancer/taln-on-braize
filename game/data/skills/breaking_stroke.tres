@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="SkillDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/skill_def.gd" id="1_skill"]
+[ext_resource type="PackedScene" path="res://scenes/skills/breaking_stroke.tscn" id="2_behavior"]
+
+[resource]
+script = ExtResource("1_skill")
+id = &"breaking_stroke"
+display_name = "Breaking Stroke"
+kind = 0
+tree = 0
+tags = Array[StringName]([&"melee", &"kinetic"])
+level_params = Array[Dictionary]([{
+"acquire_margin": 0.5,
+"cone_deg": 110.0,
+"damage": 24.0,
+"interval": 0.8,
+"range": 3.2
+}, {
+"acquire_margin": 0.5,
+"cone_deg": 110.0,
+"damage": 29.0,
+"interval": 0.75,
+"range": 3.2
+}, {
+"acquire_margin": 0.5,
+"cone_deg": 110.0,
+"damage": 35.0,
+"interval": 0.7,
+"range": 3.2
+}])
+behavior = ExtResource("2_behavior")

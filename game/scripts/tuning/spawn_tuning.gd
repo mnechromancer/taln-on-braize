@@ -27,6 +27,11 @@ extends Resource
 ## Ring points tried per spawn before it is skipped.
 @export_range(1, 64, 1) var spawn_attempts: int = 1
 
+## Notice packs (spec §5.3) spawn around one point this far from the target.
+@export_range(0.0, 100.0, 0.5, "suffix:m") var pack_distance: float = 0.0
+## Pack members spread over a disc this wide around that point.
+@export_range(0.0, 20.0, 0.1, "suffix:m") var pack_spread: float = 0.0
+
 @export_group("Scaling")
 ## HP multiplier grows by this fraction per wave index.
 @export_range(0.0, 2.0, 0.01) var hp_slope: float = 0.0
@@ -37,6 +42,6 @@ extends Resource
 ## Damage multiplier by station (D_s).
 @export var station_dmg_mults: Array[float] = []
 
-@export_group("Debug stress mode (F6)")
+@export_group("Debug stress mode (Ctrl+2)")
 @export_range(0, 4000, 1) var stress_alive_cap: int = 0
 @export_range(1.0, 100.0, 0.5) var stress_budget_scale: float = 1.0

@@ -13,7 +13,7 @@ namespace {
 constexpr double kTau = 6.28318530717958647692;
 // After a hitch, drop simulation time rather than spiral trying to catch up.
 constexpr int kMaxStepsPerFrame = 4;
-// MultiMesh buffer layout: a 3x4 transform, then custom data (phase, flash, age, unused).
+// MultiMesh buffer layout: a 3x4 transform, then custom data (phase, flash, age, rooted).
 constexpr int kFloatsPerInstance = 16;
 // Below these, a distance or speed counts as zero.
 constexpr real_t kTiny = 1e-5f;
@@ -73,6 +73,7 @@ void SwarmServer::_process(double p_delta) {
 	const double since_tick = engine->get_physics_interpolation_fraction() / engine->get_physics_ticks_per_second();
 	const real_t alpha = real_t(std::clamp((accumulator + since_tick) / step, 0.0, 1.0));
 	const double flash_time = tuning->get_hit_flash_time();
+	const double root_fade = tuning->get_root_fade_time();
 
 	std::vector<float *> writers(types.size());
 	for (size_t t = 0; t < types.size(); ++t) {
@@ -105,7 +106,12 @@ void SwarmServer::_process(double p_delta) {
 		w[12] = phase[i];
 		w[13] = flash_time > 0.0 ? float(hit_flash[i] / flash_time) : 0.0f;
 		w[14] = float(std::max(0.0, age[i] - (1.0 - alpha) * step));
-		w[15] = 0.0f;
+		// Rooted amount: 1 while rooted, easing to 0 over the root's last root_fade_time.
+		float rooted = 0.0f;
+		if (root_time[i] > 0.0) {
+			rooted = root_fade > 0.0 ? float(std::min(1.0, root_time[i] / root_fade)) : 1.0f;
+		}
+		w[15] = rooted;
 	}
 	for (TypeSlot &slot : types) {
 		slot.multimesh->set_buffer(slot.buffer);
@@ -177,6 +183,10 @@ int SwarmServer::spawn(const Ref<SwarmType> &p_type, const Vector3 &p_position, 
 	phase[i] = std::uniform_real_distribution<float>(0.0f, float(kTau))(rng);
 	age[i] = 0.0;
 	facing[i] = 0.0f;
+	root_time[i] = 0.0;
+	slow_mult[i] = 1.0;
+	slow_time[i] = 0.0;
+	lifetime[i] = 0.0;
 	if (Node3D *target = get_target()) {
 		const Vector3 to = target->get_global_position() - p;
 		if (Vector2(to.x, to.z).length() > kTiny) {
@@ -209,19 +219,121 @@ int SwarmServer::apply_damage_in_cone(const Vector3 &p_origin, const Vector3 &p_
 	const real_t min_cos = std::cos(real_t(p_angle_deg * 0.5 * kTau / 360.0));
 	int hits = 0;
 	_for_each_near(p_origin.x, p_origin.z, real_t(p_range) + max_radius, [&](int i) {
-		if (hp[i] <= 0.0) {
-			return;
-		}
-		const real_t r = _radius(i);
-		const Vector2 d(position[i].x - p_origin.x, position[i].z - p_origin.z);
-		const real_t dist = d.length();
-		// Inside the range, and either overlapping the origin or within the angle.
-		if (dist <= real_t(p_range) + r && (dist <= r || d.dot(forward) / dist >= min_cos)) {
+		if (hp[i] > 0.0 && _in_cone(i, p_origin, forward, min_cos, real_t(p_range))) {
 			_hit(i, p_amount, p_type);
 			++hits;
 		}
 	});
 	return hits;
+}
+
+int SwarmServer::apply_root_in_cone(const Vector3 &p_origin, const Vector3 &p_direction, double p_angle_deg,
+		double p_range, double p_duration) {
+	const Vector2 forward = Vector2(p_direction.x, p_direction.z).normalized();
+	ERR_FAIL_COND_V_MSG(forward.is_zero_approx(), 0, "Cone direction needs an XZ component.");
+	const real_t min_cos = std::cos(real_t(p_angle_deg * 0.5 * kTau / 360.0));
+	int rooted = 0;
+	_for_each_near(p_origin.x, p_origin.z, real_t(p_range) + max_radius, [&](int i) {
+		if (hp[i] > 0.0 && _in_cone(i, p_origin, forward, min_cos, real_t(p_range))) {
+			// A new root never shortens one already running.
+			root_time[i] = std::max(root_time[i], p_duration);
+			impulse[i] = Vector3();
+			++rooted;
+		}
+	});
+	return rooted;
+}
+
+int SwarmServer::apply_slow_in_radius(const Vector3 &p_center, double p_radius, double p_factor, double p_duration) {
+	int slowed = 0;
+	_for_each_near(p_center.x, p_center.z, real_t(p_radius) + max_radius, [&](int i) {
+		const real_t reach = real_t(p_radius) + _radius(i);
+		const Vector2 d(position[i].x - p_center.x, position[i].z - p_center.z);
+		if (hp[i] <= 0.0 || d.length_squared() > reach * reach) {
+			return;
+		}
+		// The strongest slow wins and an equal one extends it; a weaker one is
+		// ignored while a stronger one runs.
+		if (slow_time[i] <= 0.0 || p_factor < slow_mult[i]) {
+			slow_mult[i] = p_factor;
+			slow_time[i] = p_duration;
+		} else if (p_factor == slow_mult[i]) {
+			slow_time[i] = std::max(slow_time[i], p_duration);
+		}
+		++slowed;
+	});
+	return slowed;
+}
+
+void SwarmServer::set_enemy_lifetime(int p_index, double p_seconds) {
+	ERR_FAIL_INDEX(p_index, capacity);
+	ERR_FAIL_COND_MSG(!alive[p_index], "No enemy in that slot.");
+	lifetime[p_index] = std::max(0.0, p_seconds);
+}
+
+int SwarmServer::get_rooted_count() const {
+	int count = 0;
+	for (int i = 0; i < capacity; ++i) {
+		if (alive[i] && root_time[i] > 0.0) {
+			++count;
+		}
+	}
+	return count;
+}
+
+// Nearest by XZ distance between centers.
+Vector3 SwarmServer::find_nearest(const Vector3 &p_center, double p_radius) {
+	int best = -1;
+	real_t best_dist_sq = real_t(p_radius * p_radius);
+	_for_each_near(p_center.x, p_center.z, real_t(p_radius), [&](int i) {
+		const Vector2 d(position[i].x - p_center.x, position[i].z - p_center.z);
+		const real_t dist_sq = d.length_squared();
+		if (hp[i] > 0.0 && (dist_sq < best_dist_sq || (best < 0 && dist_sq == best_dist_sq))) {
+			best = i;
+			best_dist_sq = dist_sq;
+		}
+	});
+	return best >= 0 ? position[best] : Vector3(INFINITY, INFINITY, INFINITY);
+}
+
+Vector3 SwarmServer::find_densest_direction(const Vector3 &p_origin, const Vector3 &p_forward, double p_half_angle_deg,
+		double p_range, int p_sectors) {
+	const Vector2 forward = Vector2(p_forward.x, p_forward.z).normalized();
+	ERR_FAIL_COND_V_MSG(forward.is_zero_approx(), p_forward, "Forward needs an XZ component.");
+	const Vector3 flat_forward(forward.x, 0.0f, forward.y);
+	ERR_FAIL_COND_V_MSG(p_sectors <= 0, flat_forward, "Needs at least one sector.");
+	const real_t half = real_t(p_half_angle_deg * kTau / 360.0);
+	const real_t width = 2.0f * half / real_t(p_sectors);
+	const real_t range_sq = real_t(p_range * p_range);
+	std::vector<int> counts(size_t(p_sectors), 0);
+	_for_each_near(p_origin.x, p_origin.z, real_t(p_range), [&](int i) {
+		const Vector2 d(position[i].x - p_origin.x, position[i].z - p_origin.z);
+		const real_t dist_sq = d.length_squared();
+		if (hp[i] <= 0.0 || dist_sq > range_sq || dist_sq < kTiny * kTiny) {
+			return;
+		}
+		// Signed angle from forward to d, in the same sense as Vector2::rotated().
+		const real_t angle = std::atan2(forward.cross(d), forward.dot(d));
+		if (angle >= -half && angle <= half) {
+			++counts[size_t(std::clamp(int((angle + half) / width), 0, p_sectors - 1))];
+		}
+	});
+	// Ties go to the bin nearest forward.
+	int best = -1;
+	for (int s = 0; s < p_sectors; ++s) {
+		if (counts[s] == 0) {
+			continue;
+		}
+		const bool closer = best >= 0 && std::abs(2 * s + 1 - p_sectors) < std::abs(2 * best + 1 - p_sectors);
+		if (best < 0 || counts[s] > counts[best] || (counts[s] == counts[best] && closer)) {
+			best = s;
+		}
+	}
+	if (best < 0) {
+		return flat_forward;
+	}
+	const Vector2 dir = forward.rotated(-half + width * (real_t(best) + 0.5f));
+	return Vector3(dir.x, 0.0f, dir.y);
 }
 
 void SwarmServer::apply_impulse_in_radius(const Vector3 &p_center, double p_radius, double p_force) {
@@ -240,7 +352,7 @@ void SwarmServer::apply_impulse_in_radius(const Vector3 &p_center, double p_radi
 		const real_t reach = real_t(p_radius) + _radius(i);
 		Vector2 d(position[i].x - p_center.x, position[i].z - p_center.z);
 		const real_t dist = d.length();
-		if (mass <= 0.0 || hp[i] <= 0.0 || dist > reach) {
+		if (mass <= 0.0 || hp[i] <= 0.0 || root_time[i] > 0.0 || dist > reach) {
 			return;
 		}
 		const Vector2 dir = dist > kTiny ? d / dist : fallback_direction(i);
@@ -297,6 +409,16 @@ Vector3 SwarmServer::get_enemy_position(int p_index) const {
 	return alive[p_index] ? position[p_index] : Vector3();
 }
 
+double SwarmServer::get_enemy_root_time(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, capacity, 0.0);
+	return alive[p_index] ? root_time[p_index] : 0.0;
+}
+
+double SwarmServer::get_enemy_slow_time(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, capacity, 0.0);
+	return alive[p_index] ? slow_time[p_index] : 0.0;
+}
+
 // --- simulation --------------------------------------------------------------
 
 void SwarmServer::_step(double p_dt) {
@@ -319,8 +441,21 @@ void SwarmServer::_step(double p_dt) {
 		contact_cooldown[i] -= p_dt;
 		hit_flash[i] = std::max(0.0, hit_flash[i] - p_dt);
 		age[i] += p_dt;
+		if (slow_time[i] > 0.0) {
+			slow_time[i] -= p_dt;
+			if (slow_time[i] <= 0.0) {
+				slow_time[i] = 0.0;
+				slow_mult[i] = 1.0;
+			}
+		}
+		if (root_time[i] > 0.0) {
+			root_time[i] = std::max(0.0, root_time[i] - p_dt);
+			velocity[i] = Vector3();
+			impulse[i] = Vector3();
+			continue;
+		}
 
-		const real_t max_speed = real_t(std::min(speed[i], top_speed));
+		const real_t max_speed = real_t(std::min(speed[i], top_speed) * slow_mult[i]);
 		Vector2 seek;
 		if (has_target) {
 			const Vector2 to(goal.x - position[i].x, goal.z - position[i].z);
@@ -371,10 +506,20 @@ void SwarmServer::_step(double p_dt) {
 	}
 
 	std::vector<Death> deaths;
+	std::vector<Death> expiries;
 	for (int i = 0; i < capacity; ++i) {
-		if (alive[i] && hp[i] <= 0.0) {
+		if (!alive[i]) {
+			continue;
+		}
+		if (hp[i] <= 0.0) {
 			deaths.push_back({ types[type_index[i]].type->get_id(), position[i] });
 			_free(i);
+		} else if (lifetime[i] > 0.0) {
+			lifetime[i] -= p_dt;
+			if (lifetime[i] <= 0.0) {
+				expiries.push_back({ types[type_index[i]].type->get_id(), position[i] });
+				_free(i);
+			}
 		}
 	}
 
@@ -387,6 +532,9 @@ void SwarmServer::_step(double p_dt) {
 	}
 	for (const Death &death : deaths) {
 		emit_signal("enemy_died", death.type_id, death.position);
+	}
+	for (const Death &expiry : expiries) {
+		emit_signal("enemy_expired", expiry.type_id, expiry.position);
 	}
 }
 
@@ -451,6 +599,14 @@ void SwarmServer::_free(int p_index) {
 void SwarmServer::_hit(int p_index, double p_amount, int p_type) {
 	hp[p_index] -= p_amount * types[type_index[p_index]].type->get_resist(p_type);
 	hit_flash[p_index] = tuning.is_valid() ? tuning->get_hit_flash_time() : 0.0;
+}
+
+bool SwarmServer::_in_cone(int p_index, const Vector3 &p_origin, const Vector2 &p_forward, real_t p_min_cos,
+		real_t p_range) const {
+	const real_t r = _radius(p_index);
+	const Vector2 d(position[p_index].x - p_origin.x, position[p_index].z - p_origin.z);
+	const real_t dist = d.length();
+	return dist <= p_range + r && (dist <= r || d.dot(p_forward) / dist >= p_min_cos);
 }
 
 // --- ground --------------------------------------------------------------------
@@ -587,6 +743,10 @@ void SwarmServer::_allocate() {
 	phase.assign(n, 0.0f);
 	age.assign(n, 0.0);
 	facing.assign(n, 0.0f);
+	root_time.assign(n, 0.0);
+	slow_mult.assign(n, 1.0);
+	slow_time.assign(n, 0.0);
+	lifetime.assign(n, 0.0);
 	alive.assign(n, 0);
 	grid_items.assign(n, 0);
 	grid_cell_of.assign(n, 0);
@@ -624,6 +784,12 @@ int SwarmServer::_type_index(const Ref<SwarmType> &p_type) {
 	slot.instance->set_name(String(p_type->get_id()));
 	// Enemy positions are in world space.
 	slot.instance->set_as_top_level(true);
+	// _process() already interpolates between simulation steps. Engine physics
+	// interpolation would blend each instance index with its previous frame's
+	// transform, but indices shift whenever an enemy dies (live enemies are
+	// packed), so it smeared instances between two different enemies: the
+	// flicker seen in P2-03.
+	slot.instance->set_physics_interpolation_mode(Node::PHYSICS_INTERPOLATION_MODE_OFF);
 	slot.instance->set_multimesh(slot.multimesh);
 	slot.instance->set_material_override(p_type->get_material());
 	add_child(slot.instance);
@@ -661,10 +827,23 @@ void SwarmServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("apply_impulse_in_radius", "center", "radius", "force"),
 			&SwarmServer::apply_impulse_in_radius);
 	ClassDB::bind_method(D_METHOD("query_count_in_radius", "center", "radius"), &SwarmServer::query_count_in_radius);
+	ClassDB::bind_method(
+			D_METHOD("apply_root_in_cone", "origin", "direction", "angle_deg", "range", "duration"),
+			&SwarmServer::apply_root_in_cone);
+	ClassDB::bind_method(D_METHOD("apply_slow_in_radius", "center", "radius", "factor", "duration"),
+			&SwarmServer::apply_slow_in_radius);
+	ClassDB::bind_method(D_METHOD("set_enemy_lifetime", "index", "seconds"), &SwarmServer::set_enemy_lifetime);
+	ClassDB::bind_method(D_METHOD("get_rooted_count"), &SwarmServer::get_rooted_count);
+	ClassDB::bind_method(D_METHOD("find_nearest", "center", "radius"), &SwarmServer::find_nearest);
+	ClassDB::bind_method(
+			D_METHOD("find_densest_direction", "origin", "forward", "half_angle_deg", "range", "sectors"),
+			&SwarmServer::find_densest_direction);
 	ClassDB::bind_method(D_METHOD("get_alive_count"), &SwarmServer::get_alive_count);
 	ClassDB::bind_method(D_METHOD("clear_all"), &SwarmServer::clear_all);
 	ClassDB::bind_method(D_METHOD("get_last_step_ms"), &SwarmServer::get_last_step_ms);
 	ClassDB::bind_method(D_METHOD("get_enemy_position", "index"), &SwarmServer::get_enemy_position);
+	ClassDB::bind_method(D_METHOD("get_enemy_root_time", "index"), &SwarmServer::get_enemy_root_time);
+	ClassDB::bind_method(D_METHOD("get_enemy_slow_time", "index"), &SwarmServer::get_enemy_slow_time);
 
 	ClassDB::bind_method(D_METHOD("set_capacity", "capacity"), &SwarmServer::set_capacity);
 	ClassDB::bind_method(D_METHOD("get_capacity"), &SwarmServer::get_capacity);
@@ -677,6 +856,8 @@ void SwarmServer::_bind_methods() {
 	SWARM_BIND_PROPERTY(SwarmServer, Variant::FLOAT, target_radius, PROPERTY_HINT_RANGE, "0,5,0.01,suffix:m");
 
 	ADD_SIGNAL(MethodInfo("enemy_died", PropertyInfo(Variant::STRING_NAME, "type_id"),
+			PropertyInfo(Variant::VECTOR3, "position")));
+	ADD_SIGNAL(MethodInfo("enemy_expired", PropertyInfo(Variant::STRING_NAME, "type_id"),
 			PropertyInfo(Variant::VECTOR3, "position")));
 	ADD_SIGNAL(MethodInfo("taln_contacted", PropertyInfo(Variant::FLOAT, "damage"), PropertyInfo(Variant::INT, "type")));
 }

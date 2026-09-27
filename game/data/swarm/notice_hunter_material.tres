@@ -1,0 +1,13 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://shaders/swarm_enemy.gdshader" id="1_shader"]
+
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/body_color = Color(0.3529412, 0.3372549, 0.30980393, 1)
+shader_parameter/eye_color = Color(0.7607843, 0.09411765, 0.35686275, 1)
+shader_parameter/base_offset = 0.845
+shader_parameter/eye_band_bottom = 1.22
+shader_parameter/eye_band_top = 1.48
+shader_parameter/eye_inner = 0.02
+shader_parameter/eye_outer = 0.24

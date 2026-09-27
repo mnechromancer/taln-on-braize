@@ -1,0 +1,13 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/breaking_stroke.gd" id="1_stroke"]
+
+[node name="BreakingStroke" type="Node3D"]
+script = ExtResource("1_stroke")
+flash_color = Color(0.8509804, 0.64705884, 0.35686275, 1)
+flash_time = 0.12
+arc_segments = 16
+arc_lift = 0.03
+
+[node name="Arc" type="MeshInstance3D" parent="."]
+cast_shadow = 0

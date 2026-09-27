@@ -12,6 +12,8 @@ extends Node
 
 signal wave_changed(wave: int)
 signal spawned(slot: int, position: Vector3)
+## A pack spawned outside the budget (e.g. a Notice), with its slots.
+signal pack_spawned(type_id: StringName, slots: Array[int])
 
 @export var tuning: SpawnTuning
 @export var swarm_type: SwarmType
@@ -72,6 +74,30 @@ func _physics_process(delta: float) -> void:
 		spawned.emit(slot, at)
 
 
+## Spawns count enemies of type around one walkable point pack_distance from
+## the target, preferring one off-camera, at this wave's multipliers. It
+## spends nothing from the bank and ignores pause and the alive cap.
+func spawn_pack(type: SwarmType, count: int) -> Array[int]:
+	var slots: Array[int] = []
+	var center: Variant = _pick_point(tuning.pack_distance, tuning.pack_distance)
+	if center == null:
+		push_warning("No walkable point %.0f m out for a %s pack." % [tuning.pack_distance, type.id])
+		return slots
+	for k in count:
+		var at: Vector3 = center
+		for attempt in tuning.spawn_attempts:
+			var offset: Vector2 = Vector2.from_angle(_rng.randf() * TAU) * sqrt(_rng.randf()) * tuning.pack_spread * 0.5
+			var p: Vector3 = center + Vector3(offset.x, 0.0, offset.y)
+			if not ground.is_blocked_at(p.x, p.z):
+				at = Vector3(p.x, ground.get_surface_height_at(p.x, p.z), p.z)
+				break
+		var slot: int = swarm.spawn(type, at, hp_multiplier(), damage_multiplier())
+		if slot >= 0:
+			slots.append(slot)
+	pack_spawned.emit(type.id, slots)
+	return slots
+
+
 ## B = B0 × (1 + wave_slope × w) × P_s × return_pressure^returns (spec §8.4).
 func budget_per_second() -> float:
 	var rate: float = tuning.base_budget * (1.0 + tuning.wave_slope * _wave) \
@@ -96,13 +122,18 @@ func damage_multiplier() -> float:
 ## A walkable point on the ring around the target, preferring ones the camera
 ## can't see. Returns null when every try lands on a blocked cell.
 func _pick_spawn_point() -> Variant:
+	return _pick_point(tuning.ring_min, tuning.ring_max)
+
+
+## A walkable point min_dist to max_dist from the target, as above.
+func _pick_point(min_dist: float, max_dist: float) -> Variant:
 	var camera: Camera3D = get_viewport().get_camera_3d()
 	var center: Vector3 = target.global_position
 	var visible_fallback: Variant = null
 	for attempt in tuning.spawn_attempts:
 		var angle: float = _rng.randf() * TAU
 		# Uniform over the ring's area, not bunched at its inner edge.
-		var dist: float = sqrt(_rng.randf_range(tuning.ring_min * tuning.ring_min, tuning.ring_max * tuning.ring_max))
+		var dist: float = sqrt(_rng.randf_range(min_dist * min_dist, max_dist * max_dist))
 		var at: Vector3 = center + Vector3(cos(angle), 0.0, sin(angle)) * dist
 		if ground.is_blocked_at(at.x, at.z):
 			continue

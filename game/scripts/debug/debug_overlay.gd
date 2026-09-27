@@ -30,11 +30,20 @@ func _process(_delta: float) -> void:
 	var shoulder: Shoulder = taln.shoulder
 	_label.text = "\n".join([
 		"FPS        %d" % Engine.get_frames_per_second(),
-		"Speed      %.2f m/s" % speed,
+		"Speed      %.2f m/s%s" % [speed, _speed_mult_status()],
 		"Stance     %s" % _stance(speed),
 		"Fracture   %s  (still %.1f s, away %.1f s)" % [
 				Fracture.State.keys()[fracture.state], fracture.still_time, fracture.away_time],
 		"Health     %.1f / %.0f   armor %.0f" % [health.current, taln.tuning.max_health, health.get_armor()],
+		"Investiture %.1f" % taln.investiture.current,
+		"Strain     %s" % _strain_status(),
+		"Routing    %s" % ("Blade (Blade-eligible Surges)" if taln.loadout.honorblade_held else "Toa'uma"),
+		"Loadout    %d / %d slots" % [taln.loadout.slots.size(), taln.loadout.tuning.slots],
+		"Weapon     %s" % _weapon_status(),
+		"Surges     %s" % _surges_status(),
+		"Draw       %s" % _timer(taln.toauma.draw_cooldown_left),
+		"Side eff.  %s" % _side_effect_status(),
+		"Rooted     %d" % swarm.get_rooted_count(),
 		"Shoulder   %s" % _shoulder_status(shoulder),
 		"Well pool  %s" % _pool_status(),
 		"Camera     %.1f m, pitch %.1f°" % [camera_rig.distance, camera_rig.pitch_deg],
@@ -60,6 +69,56 @@ func _shoulder_status(shoulder: Shoulder) -> String:
 	if shoulder.cooldown_left > 0.0:
 		return "cooldown %.2f s" % shoulder.cooldown_left
 	return "ready"
+
+
+## "ready", or the seconds left on a timer.
+func _timer(seconds: float) -> String:
+	return "ready" if seconds <= 0.0 else "%.2f s" % seconds
+
+
+func _speed_mult_status() -> String:
+	var mult: float = taln.get_speed_multiplier()
+	return "" if is_equal_approx(mult, 1.0) else "  (speed x%.2f)" % mult
+
+
+func _strain_status() -> String:
+	var toauma: Toauma = taln.toauma
+	var next: float = toauma.next_notice_threshold()
+	var notice: String = "next Notice at %.0f" % next if next != INF else "every Notice fired"
+	return "%.2f / %.0f, %s, side effect %.0f%%" % [toauma.strain, toauma.tuning.strain_max, notice,
+			toauma.side_effect_chance() * 100.0]
+
+
+func _weapon_status() -> String:
+	for skill: SkillDef in taln.loadout.slots:
+		if skill.kind == SkillDef.Kind.WEAPON:
+			var behavior: SkillBehavior = taln.loadout.get_behavior(skill.id)
+			return "%s L%d, next swing %s" % [skill.id, taln.loadout.get_level(skill.id),
+					_timer(behavior.cooldown_left) if behavior else "-"]
+	return "-"
+
+
+func _surges_status() -> String:
+	var parts: Array[String] = []
+	for index in taln.loadout.surge_bindings.size():
+		var surge: SurgeBehavior = taln.loadout.get_surge_behavior(index)
+		if surge == null:
+			parts.append("%d -" % (index + 1))
+			continue
+		var state: String = _timer(surge.cooldown_left)
+		if surge.cooldown_left <= 0.0 and not taln.investiture.can_afford(surge.skill.investiture_cost):
+			state = "can't afford %.0f" % surge.skill.investiture_cost
+		parts.append("%d %s %s" % [index + 1, surge.skill.id, state])
+	return " | ".join(parts)
+
+
+func _side_effect_status() -> String:
+	var toauma: Toauma = taln.toauma
+	if toauma.last_effect == Toauma.Effect.NONE:
+		return "none yet"
+	return "%s on a %s, %.1f s ago" % [Toauma.Effect.keys()[toauma.last_effect].capitalize(),
+			"Draw" if toauma.last_effect_from_draw else "Surge",
+			(Time.get_ticks_msec() - toauma.last_effect_msec) / 1000.0]
 
 
 func _pool_status() -> String:

@@ -17,8 +17,13 @@ enum Edge { NONE, CROSSABLE, WIDE_GAP, DROP }
 
 ## This frame's movement input, camera-relative on XZ, length 0–1.
 var move_direction: Vector3 = Vector3.ZERO
+## Walking-speed multipliers by source (e.g. Lurch); they multiply together.
+var _speed_multipliers: Dictionary[StringName, float] = {}
 
 @onready var health: Health = $Health
+@onready var investiture: Investiture = $Investiture
+@onready var loadout: Loadout = $Loadout
+@onready var toauma: Toauma = $Toauma
 @onready var shoulder: Shoulder = $Shoulder
 @onready var anchored: Anchored = $Anchored
 @onready var fracture: Fracture = $Fracture
@@ -61,7 +66,7 @@ func _physics_process(delta: float) -> void:
 
 	var horizontal := Vector3(velocity.x, 0.0, velocity.z)
 	var rate: float = tuning.deceleration if move_direction.is_zero_approx() else tuning.acceleration
-	horizontal = horizontal.move_toward(move_direction * tuning.move_speed, rate * delta)
+	horizontal = horizontal.move_toward(move_direction * tuning.move_speed * get_speed_multiplier(), rate * delta)
 	velocity.x = horizontal.x
 	velocity.z = horizontal.z
 	velocity.y = 0.0 if is_on_floor() else velocity.y - tuning.gravity * delta
@@ -178,6 +183,21 @@ func _read_move_direction() -> Vector3:
 		var forward: Vector3 = -camera.global_basis.z
 		yaw = atan2(-forward.x, -forward.z)
 	return Basis(Vector3.UP, yaw) * Vector3(input.x, 0.0, input.y)
+
+
+func get_speed_multiplier() -> float:
+	var mult: float = 1.0
+	for value: float in _speed_multipliers.values():
+		mult *= value
+	return mult
+
+
+func set_speed_multiplier(source: StringName, value: float) -> void:
+	_speed_multipliers[source] = value
+
+
+func clear_speed_multiplier(source: StringName) -> void:
+	_speed_multipliers.erase(source)
 
 
 ## Lifts Taln onto a ledge no taller than step_height when this frame's

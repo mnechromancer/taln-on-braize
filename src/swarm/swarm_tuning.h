@@ -19,6 +19,7 @@ public:
 	SWARM_ACCESSORS(double, impulse_decay)
 	SWARM_ACCESSORS(double, contact_cooldown)
 	SWARM_ACCESSORS(double, hit_flash_time)
+	SWARM_ACCESSORS(double, root_fade_time)
 
 protected:
 	static void _bind_methods();
@@ -37,4 +38,6 @@ private:
 	// Seconds between contact hits from one enemy (spec §6.2).
 	double contact_cooldown = 0.0;
 	double hit_flash_time = 0.0;
+	// The shader's rooted amount eases from 1 to 0 over a root's last this-many seconds.
+	double root_fade_time = 0.0;
 };

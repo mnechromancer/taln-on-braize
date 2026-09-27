@@ -8,4 +8,5 @@ void SwarmTuning::_bind_methods() {
 	SWARM_BIND_PROPERTY(SwarmTuning, Variant::FLOAT, impulse_decay, PROPERTY_HINT_RANGE, "0,50,0.1,suffix:/s");
 	SWARM_BIND_PROPERTY(SwarmTuning, Variant::FLOAT, contact_cooldown, PROPERTY_HINT_RANGE, "0,5,0.01,suffix:s");
 	SWARM_BIND_PROPERTY(SwarmTuning, Variant::FLOAT, hit_flash_time, PROPERTY_HINT_RANGE, "0,1,0.01,suffix:s");
+	SWARM_BIND_PROPERTY(SwarmTuning, Variant::FLOAT, root_fade_time, PROPERTY_HINT_RANGE, "0,2,0.01,suffix:s");
 }

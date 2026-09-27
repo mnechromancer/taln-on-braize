@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LoadoutTuning" format=3]
+
+[ext_resource type="Script" path="res://scripts/tuning/loadout_tuning.gd" id="1_loadout"]
+[ext_resource type="Resource" path="res://data/skills/breaking_stroke.tres" id="2_stroke"]
+[ext_resource type="Resource" path="res://data/skills/settle.tres" id="3_settle"]
+
+[resource]
+script = ExtResource("1_loadout")
+slots = 9
+surge_bindings = 3
+surge_soft_lock_half_angle_deg = 15.0
+surge_soft_lock_sectors = 9
+starting_skills = Array[Resource]([ExtResource("2_stroke"), ExtResource("3_settle")])

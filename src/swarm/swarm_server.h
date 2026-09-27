@@ -42,11 +42,24 @@ public:
 			double p_amount, int p_type);
 	void apply_impulse_in_radius(const Vector3 &p_center, double p_radius, double p_force);
 	int query_count_in_radius(const Vector3 &p_center, double p_radius);
+	int apply_root_in_cone(const Vector3 &p_origin, const Vector3 &p_direction, double p_angle_deg, double p_range,
+			double p_duration);
+	int apply_slow_in_radius(const Vector3 &p_center, double p_radius, double p_factor, double p_duration);
+	// The enemy in this slot expires after p_seconds (0 clears it): it is removed
+	// with enemy_expired rather than enemy_died, since nothing killed it.
+	void set_enemy_lifetime(int p_index, double p_seconds);
+	int get_rooted_count() const;
+	Vector3 find_nearest(const Vector3 &p_center, double p_radius);
+	Vector3 find_densest_direction(const Vector3 &p_origin, const Vector3 &p_forward, double p_half_angle_deg,
+			double p_range, int p_sectors);
 	int get_alive_count() const;
 	void clear_all();
 	double get_last_step_ms() const;
 	// Debugging and checks: where the enemy in this slot stands (zero if the slot is free).
 	Vector3 get_enemy_position(int p_index) const;
+	// Checks: seconds of root and slow left on the enemy in this slot.
+	double get_enemy_root_time(int p_index) const;
+	double get_enemy_slow_time(int p_index) const;
 
 	void set_capacity(int p_capacity);
 	int get_capacity() const;
@@ -82,6 +95,8 @@ private:
 	void _step(double p_dt);
 	void _free(int p_index);
 	void _hit(int p_index, double p_amount, int p_type);
+	// Inside the range, and either within the angle or overlapping the origin.
+	bool _in_cone(int p_index, const Vector3 &p_origin, const Vector2 &p_forward, real_t p_min_cos, real_t p_range) const;
 	Vector2 _separation(int p_index);
 	void _slide(int p_index, real_t p_dx, real_t p_dz);
 	bool _blocked_at(real_t p_x, real_t p_z) const;
@@ -117,6 +132,14 @@ private:
 	std::vector<float> phase;
 	std::vector<double> age;
 	std::vector<float> facing;
+	// Rooted enemies don't seek or separate and ignore impulses; they still
+	// deal contact damage.
+	std::vector<double> root_time;
+	// Speed multiplier while slow_time > 0.
+	std::vector<double> slow_mult;
+	std::vector<double> slow_time;
+	// Seconds left to live; 0 means no limit.
+	std::vector<double> lifetime;
 	std::vector<uint8_t> alive;
 	std::vector<int> free_slots;
 	int alive_count = 0;

@@ -76,7 +76,7 @@ func _run() -> void:
 	await _check_step_budget()
 	print("")
 	print("MANUAL  Enemy look: prism, eyes, bob, hit flash and fade-in need a rendered run.")
-	print("MANUAL  60 fps at 400 alive, and fps at 800 in F6 stress mode, need a rendered run.")
+	print("MANUAL  60 fps at 400 alive, and fps at 800 in Ctrl+2 stress mode, need a rendered run.")
 	print("")
 	print("%d check(s) failed." % failures if failures > 0 else "All automated checks passed.")
 	quit(failures)
@@ -519,7 +519,9 @@ func _check_rendering() -> void:
 	var mm: MultiMesh = mmi.multimesh
 	_check("MultiMesh setup", mm.use_custom_data and mm.transform_format == MultiMesh.TRANSFORM_3D
 			and mm.instance_count == swarm.capacity and mm.visible_instance_count == 5 and mm.mesh == ash.mesh
-			and mmi.material_override == ash.material and mmi.is_set_as_top_level(),
+			and mmi.material_override == ash.material and mmi.is_set_as_top_level()
+			# SwarmServer interpolates itself; engine interpolation smeared shifting instance slots.
+			and mmi.physics_interpolation_mode == Node.PHYSICS_INTERPOLATION_MODE_OFF,
 			"%s: custom data %s, %d of %d visible" % [mmi.name, mm.use_custom_data, mm.visible_instance_count, mm.instance_count])
 
 
@@ -536,6 +538,8 @@ func _fresh_station() -> void:
 	station_swarm = station.get_node("SwarmServer")
 	spawner = station.get_node("SpawnDirector")
 	spawner.paused = true
+	# These checks predate Taln's weapon (P2-03); it would kill their enemies.
+	taln.loadout.process_mode = Node.PROCESS_MODE_DISABLED
 	contacts.clear()
 	deaths.clear()
 	station_swarm.enemy_died.connect(func(id: StringName, at: Vector3) -> void: deaths.append([id, at]))
@@ -699,7 +703,7 @@ func _check_debug_blast() -> void:
 	await _tap("debug_blast")
 	await _ticks(4)
 	var kills: int = (station as GrayboxStation).kills - kills_before
-	_check("F5 kills everything within 6 m, one enemy_died per kill", kills == 10 and deaths.size() == 10
+	_check("Debug blast kills everything within 6 m, one enemy_died per kill", kills == 10 and deaths.size() == 10
 			and station_swarm.get_alive_count() == 6, "%d logged kills, %d signals, %d alive" % [kills, deaths.size(),
 			station_swarm.get_alive_count()])
 

@@ -26,8 +26,8 @@
 | Core Systems Spec (Agony/Investiture math, catalyst cost curves, movement/camera values, damage/health model) | Doc | ✅ Done — approved v1.0, all 12 decisions ruled (2026-09-25) |
 | Repo + Godot project + GDExtension scaffold | Setup | ✅ Done — Godot 4.7 project, godot-cpp, swarm GDExtension (2026-09-25) |
 | Gray-box arena | Feature | ✅ Done — P2-01: arena + movement/camera/stance, branch `phase-2` (2026-09-26) |
-| Player movement + one Stoneward ability | Feature | 🔶 In Progress — movement done in P2-01; Stoneward ability not started |
-| Basic enemy spawner | Feature | ⬜ Not Started |
+| Player movement + one Stoneward ability | Feature | ✅ Done — movement in P2-01; Breaking Stroke weapon + Settle Surge routed through Toa'uma with Strain in P2-03 (2026-09-26) |
+| Basic enemy spawner | Feature | ✅ Done — P2-02: SwarmServer v0 (C++) + SpawnDirector; Notice hunter packs in P2-03 (2026-09-26) |
 | Agony meter + "Welcome the Agony" prompt (no real Cataclysm payoff yet) | Feature | ⬜ Not Started |
 
 **Phase complete when**: the core loop is provably fun with placeholder art — this is the internal go/no-go gate.
@@ -104,4 +104,4 @@
 
 ---
 
-*Current position: Phase 2 open. Core Systems Spec v1.1 (P2-01 playtest revisions in §15). Repo + Godot project + GDExtension scaffold done; gray-box arena done (P2-01, branch `phase-2`). Next up: SwarmServer v0 per spec §13 step 2, then the rest of the §13 build order. Work is built in Claude Code from step-by-step handoffs given in chat (no handoff files in the repo). Project files: unbroken-design-doc-draft.md, claude/unbroken-narrative-bible.md, claude/unbroken-art-direction.md (live Art Direction doc, authoritative: https://claude.ai/code/artifact/a2b626e6-f594-4f80-a75f-ca3a70e59fec), claude/unbroken-core-systems-spec.md.*
+*Current position: Phase 2 open. Core Systems Spec v1.2 (revisions in §15). Repo + Godot project + GDExtension scaffold done; gray-box arena (P2-01), SwarmServer v0 + spawner (P2-02), and weapon + Stoneward Surge + Toa'uma/Strain (P2-03) done on branch `phase-2`. Next up: P2-04, the Investiture loop per spec §13 step 4, then the rest of the §13 build order. Manual checks are tested together via rendered recordings (see CLAUDE.md). Work is built in Claude Code from step-by-step handoffs given in chat (no handoff files in the repo). Project files: unbroken-design-doc-draft.md, claude/unbroken-narrative-bible.md, claude/unbroken-art-direction.md (live Art Direction doc, authoritative: https://claude.ai/code/artifact/a2b626e6-f594-4f80-a75f-ca3a70e59fec), claude/unbroken-core-systems-spec.md.*

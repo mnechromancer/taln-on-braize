@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="ToaumaTuning" format=3]
+
+[ext_resource type="Script" path="res://scripts/tuning/toauma_tuning.gd" id="1_toauma"]
+[ext_resource type="SwarmType" path="res://data/swarm/notice_hunter.tres" id="2_hunter"]
+
+[resource]
+script = ExtResource("1_toauma")
+strain_max = 9.0
+surge_strain_per_25 = 0.25
+debug_strain_step = 1.0
+draw_investiture = 30.0
+draw_cooldown = 9.0
+draw_strain = 1.0
+p_base = 0.05
+p_per_strain = 0.05
+p_max = 0.5
+weight_overcharge = 3
+weight_burn = 3
+weight_misfire = 2
+weight_lurch = 2
+weight_echo = 1
+weight_speaks = 2
+high_strain = 9.0
+high_strain_weight_mult = 2
+overcharge_mult = 2.0
+burn_fraction = 0.06
+misfire_max_deg = 45.0
+lurch_radius = 6.0
+lurch_factor = 0.6
+lurch_duration = 2.0
+echo_delay = 1.0
+speaks_lines = Array[String](["[Toa'uma speaks: placeholder line]"])
+notice_thresholds = Array[float]([3.0, 6.0, 9.0])
+notice_hunters = Array[int]([3, 5, 9])
+notice_lifetimes = Array[float]([30.0, 30.0, 0.0])
+notice_hunter_type = ExtResource("2_hunter")

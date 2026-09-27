@@ -1,5 +1,5 @@
 # Unbroken: Taln on Braize
-### Core Systems Spec — v1.1 (Approved)
+### Core Systems Spec — v1.2 (Approved)
 
 *Phase 2 deliverable. Parent documents: Design Doc v1.1 (governs mechanics intent), Narrative Bible v1.1 (governs fiction), Art Direction v1.1 (governs visuals). This document turns their intent into numbers, state machines and system boundaries that the prototype can be built against. Every number here is a **starting value for the prototype**, not a balance commitment; the Phase 4 Balancing doc supersedes them.*
 
@@ -238,14 +238,16 @@ Per-cycle value, 0–9 [NINE]. **No decay within a cycle**; resets to 0 at cycle
 |---|---|---|
 | Overcharge | 3 | The Surge fires at 200% magnitude |
 | Voidlight burn | 3 | Taln takes 6% max Health (feeds Agony normally) |
-| Misfire | 2 | The Surge fires at a random direction within 90° of aim |
+| Misfire | 2 | The Surge fires at a random direction within ±45° of aim (a 90° cone) |
 | Lurch | 2 | Local gravity spike: Taln and enemies within 6 m slowed 40% for 2 s |
 | Echo | 1 | The Surge fires again 1.0 s later at no cost |
 | Speaks | 2 | A Toa'uma line; no mechanical effect |
 
+A Draw can't Misfire or Echo; those results are rerolled. An Overcharged Draw grants double Investiture.
+
 **Escalating risk** — carried by `p` rising with Strain.
 
-**Drawing attention** — at Strain **3, 6 and 9**, a **Notice** event: an elite hunter pack (Enemy Design doc defines them) spawns on the arena edge and targets Taln directly. At Strain 9, the hunters persist until killed and Voidlight side-effect weights shift toward Burn and Misfire.
+**Drawing attention** — at Strain **3, 6 and 9**, a **Notice** event: an elite hunter pack (Enemy Design doc defines them) spawns on the arena edge and targets Taln directly. Placeholder pack sizes until that doc lands: 3 hunters at Strain 3, 5 at Strain 6, 9 at Strain 9. Hunters from the Strain 3 and 6 Notices die after 30 s if not killed; at Strain 9, the hunters persist until killed and Voidlight side-effect weights shift toward Burn and Misfire.
 
 ---
 
@@ -345,7 +347,7 @@ Third-person, high and far enough to read the swarm (Megabonk readability refere
 ### 7.3 Aiming
 
 - **Weapons** auto-target (nearest, or per-weapon rule).
-- **Surges:** aim at the mouse ground-point (KB+M). Gamepad: camera-forward projected on the ground with a **30° soft-lock cone** to the densest cluster within the Surge's range.
+- **Surges:** one scheme for both KB+M and gamepad: camera-forward projected on the ground with a **30° soft-lock cone** to the densest cluster within the Surge's range. While a Surge is ready, a ground reticle shows its area.
 
 ---
 
@@ -536,6 +538,16 @@ All twelve approved 2026-09-25 as recommended.
 | 3 | Clarified: the charge stops dead when it ends. Momentum carry is an upgrade surface, not base behavior | §6.5 | Movement feel is meant to be a build-defining axis |
 | 4 | Anchored also ends on a Shoulder charge; its 0.6 s timer restarts when the charge ends | §6.3 | Came from the P2-01 handoff; accepted in playtest |
 | 5 | Clarified: Fracture damage lands in once-per-second pulses (3% at 9 s, then +1% each pulse) rather than continuously. Base behavior; expected to be modified by upgrades | §6.4 | Keeps damage events and Health signals readable |
+
+### v1.2 — 2026-09-26 (P2-03 step 0)
+
+| # | Change | Where | Why |
+|---|---|---|---|
+| 1 | Surge aiming is unified for both inputs: camera-forward on the ground plane with a 30° soft-lock cone toward the densest cluster in range. A ground reticle shows the Surge's area while it's ready | §7.3 | The camera captures the mouse (P2-01), so there's no cursor ground-point to aim at |
+| 2 | Draw can't Misfire or Echo; those results are rerolled. An Overcharged Draw grants double Investiture | §5.3 | Those side effects only make sense for Surges |
+| 3 | Notice pack sizes are placeholders: 3 hunters at Strain 3, 5 at Strain 6, 9 at Strain 9. The Enemy Design doc replaces them | §5.3 | Notice needs a pack size to spawn before the Enemy Design doc exists |
+| 4 | Clarified: Misfire turns the Surge within ±45° of its aim, a 90° cone | §5.3 | "Within 90° of aim" could be read as ±90° |
+| 5 | Hunters from the Strain 3 and 6 Notices die after 30 s if not killed (not a kill: no kill rewards). Strain 9 hunters still persist until killed | §5.3 | The spec said only Strain 9 hunters persist, without saying when the others go. 30 s is about 6 s to close from 26 m plus ~24 s of hunting, and shorter than a wave, so packs rarely stack |
 
 ---
 

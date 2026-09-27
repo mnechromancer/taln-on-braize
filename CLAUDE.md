@@ -23,6 +23,8 @@ Godot 4.7.2 lives at `D:/users/itspe/Godot_v4.7.2-stable_win64.exe/` (a folder, 
   - Run a check script with `--headless --fixed-fps 60 --path game --script res://<file>.gd`.
   - P2-01's checks live in `game/tools/checks/p2_01_checks.gd` (exit code = failure count). Rerun them after changing Taln, the camera, the station or tuning.
   - P2-02's (SwarmServer v0) checks live in `game/tools/checks/p2_02_checks.gd`. Rerun them after changing StationGround, the station layout, ground or swarm tuning, or the C++.
+  - Test anything the headless checks list as MANUAL (visuals, flicker, rendered fps) with a rendered recording. The user watches the window come up and tests alongside. Write a throwaway SceneTree script that sets up the scenario, then run the console exe *without* `--headless`: `--path game --resolution 640x360 --fixed-fps 144 --write-movie <scratchpad>/frames/f.png --script res://tools/checks/_capture.gd`. Use 144 fps against 60 Hz physics so frames land between ticks, as on a high-refresh monitor. Analyze the PNGs with Python (PIL and numpy are installed), view key frames directly, and delete the throwaway script afterwards.
+  - P2-03's (weapon, Surge, Toa'uma, Strain) checks live in `game/tools/checks/p2_03_checks.gd`. Rerun them after changing Investiture, the Loadout, those systems, or the C++.
 
 ## C++ (GDExtension)
 

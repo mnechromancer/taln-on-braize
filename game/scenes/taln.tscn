@@ -6,6 +6,13 @@
 [ext_resource type="Script" path="res://scripts/taln/shoulder.gd" id="4_shoulder"]
 [ext_resource type="Script" path="res://scripts/taln/anchored.gd" id="5_anchored"]
 [ext_resource type="Script" path="res://scripts/taln/fracture.gd" id="6_fracture"]
+[ext_resource type="Script" path="res://scripts/taln/investiture.gd" id="7_investiture"]
+[ext_resource type="Resource" path="res://data/tuning/investiture_tuning.tres" id="8_inv_tune"]
+[ext_resource type="Script" path="res://scripts/taln/loadout.gd" id="9_loadout"]
+[ext_resource type="Resource" path="res://data/tuning/loadout_tuning.tres" id="10_loadout_tune"]
+[ext_resource type="Script" path="res://scripts/taln/toauma.gd" id="11_toauma"]
+[ext_resource type="Resource" path="res://data/tuning/toauma_tuning.tres" id="12_toauma_tune"]
+[ext_resource type="Script" path="res://scripts/taln/toauma_gem.gd" id="13_gem"]
 
 [sub_resource type="CapsuleShape3D" id="Shape_body"]
 radius = 0.45
@@ -25,6 +32,12 @@ albedo_color = Color(0.549, 0.4157, 0.2627, 1)
 [sub_resource type="BoxMesh" id="Mesh_front"]
 material = SubResource("Mat_front")
 size = Vector3(0.5, 0.35, 0.25)
+
+[sub_resource type="SphereMesh" id="Mesh_gem"]
+radius = 0.08
+height = 0.16
+radial_segments = 12
+rings = 6
 
 [sub_resource type="StandardMaterial3D" id="Mat_anchor"]
 shading_mode = 0
@@ -69,6 +82,24 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, -0.45)
 cast_shadow = 0
 mesh = SubResource("Mesh_front")
 
+[node name="Gem" type="MeshInstance3D" parent="Body" node_paths=PackedStringArray("toauma")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.62, -0.44)
+cast_shadow = 0
+mesh = SubResource("Mesh_gem")
+script = ExtResource("13_gem")
+toauma = NodePath("../../Toauma")
+rest_color = Color(0.8509804, 0.64705884, 0.35686275, 1)
+voidlight_core = Color(0.41960785, 0.24705882, 0.627451, 1)
+voidlight_rim = Color(0.49803922, 0.8901961, 0.8392157, 1)
+rest_energy = 0.6
+pulse_depth = 0.5
+pulse_rate_base = 0.4
+pulse_rate_per_strain = 0.3
+flicker_time = 0.35
+flicker_energy = 4.0
+speak_time = 0.6
+speak_energy = 3.0
+
 [node name="TalnLight" type="OmniLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
 light_color = Color(0.851, 0.647, 0.357, 1)
@@ -79,6 +110,18 @@ omni_range = 14.0
 [node name="Health" type="Node" parent="."]
 script = ExtResource("3_health")
 tuning = ExtResource("2_tune")
+
+[node name="Investiture" type="Node" parent="."]
+script = ExtResource("7_investiture")
+tuning = ExtResource("8_inv_tune")
+
+[node name="Loadout" type="Node3D" parent="."]
+script = ExtResource("9_loadout")
+tuning = ExtResource("10_loadout_tune")
+
+[node name="Toauma" type="Node" parent="."]
+script = ExtResource("11_toauma")
+tuning = ExtResource("12_toauma_tune")
 
 [node name="Shoulder" type="Node" parent="."]
 script = ExtResource("4_shoulder")

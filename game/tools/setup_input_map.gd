@@ -23,12 +23,20 @@ func _init() -> void:
 		"cam_zoom_in_step": [_mouse(MOUSE_BUTTON_WHEEL_UP)],
 		"cam_zoom_out_step": [_mouse(MOUSE_BUTTON_WHEEL_DOWN)],
 		"shoulder": [_key(KEY_SPACE), _pad(JOY_BUTTON_B)],
+		"surge_1": [_mouse(MOUSE_BUTTON_LEFT), _stick(JOY_AXIS_TRIGGER_RIGHT, 1.0)],
+		"surge_2": [_mouse(MOUSE_BUTTON_RIGHT), _stick(JOY_AXIS_TRIGGER_LEFT, 1.0)],
+		"surge_3": [_key(KEY_Q), _pad(JOY_BUTTON_Y)],
+		"draw": [_key(KEY_E), _pad(JOY_BUTTON_X)],
 		"mouse_release": [_key(KEY_ESCAPE)],
 		"debug_overlay": [_key(KEY_F3)],
 		"debug_inspect_light": [_key(KEY_F4)],
-		"debug_blast": [_key(KEY_F5)],
-		"debug_stress": [_key(KEY_F6)],
-		"debug_pause_spawner": [_key(KEY_F7)],
+		"debug_blast": [_key(KEY_1, true)],
+		"debug_stress": [_key(KEY_2, true)],
+		"debug_pause_spawner": [_key(KEY_3, true)],
+		"debug_grant_investiture": [_key(KEY_4, true)],
+		"debug_honorblade": [_key(KEY_5, true)],
+		"debug_add_strain": [_key(KEY_6, true)],
+		"debug_reset_strain": [_key(KEY_7, true)],
 	}
 
 	for property: Dictionary in ProjectSettings.get_property_list():
@@ -43,10 +51,11 @@ func _init() -> void:
 	quit()
 
 
-func _key(code: Key) -> InputEventKey:
+func _key(code: Key, ctrl: bool = false) -> InputEventKey:
 	var event := InputEventKey.new()
 	event.device = -1
 	event.physical_keycode = code
+	event.ctrl_pressed = ctrl
 	return event
 
 

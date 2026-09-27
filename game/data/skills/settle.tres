@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="SkillDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/skill_def.gd" id="1_skill"]
+[ext_resource type="PackedScene" path="res://scenes/skills/settle.tscn" id="2_behavior"]
+
+[resource]
+script = ExtResource("1_skill")
+id = &"settle"
+display_name = "Settle"
+kind = 1
+tree = 0
+tags = Array[StringName]([&"cohesion", &"kinetic", &"root"])
+investiture_cost = 25.0
+cooldown = 4.0
+routing = 1
+level_params = Array[Dictionary]([{
+"cone_deg": 70.0,
+"damage": 18.0,
+"range": 7.0,
+"root_duration": 2.0
+}, {
+"cone_deg": 80.0,
+"damage": 22.0,
+"range": 7.0,
+"root_duration": 2.3
+}, {
+"cone_deg": 90.0,
+"damage": 27.0,
+"range": 7.0,
+"root_duration": 2.6
+}])
+behavior = ExtResource("2_behavior")

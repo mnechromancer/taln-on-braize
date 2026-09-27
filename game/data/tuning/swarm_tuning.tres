@@ -8,3 +8,4 @@ separation_range = 2.0
 impulse_decay = 8.0
 contact_cooldown = 0.75
 hit_flash_time = 0.1
+root_fade_time = 0.3

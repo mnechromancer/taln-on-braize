@@ -5,14 +5,18 @@ extends Node3D
 ## Shoulder wall hits to camera shake, and the swarm (SwarmServer v0) to Taln
 ## and the ground.
 ##
-## Debug keys: F5 hits every enemy near Taln hard, F6 toggles spawner stress
-## mode, F7 pauses the spawner.
+## Debug keys: Ctrl+1 hits every enemy near Taln hard, Ctrl+2 toggles spawner
+## stress mode, Ctrl+3 pauses the spawner, Ctrl+4 grants Investiture, Ctrl+5
+## toggles the Honorblade, Ctrl+6 adds Strain, Ctrl+7 resets Strain.
 
-## F5: radius and damage of the debug blast around Taln.
+## Ctrl+1: radius and damage of the debug blast around Taln.
 const DEBUG_BLAST_RADIUS := 6.0
 const DEBUG_BLAST_DAMAGE := 50.0
 
-## enemy_died count since the station loaded, for the log.
+## Print a line for every enemy_died.
+@export var verbose_kill_log := false
+
+## enemy_died count since the station loaded.
 var kills: int = 0
 
 @onready var _inspect_light: DirectionalLight3D = $InspectLight
@@ -29,9 +33,11 @@ func _ready() -> void:
 	_swarm.target_move_speed = _taln.tuning.move_speed
 	_swarm.target_radius = _taln.tuning.capsule_radius
 	_swarm.set_target(_taln)
+	_taln.loadout.swarm = _swarm
 	_ground.ground_changed.connect(_on_ground_changed)
 	_swarm.taln_contacted.connect(_on_taln_contacted)
 	_swarm.enemy_died.connect(_on_enemy_died)
+	_taln.toauma.notice.connect(_on_notice)
 
 
 func _physics_process(_delta: float) -> void:
@@ -51,7 +57,17 @@ func _on_taln_contacted(damage: float, type: int) -> void:
 
 func _on_enemy_died(type_id: StringName, at: Vector3) -> void:
 	kills += 1
-	print("enemy_died %s at (%.1f, %.1f, %.1f)  [kill %d]" % [type_id, at.x, at.y, at.z, kills])
+	if verbose_kill_log:
+		print("enemy_died %s at (%.1f, %.1f, %.1f)  [kill %d]" % [type_id, at.x, at.y, at.z, kills])
+
+
+func _on_notice(threshold: float, hunters: int, lifetime: float) -> void:
+	var slots: Array[int] = _spawner.spawn_pack(_taln.toauma.tuning.notice_hunter_type, hunters)
+	if lifetime > 0.0:
+		for slot in slots:
+			_swarm.set_enemy_lifetime(slot, lifetime)
+	print("Notice at Strain %.0f: %d hunters, %s" % [threshold, slots.size(),
+			"%.0f s to live" % lifetime if lifetime > 0.0 else "until killed"])
 
 
 func _on_shoulder_blocked(_position: Vector3, _normal: Vector3) -> void:
@@ -64,10 +80,22 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("debug_blast"):
 		var hit: int = _swarm.apply_damage_in_radius(_taln.global_position, DEBUG_BLAST_RADIUS,
 				DEBUG_BLAST_DAMAGE, Damage.Type.KINETIC)
-		print("F5 blast hit %d enemies" % hit)
+		print("Debug blast hit %d enemies" % hit)
 	elif event.is_action_pressed("debug_stress"):
 		_spawner.stress = not _spawner.stress
 		print("Spawner stress mode ", "on" if _spawner.stress else "off")
 	elif event.is_action_pressed("debug_pause_spawner"):
 		_spawner.paused = not _spawner.paused
 		print("Spawner ", "paused" if _spawner.paused else "running")
+	elif event.is_action_pressed("debug_grant_investiture"):
+		_taln.investiture.add(_taln.investiture.tuning.debug_grant_amount, &"debug")
+		print("Investiture now %.0f" % _taln.investiture.current)
+	elif event.is_action_pressed("debug_honorblade"):
+		_taln.loadout.honorblade_held = not _taln.loadout.honorblade_held
+		print("Honorblade ", "held" if _taln.loadout.honorblade_held else "not held")
+	elif event.is_action_pressed("debug_add_strain"):
+		_taln.toauma.add_strain(_taln.toauma.tuning.debug_strain_step)
+		print("Strain now %.2f" % _taln.toauma.strain)
+	elif event.is_action_pressed("debug_reset_strain"):
+		_taln.toauma.reset_strain()
+		print("Strain reset")
