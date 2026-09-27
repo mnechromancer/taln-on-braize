@@ -4,5 +4,12 @@
 
 [resource]
 script = ExtResource("1_inv")
-debug_start_investiture = 100.0
+station_values = Array[float]([1.0, 2.0, 3.0])
+level_cost_base = 54.0
+level_cost_growth = 1.1
+level_heal_fraction = 0.09
+consolidate_heal_fraction = 0.25
+offer_size = 3
+menu_input_delay = 0.2
+debug_start_investiture = 0.0
 debug_grant_amount = 100.0

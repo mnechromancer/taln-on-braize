@@ -9,6 +9,7 @@
 #include <godot_cpp/classes/node3d.hpp>
 
 #include "flow_field.h"
+#include "mote_server.h"
 #include "swarm_tuning.h"
 #include "swarm_type.h"
 
@@ -44,6 +45,9 @@ public:
 			double p_cell_size, const Vector2 &p_origin);
 	void set_target(Node3D *p_target);
 	Node3D *get_target() const;
+	// Rewarded kills drop a mote of their type's investiture_drop here.
+	void set_mote_server(MoteServer *p_motes);
+	MoteServer *get_mote_server() const;
 
 	int spawn(const Ref<SwarmType> &p_type, const Vector3 &p_position, double p_hp_mult, double p_dmg_mult);
 	int apply_damage_in_radius(const Vector3 &p_center, double p_radius, double p_amount, int p_type);
@@ -54,15 +58,19 @@ public:
 	int apply_root_in_cone(const Vector3 &p_origin, const Vector3 &p_direction, double p_angle_deg, double p_range,
 			double p_duration);
 	int apply_slow_in_radius(const Vector3 &p_center, double p_radius, double p_factor, double p_duration);
-	// The enemy in this slot expires after p_seconds (0 clears it): it is removed
-	// with enemy_expired rather than enemy_died, since nothing killed it.
+	// The enemy in this slot expires after p_seconds (0 clears it): it is
+	// removed with enemy_died(..., rewarded = false), since nothing killed it.
 	void set_enemy_lifetime(int p_index, double p_seconds);
 	int get_rooted_count() const;
 	Vector3 find_nearest(const Vector3 &p_center, double p_radius);
 	Vector3 find_densest_direction(const Vector3 &p_origin, const Vector3 &p_forward, double p_half_angle_deg,
 			double p_range, int p_sectors);
 	int get_alive_count() const;
+	// Mean position of every live enemy; Vector3.INF if there are none.
+	Vector3 get_alive_centroid() const;
 	void clear_all();
+	// Reseeds the random rolls (spawn speeds, animation phases) for reproducible runs (spec §11.5).
+	void set_seed(int64_t p_seed);
 	double get_last_step_ms() const;
 	// Everything the last physics tick cost: steps plus any flow rebuild.
 	double get_last_tick_ms() const;
@@ -111,6 +119,7 @@ private:
 	struct Death {
 		StringName type_id;
 		Vector3 position;
+		bool rewarded;
 	};
 
 	void _allocate();
@@ -144,6 +153,7 @@ private:
 	int capacity = 800;
 	Ref<SwarmTuning> tuning;
 	ObjectID target_id;
+	ObjectID motes_id;
 	double target_move_speed = 0.0;
 	double target_radius = 0.0;
 

@@ -6,6 +6,7 @@
 [resource]
 id = &"notice_hunter"
 family = 0
+tier = 1
 hp = 120.0
 contact_damage = 14.0
 contact_damage_type = 0
@@ -19,5 +20,6 @@ resist_void = 1.0
 resist_blight = 1.0
 spawn_cost = 9
 behavior = 0
+investiture_drop = 9.0
 mesh = ExtResource("1_mesh")
 material = ExtResource("2_mat")

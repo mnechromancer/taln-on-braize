@@ -5,3 +5,15 @@
 [resource]
 script = ExtResource("1_pool")
 pool_radius = 3.0
+ambient_rate = 0.5
+draw_rate_anchored = 4.0
+draw_rate_standing = 1.0
+pool_capacity = 90.0
+respawn_delay = 20.0
+min_distance_taln = 12.0
+min_distance_pools = 15.0
+max_height_spread = 0.2
+placement_attempts = 200
+retry_delay = 1.0
+drained_scale = 0.4
+drained_brightness = 0.3

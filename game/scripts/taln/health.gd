@@ -43,6 +43,12 @@ func damage(raw: float, type: Damage.Type) -> float:
 	return taken
 
 
+## Restores up to amount, never past max Health.
+func heal(amount: float) -> void:
+	if amount > 0.0 and current < tuning.max_health:
+		_set_current(minf(current + amount, tuning.max_health))
+
+
 func get_armor() -> float:
 	var armor: float = tuning.base_armor
 	for bonus: float in _armor_bonuses.values():

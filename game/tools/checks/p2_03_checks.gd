@@ -90,6 +90,9 @@ func _fresh() -> void:
 	root.add_child(station)
 	(station.get_node("SpawnDirector") as SpawnDirector).paused = true
 	taln = station.get_node("Taln")
+	# These checks were written for a 100 Investiture start; cycles start at 0
+	# since P2-05 (ruled), so fund Taln the way Ctrl+4 does, before any frame runs.
+	taln.investiture.add(100.0, &"debug")
 	await _ticks(2)
 
 
@@ -117,8 +120,10 @@ func _check_investiture() -> void:
 	var emitted: Array[float] = []
 	inv.changed.connect(func(value: float) -> void: emitted.append(value))
 
-	_check("Investiture starts at debug_start_investiture", is_equal_approx(inv.current, t.debug_start_investiture)
-			and t.debug_start_investiture == 100.0, "%.1f (tuning %.1f)" % [inv.current, t.debug_start_investiture])
+	# _fresh() added 100 debug Investiture on top of the starting amount.
+	_check("Investiture starts the cycle at debug_start_investiture = 0 (P2-05 ruling)", t.debug_start_investiture == 0.0
+			and is_equal_approx(inv.current, 100.0), "tuning %.1f; %.1f after the 100 test grant" % [t.debug_start_investiture,
+			inv.current])
 
 	var start: float = inv.current
 	var spent: bool = inv.spend(40.0)
@@ -381,8 +386,9 @@ func _check_weapon_data() -> void:
 	var skill: SkillDef = load(BREAKING_STROKE)
 	var damage: Array = []
 	var interval: Array = []
-	var shape_ok: bool = skill.level_params.size() == 3
-	for p: Dictionary in skill.level_params:
+	# P2-05 extended the table to 9 levels; levels 1–3 are this step's.
+	var shape_ok: bool = skill.level_params.size() >= 3
+	for p: Dictionary in skill.level_params.slice(0, 3):
 		damage.append(p.damage)
 		interval.append(p.interval)
 		shape_ok = shape_ok and p.cone_deg == 110.0 and p.range == 3.2 and p.acquire_margin == 0.5
@@ -410,7 +416,7 @@ func _check_weapon_swings() -> void:
 	var swings: Array = []
 	weapon.swung.connect(func(dir: Vector3, hits: int) -> void: swings.append([dir, hits]))
 	var deaths: Array[Vector3] = []
-	swarm.enemy_died.connect(func(_id: StringName, at: Vector3) -> void: deaths.append(at))
+	swarm.enemy_died.connect(func(_id: StringName, at: Vector3, _rewarded: bool) -> void: deaths.append(at))
 	swarm.set_target(null)
 	await _ticks(30)
 	_check("No swing with nothing in range", swings.is_empty(), "%d swings" % swings.size())
@@ -511,8 +517,9 @@ func _check_settle_data() -> void:
 	var damage: Array = []
 	var root: Array = []
 	var cone: Array = []
-	var range_ok: bool = skill.level_params.size() == 3
-	for p: Dictionary in skill.level_params:
+	# P2-05 extended the table to 9 levels; levels 1–3 are this step's.
+	var range_ok: bool = skill.level_params.size() >= 3
+	for p: Dictionary in skill.level_params.slice(0, 3):
 		damage.append(p.damage)
 		root.append(p.root_duration)
 		cone.append(p.cone_deg)
@@ -540,7 +547,7 @@ func _check_settle_cast() -> void:
 	settle.cast.connect(func(dir: Vector3, hits: int, toa_uma: bool, _effect: Toauma.Effect) -> void:
 			casts.append([dir, hits, toa_uma]))
 	var deaths: Array[Vector3] = []
-	swarm.enemy_died.connect(func(_id: StringName, at: Vector3) -> void: deaths.append(at))
+	swarm.enemy_died.connect(func(_id: StringName, at: Vector3, _rewarded: bool) -> void: deaths.append(at))
 	var reticle: MeshInstance3D = settle.get_node("Reticle")
 	var cracks: MeshInstance3D = settle.get_node("Cracks")
 	var ash: SwarmType = load(ASH_WALKER)
@@ -1001,15 +1008,16 @@ func _check_click_recapture() -> void:
 func _check_hunter_lifetime() -> void:
 	var taln_at := Vector3(-40.0, 0.0, 20.0)
 	await _fresh_settle(taln_at)
+	# Since P2-05 a lifetime running out is enemy_died with rewarded = false (not a kill).
 	var died: Array[StringName] = []
 	var expired: Array[StringName] = []
-	swarm.enemy_died.connect(func(id: StringName, _at: Vector3) -> void: died.append(id))
-	swarm.enemy_expired.connect(func(id: StringName, _at: Vector3) -> void: expired.append(id))
+	swarm.enemy_died.connect(func(id: StringName, _at: Vector3, rewarded: bool) -> void:
+		(died if rewarded else expired).append(id))
 	var ash: SwarmType = load(ASH_WALKER)
 	var brief: int = swarm.spawn(ash, taln_at + Vector3(5.0, 0.0, 0.0), 1.0, 1.0)
 	swarm.set_enemy_lifetime(brief, 0.5)
 	await _ticks(40)
-	_check("set_enemy_lifetime(): the enemy expires with enemy_expired, not enemy_died",
+	_check("set_enemy_lifetime(): the enemy expires as enemy_died(rewarded = false), not a kill",
 			expired == [&"ash_walker"] and died.is_empty() and swarm.get_alive_count() == 0,
 			"expired %s, died %s" % [expired, died])
 
@@ -1095,7 +1103,7 @@ func _check_done_weapon() -> void:
 	var swings: Array = []
 	weapon.swung.connect(func(dir: Vector3, hits: int) -> void: swings.append([dir, hits]))
 	var deaths: Array[int] = [0]
-	swarm.enemy_died.connect(func(_id: StringName, _at: Vector3) -> void: deaths[0] += 1)
+	swarm.enemy_died.connect(func(_id: StringName, _at: Vector3, _rewarded: bool) -> void: deaths[0] += 1)
 	var out_of_reach: Vector3 = _turned(Vector3.RIGHT, 30.0) * 4.0
 	swarm.spawn(load(ASH_WALKER), taln_at + out_of_reach, 1.0, 1.0)
 	await _ticks(30)
@@ -1296,9 +1304,11 @@ func _check_done_debug_keys() -> void:
 	var paused_was: bool = spawner.paused
 	await _tap("debug_pause_spawner")
 	results["Ctrl+3 pause"] = spawner.paused != paused_was
-	var inv: float = taln.investiture.current
+	# The debug tally, not the total: Ctrl+3 just unpaused the spawner, so the
+	# Well's ambient income (P2-05) trickles in too.
+	var inv: float = taln.investiture.income_by_source.get(&"debug", 0.0)
 	await _tap("debug_grant_investiture")
-	results["Ctrl+4 Investiture"] = taln.investiture.current - inv == 100.0
+	results["Ctrl+4 Investiture"] = taln.investiture.income_by_source.get(&"debug", 0.0) - inv == 100.0
 	await _tap("debug_honorblade")
 	results["Ctrl+5 Honorblade"] = taln.loadout.honorblade_held
 	await _tap("debug_add_strain")
@@ -1316,6 +1326,8 @@ func _check_done_performance() -> void:
 	taln.loadout.process_mode = Node.PROCESS_MODE_INHERIT
 	var settle: Settle = taln.loadout.get_behavior(&"settle")
 	_no_side_effects()
+	# Kills drop motes since P2-05; leave them uncollected so the refills run.
+	(station.get_node("MoteServer") as MoteServer).set_target(null)
 	_spawn_ring(400, 6.0, 26.0)
 	var casts: Array[int] = [0]
 	settle.cast.connect(func(_d: Vector3, _h: int, _t: bool, _e: Toauma.Effect) -> void: casts[0] += 1)

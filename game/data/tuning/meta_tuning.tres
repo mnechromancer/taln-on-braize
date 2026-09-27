@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="MetaTuning" format=3]
+
+[ext_resource type="Script" path="res://scripts/tuning/meta_tuning.gd" id="1_meta"]
+
+[resource]
+script = ExtResource("1_meta")
+starting_cap = 3
+starting_cap_overrides = Dictionary[StringName, int]({
+&"bearer_of_agonies": 2
+})
+max_cap = 9
+cap_raise_cost_offset = -1

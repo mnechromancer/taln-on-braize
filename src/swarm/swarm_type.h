@@ -18,6 +18,12 @@ public:
 		BEHAVIOR_SEEK,
 	};
 
+	// Enemy tier (spec §8.1) for the tiers SwarmServer simulates.
+	enum Tier {
+		TIER_SWARM,
+		TIER_ELITE,
+	};
+
 	// Same order as Damage.Type in GDScript (spec §6.2).
 	enum DamageType {
 		DAMAGE_KINETIC,
@@ -27,6 +33,7 @@ public:
 
 	SWARM_ACCESSORS(StringName, id)
 	SWARM_ACCESSORS(int, family)
+	SWARM_ACCESSORS(int, tier)
 	SWARM_ACCESSORS(double, hp)
 	SWARM_ACCESSORS(double, contact_damage)
 	SWARM_ACCESSORS(int, contact_damage_type)
@@ -40,6 +47,7 @@ public:
 	SWARM_ACCESSORS(double, resist_blight)
 	SWARM_ACCESSORS(int, spawn_cost)
 	SWARM_ACCESSORS(int, behavior)
+	SWARM_ACCESSORS(double, investiture_drop)
 	SWARM_ACCESSORS(Ref<Mesh>, mesh)
 	SWARM_ACCESSORS(Ref<Material>, material)
 
@@ -53,6 +61,7 @@ private:
 	// Numbers default to zero (resistances to neutral); values live in .tres files.
 	StringName id;
 	int family = 0;
+	int tier = TIER_SWARM;
 	double hp = 0.0;
 	double contact_damage = 0.0;
 	int contact_damage_type = DAMAGE_KINETIC;
@@ -66,9 +75,12 @@ private:
 	double resist_blight = 1.0;
 	int spawn_cost = 0;
 	int behavior = BEHAVIOR_SEEK;
+	// Base Investiture in the one mote a rewarded kill drops (spec §2.3); 0 drops none.
+	double investiture_drop = 0.0;
 	Ref<Mesh> mesh;
 	Ref<Material> material;
 };
 
 VARIANT_ENUM_CAST(SwarmType::Behavior);
+VARIANT_ENUM_CAST(SwarmType::Tier);
 VARIANT_ENUM_CAST(SwarmType::DamageType);

@@ -274,6 +274,38 @@ func _add_taln_and_camera(spawn: Vector3) -> void:
 	spawner.set("target", taln)
 	_own(spawner, _root)
 
+	# P2-05: station value, motes, the Well, the HUD and the Invest menu.
+	var context := Node.new()
+	context.name = "StationContext"
+	context.set_script(load("res://scripts/station/station_context.gd"))
+	context.set("tuning", load("res://data/tuning/investiture_tuning.tres"))
+	_own(context, _root)
+	var motes := MoteServer.new()
+	motes.name = "MoteServer"
+	motes.tuning = load("res://data/tuning/mote_tuning.tres")
+	motes.mesh = load("res://data/motes/mote_mesh.tres")
+	motes.material = load("res://data/motes/mote_material.tres")
+	_own(motes, _root)
+	var well := Node.new()
+	well.name = "Well"
+	well.set_script(load("res://scripts/station/well.gd"))
+	well.set("tuning", load("res://data/tuning/well_pool_tuning.tres"))
+	well.set("taln", taln)
+	well.set("spawner", spawner)
+	well.set("ground", _root.get_node("StationGround"))
+	_own(well, _root)
+	var hud := CanvasLayer.new()
+	hud.name = "Hud"
+	hud.set_script(load("res://scripts/ui/hud.gd"))
+	hud.set("taln", taln)
+	hud.set("spawner", spawner)
+	_own(hud, _root)
+	var menu := CanvasLayer.new()
+	menu.name = "LevelUpMenu"
+	menu.set_script(load("res://scripts/ui/level_up_menu.gd"))
+	menu.set("taln", taln)
+	_own(menu, _root)
+
 	var overlay: Node = (load("res://scenes/debug_overlay.tscn") as PackedScene).instantiate()
 	overlay.set("taln", taln)
 	overlay.set("camera_rig", rig)

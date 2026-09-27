@@ -22,6 +22,7 @@ var _speed_multipliers: Dictionary[StringName, float] = {}
 
 @onready var health: Health = $Health
 @onready var investiture: Investiture = $Investiture
+@onready var leveling: Leveling = $Leveling
 @onready var loadout: Loadout = $Loadout
 @onready var toauma: Toauma = $Toauma
 @onready var shoulder: Shoulder = $Shoulder

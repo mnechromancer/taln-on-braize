@@ -6,6 +6,7 @@
 [resource]
 id = &"ash_walker"
 family = 0
+tier = 0
 hp = 12.0
 contact_damage = 6.0
 contact_damage_type = 0
@@ -19,5 +20,6 @@ resist_void = 1.0
 resist_blight = 1.0
 spawn_cost = 1
 behavior = 0
+investiture_drop = 1.0
 mesh = ExtResource("1_mesh")
 material = ExtResource("2_mat")

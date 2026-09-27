@@ -13,6 +13,7 @@
 [ext_resource type="Script" path="res://scripts/taln/toauma.gd" id="11_toauma"]
 [ext_resource type="Resource" path="res://data/tuning/toauma_tuning.tres" id="12_toauma_tune"]
 [ext_resource type="Script" path="res://scripts/taln/toauma_gem.gd" id="13_gem"]
+[ext_resource type="Script" path="res://scripts/taln/leveling.gd" id="14_leveling"]
 
 [sub_resource type="CapsuleShape3D" id="Shape_body"]
 radius = 0.45
@@ -118,6 +119,10 @@ tuning = ExtResource("8_inv_tune")
 [node name="Loadout" type="Node3D" parent="."]
 script = ExtResource("9_loadout")
 tuning = ExtResource("10_loadout_tune")
+
+[node name="Leveling" type="Node" parent="."]
+script = ExtResource("14_leveling")
+tuning = ExtResource("8_inv_tune")
 
 [node name="Toauma" type="Node" parent="."]
 script = ExtResource("11_toauma")

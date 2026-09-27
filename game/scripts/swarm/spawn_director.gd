@@ -98,6 +98,11 @@ func spawn_pack(type: SwarmType, count: int) -> Array[int]:
 	return slots
 
 
+## True while a wave is running (the spawner isn't paused).
+func is_in_wave() -> bool:
+	return not paused and ground.is_ground_data_ready()
+
+
 ## B = B0 × (1 + wave_slope × w) × P_s × return_pressure^returns (spec §8.4).
 func budget_per_second() -> float:
 	var rate: float = tuning.base_budget * (1.0 + tuning.wave_slope * _wave) \

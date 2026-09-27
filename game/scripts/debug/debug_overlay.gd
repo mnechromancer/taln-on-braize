@@ -35,7 +35,10 @@ func _process(_delta: float) -> void:
 		"Fracture   %s  (still %.1f s, away %.1f s)" % [
 				Fracture.State.keys()[fracture.state], fracture.still_time, fracture.away_time],
 		"Health     %.1f / %.0f   armor %.0f" % [health.current, taln.tuning.max_health, health.get_armor()],
-		"Investiture %.1f" % taln.investiture.current,
+		"Investiture %.1f  (v %.0f)" % [taln.investiture.current, taln.investiture.station.value() if taln.investiture.station else 1.0],
+		"Leveling   n %d, next %.0f%s" % [taln.leveling.levels_taken, taln.leveling.next_cost(),
+				"  ready" if taln.leveling.can_invest() else ""],
+		"Income     %s" % _income_status(),
 		"Strain     %s" % _strain_status(),
 		"Routing    %s" % ("Blade (Blade-eligible Surges)" if taln.loadout.honorblade_held else "Toa'uma"),
 		"Loadout    %d / %d slots" % [taln.loadout.slots.size(), taln.loadout.tuning.slots],
@@ -135,6 +138,13 @@ func _spawner_flags() -> String:
 	if spawner.paused:
 		flags.append("PAUSED")
 	return "  " + " ".join(flags) if not flags.is_empty() else ""
+
+
+func _income_status() -> String:
+	var parts: Array[String] = []
+	for source: StringName in taln.investiture.income_by_source:
+		parts.append("%s %.0f" % [source, taln.investiture.income_by_source[source]])
+	return ", ".join(parts) if not parts.is_empty() else "none yet"
 
 
 func _pressed_status() -> String:

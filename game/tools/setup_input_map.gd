@@ -3,7 +3,8 @@ extends SceneTree
 ## is the single source for game actions: actions not listed here are removed
 ## (Godot's built-in ui_* actions are left alone). Mouse orbit and click-to-
 ## recapture read mouse events directly in CameraRig, so they have no action.
-## Gamepad A stays unbound: the spec reserves it for Catalyze.
+## Gamepad A stays unbound here: the spec reserves it for Catalyze, and paused
+## menus confirm with it through Godot's built-in ui_accept (P2-05 handoff).
 ##
 ## Run: Godot_v4.7.2-stable_win64_console.exe --headless --path game --script res://tools/setup_input_map.gd
 
@@ -28,6 +29,10 @@ func _init() -> void:
 		"surge_3": [_key(KEY_Q), _pad(JOY_BUTTON_Y)],
 		"draw": [_key(KEY_E), _pad(JOY_BUTTON_X)],
 		"mouse_release": [_key(KEY_ESCAPE)],
+		"invest": [_key(KEY_TAB), _pad(JOY_BUTTON_BACK)],
+		"pick_1": [_key(KEY_1)],
+		"pick_2": [_key(KEY_2)],
+		"pick_3": [_key(KEY_3)],
 		"debug_overlay": [_key(KEY_F3)],
 		"debug_inspect_light": [_key(KEY_F4)],
 		"debug_blast": [_key(KEY_1, true)],

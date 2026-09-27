@@ -157,6 +157,17 @@ void SwarmServer::set_target(Node3D *p_target) {
 	flow_dirty = true;
 }
 
+void SwarmServer::set_mote_server(MoteServer *p_motes) {
+	motes_id = p_motes ? ObjectID(p_motes->get_instance_id()) : ObjectID();
+}
+
+MoteServer *SwarmServer::get_mote_server() const {
+	if (motes_id.is_null()) {
+		return nullptr;
+	}
+	return Object::cast_to<MoteServer>(ObjectDB::get_instance(uint64_t(motes_id)));
+}
+
 Node3D *SwarmServer::get_target() const {
 	if (target_id.is_null()) {
 		return nullptr;
@@ -389,6 +400,23 @@ int SwarmServer::get_alive_count() const {
 	return alive_count;
 }
 
+Vector3 SwarmServer::get_alive_centroid() const {
+	if (alive_count == 0) {
+		return Vector3(INFINITY, INFINITY, INFINITY);
+	}
+	Vector3 sum;
+	for (int i = 0; i < capacity; ++i) {
+		if (alive[i]) {
+			sum += position[i];
+		}
+	}
+	return sum / real_t(alive_count);
+}
+
+void SwarmServer::set_seed(int64_t p_seed) {
+	rng.seed(uint32_t(uint64_t(p_seed) ^ (uint64_t(p_seed) >> 32)));
+}
+
 void SwarmServer::clear_all() {
 	for (int i = 0; i < capacity; ++i) {
 		if (alive[i]) {
@@ -548,19 +576,24 @@ void SwarmServer::_step(double p_dt) {
 		}
 	}
 
+	// Kills are rewarded: they drop their mote. Expiries aren't (spec v1.2 #5).
 	std::vector<Death> deaths;
-	std::vector<Death> expiries;
+	MoteServer *motes = get_mote_server();
 	for (int i = 0; i < capacity; ++i) {
 		if (!alive[i]) {
 			continue;
 		}
+		const Ref<SwarmType> &type = types[type_index[i]].type;
 		if (hp[i] <= 0.0) {
-			deaths.push_back({ types[type_index[i]].type->get_id(), position[i] });
+			deaths.push_back({ type->get_id(), position[i], true });
+			if (motes && type->get_investiture_drop() > 0.0) {
+				motes->spawn(position[i], type->get_investiture_drop(), type->get_tier());
+			}
 			_free(i);
 		} else if (lifetime[i] > 0.0) {
 			lifetime[i] -= p_dt;
 			if (lifetime[i] <= 0.0) {
-				expiries.push_back({ types[type_index[i]].type->get_id(), position[i] });
+				deaths.push_back({ type->get_id(), position[i], false });
 				_free(i);
 			}
 		}
@@ -574,10 +607,7 @@ void SwarmServer::_step(double p_dt) {
 		emit_signal("taln_contacted", contact.damage, contact.type);
 	}
 	for (const Death &death : deaths) {
-		emit_signal("enemy_died", death.type_id, death.position);
-	}
-	for (const Death &expiry : expiries) {
-		emit_signal("enemy_expired", expiry.type_id, expiry.position);
+		emit_signal("enemy_died", death.type_id, death.position, death.rewarded);
 	}
 }
 
@@ -908,6 +938,8 @@ void SwarmServer::_bind_methods() {
 			&SwarmServer::set_ground);
 	ClassDB::bind_method(D_METHOD("set_target", "node"), &SwarmServer::set_target);
 	ClassDB::bind_method(D_METHOD("get_target"), &SwarmServer::get_target);
+	ClassDB::bind_method(D_METHOD("set_mote_server", "motes"), &SwarmServer::set_mote_server);
+	ClassDB::bind_method(D_METHOD("get_mote_server"), &SwarmServer::get_mote_server);
 	ClassDB::bind_method(D_METHOD("spawn", "type", "position", "hp_mult", "dmg_mult"), &SwarmServer::spawn);
 	ClassDB::bind_method(D_METHOD("apply_damage_in_radius", "center", "radius", "amount", "type"),
 			&SwarmServer::apply_damage_in_radius);
@@ -928,7 +960,9 @@ void SwarmServer::_bind_methods() {
 			D_METHOD("find_densest_direction", "origin", "forward", "half_angle_deg", "range", "sectors"),
 			&SwarmServer::find_densest_direction);
 	ClassDB::bind_method(D_METHOD("get_alive_count"), &SwarmServer::get_alive_count);
+	ClassDB::bind_method(D_METHOD("get_alive_centroid"), &SwarmServer::get_alive_centroid);
 	ClassDB::bind_method(D_METHOD("clear_all"), &SwarmServer::clear_all);
+	ClassDB::bind_method(D_METHOD("set_seed", "seed"), &SwarmServer::set_seed);
 	ClassDB::bind_method(D_METHOD("get_last_step_ms"), &SwarmServer::get_last_step_ms);
 	ClassDB::bind_method(D_METHOD("rebuild_flow_field"), &SwarmServer::rebuild_flow_field);
 	ClassDB::bind_method(D_METHOD("get_last_tick_ms"), &SwarmServer::get_last_tick_ms);
@@ -953,9 +987,9 @@ void SwarmServer::_bind_methods() {
 	SWARM_BIND_PROPERTY(SwarmServer, Variant::FLOAT, target_move_speed, PROPERTY_HINT_RANGE, "0,20,0.1,suffix:m/s");
 	SWARM_BIND_PROPERTY(SwarmServer, Variant::FLOAT, target_radius, PROPERTY_HINT_RANGE, "0,5,0.01,suffix:m");
 
+	// rewarded is false for deaths that aren't kills (a Notice hunter's time
+	// running out): they drop nothing and don't count as kills.
 	ADD_SIGNAL(MethodInfo("enemy_died", PropertyInfo(Variant::STRING_NAME, "type_id"),
-			PropertyInfo(Variant::VECTOR3, "position")));
-	ADD_SIGNAL(MethodInfo("enemy_expired", PropertyInfo(Variant::STRING_NAME, "type_id"),
-			PropertyInfo(Variant::VECTOR3, "position")));
+			PropertyInfo(Variant::VECTOR3, "position"), PropertyInfo(Variant::BOOL, "rewarded")));
 	ADD_SIGNAL(MethodInfo("taln_contacted", PropertyInfo(Variant::FLOAT, "damage"), PropertyInfo(Variant::INT, "type")));
 }

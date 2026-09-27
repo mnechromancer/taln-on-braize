@@ -2,8 +2,9 @@ class_name GrayboxStation
 extends Node3D
 ## P2-01 gray-box station. It has no directional light by design; F4 toggles
 ## a temporary one (off by default) for inspecting geometry. Also wires Taln's
-## Shoulder wall hits to camera shake, and the swarm (SwarmServer v0) to Taln
-## and the ground.
+## Shoulder wall hits to camera shake, the swarm (SwarmServer) to Taln and the
+## ground, and the Investiture loop (P2-05): the station value, and motes from
+## rewarded kills paying Taln on pickup.
 ##
 ## Debug keys: Ctrl+1 hits every enemy near Taln hard, Ctrl+2 toggles spawner
 ## stress mode, Ctrl+3 pauses the spawner, Ctrl+4 grants Investiture, Ctrl+5
@@ -16,8 +17,11 @@ const DEBUG_BLAST_DAMAGE := 50.0
 ## Print a line for every enemy_died.
 @export var verbose_kill_log := false
 
-## enemy_died count since the station loaded.
+## Rewarded kills since the station loaded (deaths that aren't kills, like a
+## Notice hunter's time running out, don't count).
 var kills: int = 0
+## Base Investiture in motes that sank before Taln reached them.
+var motes_lost: float = 0.0
 
 @onready var _inspect_light: DirectionalLight3D = $InspectLight
 @onready var _taln: Taln = $Taln
@@ -25,6 +29,8 @@ var kills: int = 0
 @onready var _ground: StationGround = $StationGround
 @onready var _swarm: SwarmServer = $SwarmServer
 @onready var _spawner: SpawnDirector = $SpawnDirector
+@onready var _context: StationContext = $StationContext
+@onready var _motes: MoteServer = $MoteServer
 
 
 func _ready() -> void:
@@ -34,6 +40,13 @@ func _ready() -> void:
 	_swarm.target_radius = _taln.tuning.capsule_radius
 	_swarm.set_target(_taln)
 	_taln.loadout.swarm = _swarm
+	_swarm.set_mote_server(_motes)
+	_motes.set_target(_taln)
+	_motes.mote_collected.connect(_on_mote_collected)
+	_motes.mote_lost.connect(func(value: float, _tag: int) -> void: motes_lost += value)
+	_taln.investiture.station = _context
+	_spawner.station_index = _context.station_index
+	_context.station_changed.connect(func(index: int) -> void: _spawner.station_index = index)
 	_ground.ground_changed.connect(_on_ground_changed)
 	_swarm.taln_contacted.connect(_on_taln_contacted)
 	_swarm.enemy_died.connect(_on_enemy_died)
@@ -55,10 +68,17 @@ func _on_taln_contacted(damage: float, type: int) -> void:
 	_taln.health.damage(damage, type as Damage.Type)
 
 
-func _on_enemy_died(type_id: StringName, at: Vector3) -> void:
+func _on_enemy_died(type_id: StringName, at: Vector3, rewarded: bool) -> void:
+	if not rewarded:
+		return
 	kills += 1
 	if verbose_kill_log:
 		print("enemy_died %s at (%.1f, %.1f, %.1f)  [kill %d]" % [type_id, at.x, at.y, at.z, kills])
+
+
+## Swarm-tier motes are kill income, elite motes elite income (spec §2.3).
+func _on_mote_collected(value: float, tier: int) -> void:
+	_taln.investiture.add(value, &"elite" if tier == SwarmType.TIER_ELITE else &"kill")
 
 
 func _on_notice(threshold: float, hunters: int, lifetime: float) -> void:

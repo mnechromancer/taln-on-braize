@@ -6,6 +6,8 @@
 #include <godot_cpp/core/defs.hpp>
 #include <godot_cpp/godot.hpp>
 
+#include "mote_server.h"
+#include "mote_tuning.h"
 #include "swarm_server.h"
 #include "swarm_tuning.h"
 #include "swarm_type.h"
@@ -20,6 +22,8 @@ void initialize_swarm_module(ModuleInitializationLevel p_level) {
 	GDREGISTER_CLASS(SwarmType);
 	GDREGISTER_CLASS(SwarmTuning);
 	GDREGISTER_CLASS(SwarmServer);
+	GDREGISTER_CLASS(MoteTuning);
+	GDREGISTER_CLASS(MoteServer);
 }
 
 void uninitialize_swarm_module(ModuleInitializationLevel p_level) {

@@ -13,6 +13,8 @@ tags = Array[StringName]([&"cohesion", &"kinetic", &"root"])
 investiture_cost = 25.0
 cooldown = 4.0
 routing = 1
+; Levels 1-3 are the P2-03 values. Levels 4-9 are PLACEHOLDERS (P2-05 ruling): each parameter
+; continues its L2->L3 step, cone capped at 120 degrees. The Content List replaces them.
 level_params = Array[Dictionary]([{
 "cone_deg": 70.0,
 "damage": 18.0,
@@ -28,5 +30,35 @@ level_params = Array[Dictionary]([{
 "damage": 27.0,
 "range": 7.0,
 "root_duration": 2.6
+}, {
+"cone_deg": 100.0,
+"damage": 32.0,
+"range": 7.0,
+"root_duration": 2.9
+}, {
+"cone_deg": 110.0,
+"damage": 37.0,
+"range": 7.0,
+"root_duration": 3.2
+}, {
+"cone_deg": 120.0,
+"damage": 42.0,
+"range": 7.0,
+"root_duration": 3.5
+}, {
+"cone_deg": 120.0,
+"damage": 47.0,
+"range": 7.0,
+"root_duration": 3.8
+}, {
+"cone_deg": 120.0,
+"damage": 52.0,
+"range": 7.0,
+"root_duration": 4.1
+}, {
+"cone_deg": 120.0,
+"damage": 57.0,
+"range": 7.0,
+"root_duration": 4.4
 }])
 behavior = ExtResource("2_behavior")

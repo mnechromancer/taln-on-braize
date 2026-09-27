@@ -9,6 +9,7 @@ extends Node3D
 const SURGE_ACTIONS: Array[StringName] = [&"surge_1", &"surge_2", &"surge_3"]
 
 signal skill_added(skill: SkillDef, behavior: SkillBehavior)
+signal skill_leveled(skill: SkillDef, level: int)
 signal surge_bindings_changed
 
 @export var tuning: LoadoutTuning
@@ -80,6 +81,45 @@ func add_skill(skill: SkillDef) -> bool:
 
 func has_skill(id: StringName) -> bool:
 	return _levels.has(id)
+
+
+## Every owned skill.
+func owned() -> Array[SkillDef]:
+	return slots.duplicate()
+
+
+## The skill's cap this cycle: its meta cap (MetaState), clamped to the levels
+## the skill defines, with a warning if the meta cap is higher.
+func get_cap(id: StringName) -> int:
+	var skill: SkillDef = get_skill(id)
+	var cap: int = Meta.state().get_cap(id)
+	if skill and cap > skill.level_params.size():
+		push_warning("%s's cap %d is past its %d defined levels; clamped." % [id, cap, skill.level_params.size()])
+		return skill.level_params.size()
+	return cap
+
+
+func is_capped(id: StringName) -> bool:
+	return get_level(id) >= get_cap(id)
+
+
+## Raises an owned skill one level, up to its cap. False if it can't.
+func level_up(id: StringName) -> bool:
+	if not has_skill(id) or is_capped(id):
+		return false
+	_levels[id] += 1
+	var behavior: SkillBehavior = get_behavior(id)
+	if behavior:
+		behavior.set_level(_levels[id])
+	skill_leveled.emit(get_skill(id), _levels[id])
+	return true
+
+
+func get_skill(id: StringName) -> SkillDef:
+	for skill: SkillDef in slots:
+		if skill.id == id:
+			return skill
+	return null
 
 
 func is_full() -> bool:

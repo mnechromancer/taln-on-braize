@@ -1,0 +1,193 @@
+class_name Hud
+extends CanvasLayer
+## The play HUD (Art Direction, UI/HUD): flat dark-stone panels at low
+## opacity, no gradients or bevels, color only from the world's signal hues
+## (Investiture in Honor hue). Separate from the F3 debug overlay. Shows
+## Health, held Investiture with the next level cost and a ready mark, the
+## Surge and Draw cooldowns, nine Strain pips and the wave. Read-only: it
+## polls the systems it shows every frame.
+
+const PANEL := Color("2a2825", 0.55)
+const TEXT := Color("a69e8f")
+const DIM := Color("5a564f")
+const HONOR := Color("cfe8ff")
+const STONEWARD := Color("d9a55b")
+const VOID_CORE := Color("6b3fa0")
+const VOID_RIM := Color("7fe3d6")
+const EMPTY := Color("0b0b0e", 0.7)
+const MARGIN := 20.0
+const BAR_SIZE := Vector2(220.0, 10.0)
+const PIP_SIZE := Vector2(14.0, 14.0)
+
+@export var taln: Taln
+@export var spawner: SpawnDirector
+
+var _health_fill: ColorRect
+var _health_value: Label
+var _investiture_value: Label
+var _next_level: Label
+var _ready_mark: Label
+var _surge_name: Label
+var _surge_state: Label
+var _surge_fill: ColorRect
+var _draw_state: Label
+var _draw_fill: ColorRect
+var _pips: Array[ColorRect] = []
+var _pip_fills: Array[Panel] = []
+var _wave: Label
+
+
+func _ready() -> void:
+	layer = 5
+	var root := Control.new()
+	root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(root)
+	_build_status(root)
+	_build_abilities(root)
+	_build_wave(root)
+
+
+func _process(_delta: float) -> void:
+	var health: Health = taln.health
+	var ratio: float = health.current / taln.tuning.max_health if taln.tuning.max_health > 0.0 else 0.0
+	_health_fill.size.x = BAR_SIZE.x * clampf(ratio, 0.0, 1.0)
+	_health_value.text = "%d / %d" % [ceili(health.current), roundi(taln.tuning.max_health)]
+
+	_investiture_value.text = "%d" % floori(taln.investiture.current)
+	_next_level.text = UiText.NEXT_LEVEL % roundi(taln.leveling.next_cost())
+	_ready_mark.visible = taln.leveling.can_invest()
+
+	var surge: SurgeBehavior = taln.loadout.get_surge_behavior(0)
+	if surge:
+		_surge_name.text = "%s  %d" % [surge.skill.display_name, roundi(surge.skill.investiture_cost)]
+		var affordable: bool = taln.investiture.can_afford(surge.skill.investiture_cost)
+		_show_timer(_surge_state, _surge_fill, surge.cooldown_left, surge.skill.cooldown)
+		_surge_name.add_theme_color_override(&"font_color", TEXT if affordable else DIM)
+	var toauma: Toauma = taln.toauma
+	_show_timer(_draw_state, _draw_fill, toauma.draw_cooldown_left, toauma.tuning.draw_cooldown)
+
+	for i in _pips.size():
+		var f: float = clampf(toauma.strain - i, 0.0, 1.0)
+		_pip_fills[i].size.x = PIP_SIZE.x * f
+	_wave.text = UiText.WAVE % [spawner.wave + 1, spawner.tuning.waves]
+
+
+func _show_timer(state: Label, fill: ColorRect, left: float, total: float) -> void:
+	state.text = UiText.READY if left <= 0.0 else UiText.SECONDS % left
+	fill.size.x = BAR_SIZE.x * 0.5 * (1.0 - clampf(left / total, 0.0, 1.0) if total > 0.0 else 1.0)
+
+
+# --- layout ------------------------------------------------------------------
+
+func _panel(parent: Control, preset: Control.LayoutPreset) -> VBoxContainer:
+	var panel := PanelContainer.new()
+	var style := StyleBoxFlat.new()
+	style.bg_color = PANEL
+	style.content_margin_left = 12.0
+	style.content_margin_right = 12.0
+	style.content_margin_top = 8.0
+	style.content_margin_bottom = 8.0
+	panel.add_theme_stylebox_override(&"panel", style)
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	parent.add_child(panel)
+	panel.set_anchors_and_offsets_preset(preset, Control.PRESET_MODE_MINSIZE, int(MARGIN))
+	# Grow away from the anchored edge as rows are added, so nothing runs off screen.
+	match preset:
+		Control.PRESET_BOTTOM_LEFT:
+			panel.grow_vertical = Control.GROW_DIRECTION_BEGIN
+		Control.PRESET_CENTER_BOTTOM:
+			panel.grow_vertical = Control.GROW_DIRECTION_BEGIN
+			panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+		Control.PRESET_CENTER_TOP:
+			panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	var box := VBoxContainer.new()
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_theme_constant_override(&"separation", 4)
+	panel.add_child(box)
+	return box
+
+
+func _label(parent: Control, text: String, color: Color, size: int = 16) -> Label:
+	var label := Label.new()
+	label.text = text
+	label.add_theme_color_override(&"font_color", color)
+	label.add_theme_font_size_override(&"font_size", size)
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	parent.add_child(label)
+	return label
+
+
+func _row(parent: Control) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override(&"separation", 10)
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	parent.add_child(row)
+	return row
+
+
+## A flat bar: a dark track and a fill whose width callers set.
+func _bar(parent: Control, color: Color, size: Vector2) -> ColorRect:
+	var track := ColorRect.new()
+	track.color = EMPTY
+	track.custom_minimum_size = size
+	track.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	track.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	parent.add_child(track)
+	var fill := ColorRect.new()
+	fill.color = color
+	fill.size = size
+	fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	track.add_child(fill)
+	return fill
+
+
+func _build_status(root: Control) -> void:
+	var box: VBoxContainer = _panel(root, Control.PRESET_BOTTOM_LEFT)
+	var health: HBoxContainer = _row(box)
+	_label(health, UiText.HEALTH, TEXT)
+	_health_fill = _bar(health, STONEWARD, BAR_SIZE)
+	_health_value = _label(health, "", TEXT)
+	var inv: HBoxContainer = _row(box)
+	_label(inv, UiText.INVESTITURE, TEXT)
+	_investiture_value = _label(inv, "", HONOR, 24)
+	var level: HBoxContainer = _row(box)
+	_next_level = _label(level, "", TEXT)
+	_ready_mark = _label(level, UiText.INVEST_READY, HONOR)
+
+
+func _build_abilities(root: Control) -> void:
+	var box: VBoxContainer = _panel(root, Control.PRESET_CENTER_BOTTOM)
+	var surge: HBoxContainer = _row(box)
+	_surge_name = _label(surge, "", TEXT)
+	_surge_fill = _bar(surge, STONEWARD, Vector2(BAR_SIZE.x * 0.5, BAR_SIZE.y))
+	_surge_state = _label(surge, "", TEXT)
+	var draw: HBoxContainer = _row(box)
+	_label(draw, UiText.DRAW, TEXT)
+	_draw_fill = _bar(draw, VOID_RIM, Vector2(BAR_SIZE.x * 0.5, BAR_SIZE.y))
+	_draw_state = _label(draw, "", TEXT)
+	var strain: HBoxContainer = _row(box)
+	_label(strain, UiText.STRAIN, TEXT)
+	for i in 9:
+		var pip := ColorRect.new()
+		pip.color = EMPTY
+		pip.custom_minimum_size = PIP_SIZE
+		pip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		strain.add_child(pip)
+		# A filled pip is Taln's Voidlight: dark core, teal rim (Art Direction).
+		var fill := Panel.new()
+		var style := StyleBoxFlat.new()
+		style.bg_color = VOID_CORE
+		style.border_color = VOID_RIM
+		style.set_border_width_all(2)
+		fill.add_theme_stylebox_override(&"panel", style)
+		fill.size = Vector2(0.0, PIP_SIZE.y)
+		fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		pip.add_child(fill)
+		_pips.append(pip)
+		_pip_fills.append(fill)
+
+
+func _build_wave(root: Control) -> void:
+	var box: VBoxContainer = _panel(root, Control.PRESET_CENTER_TOP)
+	_wave = _label(box, "", TEXT, 18)

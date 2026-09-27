@@ -508,7 +508,9 @@ func _acceptance_run(weapon: bool, flow: bool = true) -> Dictionary:
 	spawner.pack_spawned.connect(func(_id: StringName, slots: Array[int]) -> void:
 		for s in slots:
 			_track_spawn(s, taln.toauma.tuning.notice_hunter_type, stats))
-	swarm.enemy_died.connect(func(_id: StringName, _at: Vector3) -> void: stats.killed += 1)
+	swarm.enemy_died.connect(func(_id: StringName, _at: Vector3, rewarded: bool) -> void:
+		if rewarded:
+			stats.killed += 1)
 	spawner.paused = false
 	for at: Vector3 in [NORTH_OF_WALL, PLATEAU_TOP + Vector3.UP * 0.1]:
 		await _place_taln(at)

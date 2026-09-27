@@ -256,7 +256,7 @@ func _fresh_swarm(capacity: int = 800, chase: bool = true) -> void:
 	contacts.clear()
 	deaths.clear()
 	swarm.taln_contacted.connect(func(damage: float, type: int) -> void: contacts.append([tick, damage, type]))
-	swarm.enemy_died.connect(func(id: StringName, at: Vector3) -> void: deaths.append([id, at]))
+	swarm.enemy_died.connect(func(id: StringName, at: Vector3, _rewarded: bool) -> void: deaths.append([id, at]))
 
 
 func _place_taln(at: Vector3) -> void:
@@ -423,7 +423,7 @@ func _check_damage() -> void:
 	hits = swarm.apply_damage_in_radius(center, 1.0, 7.0, Damage.Type.KINETIC)
 	var again: int = swarm.apply_damage_in_radius(center, 1.0, 7.0, Damage.Type.KINETIC)
 	await _ticks(4)
-	_check("Enemies at 0 HP die on the next step with enemy_died(type_id, position)",
+	_check("Enemies at 0 HP die on the next step with enemy_died(type_id, position, rewarded)",
 			hits == 2 and again == 0 and deaths.size() == 2 and deaths[0][0] == &"ash_walker"
 			and _flat(deaths[0][1] - at_a).length() < 0.01 and swarm.get_alive_count() == 1,
 			"%d hit, then %d (already dead), %d died, alive %d" % [hits, again, deaths.size(), swarm.get_alive_count()])
@@ -542,7 +542,7 @@ func _fresh_station() -> void:
 	taln.loadout.process_mode = Node.PROCESS_MODE_DISABLED
 	contacts.clear()
 	deaths.clear()
-	station_swarm.enemy_died.connect(func(id: StringName, at: Vector3) -> void: deaths.append([id, at]))
+	station_swarm.enemy_died.connect(func(id: StringName, at: Vector3, _rewarded: bool) -> void: deaths.append([id, at]))
 	await ground.ground_changed
 	await _ticks(1)
 
