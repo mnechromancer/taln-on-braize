@@ -13,6 +13,10 @@ const TARGET_GROSS := 1450.0
 const TARGET_NET := 940.0
 const TARGET_LEVELS := 10.0
 const TARGET_KILLS_PER_MIN := 100.0
+## Spec §3.2: one fill per ~3 min for a median player; ~3 per full station
+## (waves, rooms, breaker) and ~9 per cycle. A waves-only run is shorter.
+const FILL_SECONDS := 180.0
+const TARGET_FILLS_PER_STATION := 3.0
 
 var seeds: Array[int] = [1, 2, 3]
 ## --level-first: the bot variant that won't cast Settle below the next level cost.
@@ -57,6 +61,7 @@ func _run_station(seed: int) -> Dictionary:
 	bot.camera_rig = station.get_node("CameraRig")
 	bot.menu = station.get_node("LevelUpMenu")
 	bot.well = well
+	bot.catalysis = station.get_node("Catalysis")
 	bot.level_first = level_first
 	station.add_child(bot)
 	await (station.get_node("StationGround") as StationGround).ground_changed
@@ -89,6 +94,8 @@ func _run_station(seed: int) -> Dictionary:
 		"depletions": depletions[0],
 		"motes_lost": station.motes_lost,
 		"strain": taln.toauma.strain,
+		"fills": (station.get_node("Catalysis") as Catalysis).history.map(func(h: Dictionary) -> String: return h.choice),
+		"agony": taln.agony.gained_by_source.duplicate(),
 		"bot": {"casts": bot.casts, "draws": bot.draws, "invests": bot.invests, "pool_s": bot.pool_seconds},
 	}
 	station.queue_free()
@@ -111,7 +118,7 @@ func _report(runs: Array[Dictionary]) -> void:
 	print("Economy bot%s: station 1 (v = 1), nine waves, %d seed(s)" % [" (level-first variant)" if level_first else "",
 			runs.size()])
 	var sources: Array[StringName] = [&"kill", &"elite", &"ambient", &"pool", &"draw"]
-	var totals: Dictionary = {"gross": 0.0, "levels": 0.0, "kills_pm": 0.0, "level_spend": 0.0, "surge": 0.0}
+	var totals: Dictionary = {"gross": 0.0, "levels": 0.0, "kills_pm": 0.0, "level_spend": 0.0, "surge": 0.0, "fills": 0.0}
 	for run in runs:
 		var income: Dictionary = run.income
 		var gross: float = 0.0
@@ -133,6 +140,12 @@ func _report(runs: Array[Dictionary]) -> void:
 			times.append("%.0fs:%s" % [level[0], String(level[2]).left(6)])
 		print("  level-ups at %s" % ", ".join(times))
 		print("  bot: %d Settles, %d Draws, %.0f s standing in pools" % [run.bot.casts, run.bot.draws, run.bot.pool_s])
+		var agony_parts: Array[String] = []
+		for source: StringName in run.agony:
+			agony_parts.append("%s %.0f" % [source, run.agony[source]])
+		print("  Agony fills %d: %s; Agony gained by source: %s" % [run.fills.size(), ", ".join(run.fills),
+				", ".join(agony_parts)])
+		totals.fills += run.fills.size()
 		totals.gross += gross
 		totals.levels += run.levels.size()
 		totals.kills_pm += run.kills / minutes
@@ -147,6 +160,10 @@ func _report(runs: Array[Dictionary]) -> void:
 	print("  level-ups     %.1f vs ~%.0f  (%+.0f%%)" % [totals.levels / n, TARGET_LEVELS, _pct(totals.levels / n, TARGET_LEVELS)])
 	print("  kill rate     %.0f/min vs ~%.0f/min  (%+.0f%%)" % [totals.kills_pm / n, TARGET_KILLS_PER_MIN,
 			_pct(totals.kills_pm / n, TARGET_KILLS_PER_MIN)])
+	var paced: float = runs[0].seconds / FILL_SECONDS
+	print("  Agony fills   %.1f vs ~%.0f per full station (%+.0f%%), or %.2f at one per ~3 min over these %.0f s of waves (%+.0f%%)"
+			% [totals.fills / n, TARGET_FILLS_PER_STATION, _pct(totals.fills / n, TARGET_FILLS_PER_STATION), paced,
+			runs[0].seconds, _pct(totals.fills / n, paced)])
 	print("  Surge share of spending %.0f%% (spec assumes ~35%% of income on Surges)" % (100.0 * totals.surge
 			/ maxf(totals.surge + totals.level_spend, 1.0)))
 	var file := FileAccess.open("user://bot_report.json", FileAccess.WRITE)

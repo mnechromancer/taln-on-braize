@@ -950,12 +950,15 @@ func _check_input_table() -> void:
 		var names: Array[String] = _event_names(action) if InputMap.has_action(action) else ([] as Array[String])
 		if names != Array(expected[action], TYPE_STRING, &"", null):
 			wrong.append("%s = %s" % [action, names])
+	# Pad A was held back for Catalyze; since P2-06 it's bound to exactly that
+	# (Welcome and committing a catalyst) and nothing else.
 	var a_bound: Array[String] = []
 	for action: StringName in InputMap.get_actions():
-		if not String(action).begins_with("ui_") and _event_names(action).has("pad %d" % JOY_BUTTON_A):
+		if not String(action).begins_with("ui_") and _event_names(action).has("pad %d" % JOY_BUTTON_A) \
+				and not [&"welcome", &"catalyze_commit"].has(action):
 			a_bound.append(action)
-	_check("Inputs: Surge 1 LMB/RT, Surge 2 RMB/LT, Surge 3 Q/Y, Draw E/X; pad A unbound", wrong.is_empty()
-			and a_bound.is_empty(), "mismatched %s, on pad A %s" % [wrong, a_bound])
+	_check("Inputs: Surge 1 LMB/RT, Surge 2 RMB/LT, Surge 3 Q/Y, Draw E/X; pad A only on Welcome and Catalyze", wrong.is_empty()
+			and a_bound.is_empty(), "mismatched %s, other actions on pad A %s" % [wrong, a_bound])
 
 
 func _check_input_triggers() -> void:

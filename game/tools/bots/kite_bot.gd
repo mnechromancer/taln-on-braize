@@ -7,7 +7,9 @@ extends Node
 ## - casts Settle whenever it's ready and something is in range, turning the
 ##   camera toward the nearest enemy first (Surges aim camera-forward);
 ## - Draws whenever Draw is off cooldown while Strain < draw_strain_limit;
-## - stands Anchored in a pool when no enemy is within safe_radius.
+## - stands Anchored in a pool when no enemy is within safe_radius;
+## - at a Welcome the Agony prompt, Welcomes every welcome_every-th prompt
+##   (Banks the rest) and then holds A on the first (cheapest) catalyst.
 ## These are bot habits, not gameplay numbers, so they live here as exports.
 ## Add it as a child of a station, with the station's nodes set.
 
@@ -17,6 +19,8 @@ extends Node
 @export var camera_rig: CameraRig
 @export var menu: LevelUpMenu
 @export var well: Well
+## Optional: without it the bot leaves every prompt to time out (a bank).
+@export var catalysis: Catalysis
 
 ## Keep this far from the swarm's centroid while kiting.
 @export var kite_radius: float = 11.0
@@ -36,14 +40,18 @@ extends Node
 ## Variant, off by default (the handoff's bot casts whenever Settle is
 ## ready): cast only if the next level stays affordable after paying for it.
 @export var level_first: bool = false
+## Welcome every Nth prompt, Bank the others (0: always Bank).
+@export var welcome_every: int = 2
 
 ## What the bot did, for the report.
 var invests: int = 0
 var casts: int = 0
 var draws: int = 0
 var pool_seconds: float = 0.0
+var prompts: int = 0
 
 var _pressed: Array[StringName] = []
+var _answered: bool = false
 
 
 func _ready() -> void:
@@ -51,7 +59,33 @@ func _ready() -> void:
 	process_physics_priority = -10  # Inputs land before Taln reads them.
 
 
+## Lets go of everything, so nothing stays held after the bot is gone.
+func _exit_tree() -> void:
+	_release_taps()
+	for action: StringName in [&"move_left", &"move_right", &"move_forward", &"move_back", &"catalyze_commit"]:
+		Input.action_release(action)
+
+
+func _process(_delta: float) -> void:
+	# The windows slow physics down, so answer them every frame.
+	if catalysis == null or not catalysis.is_open():
+		Input.action_release(&"catalyze_commit")
+		_answered = false
+		return
+	_release_taps()
+	_steer(Vector3.ZERO)
+	if catalysis.state == Catalysis.State.PROMPT:
+		if not _answered:
+			_answered = true
+			prompts += 1
+			_tap(&"welcome" if welcome_every > 0 and prompts % welcome_every == 0 else &"bank")
+	else:
+		Input.action_press(&"catalyze_commit")
+
+
 func _physics_process(delta: float) -> void:
+	if catalysis and catalysis.is_open():
+		return
 	_release_taps()
 	if menu.is_open:
 		# Take the first offer as soon as the menu accepts picks.

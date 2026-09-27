@@ -19,6 +19,9 @@ var pitch_deg: float:
 	get:
 		return _pitch_deg
 
+## While set (a menu or window wants the mouse) a click doesn't recapture it.
+var capture_locked: bool = false
+
 var _pitch_deg: float = 0.0
 var _distance: float = 0.0
 var _trauma: float = 0.0
@@ -59,7 +62,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventMouseButton:
 		var button: InputEventMouseButton = event
 		if button.pressed and button.button_index == MOUSE_BUTTON_LEFT \
-				and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+				and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED and not capture_locked:
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 			get_viewport().set_input_as_handled()
 		elif event.is_action_pressed("cam_zoom_in_step"):

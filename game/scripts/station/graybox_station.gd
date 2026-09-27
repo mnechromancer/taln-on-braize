@@ -31,9 +31,12 @@ var motes_lost: float = 0.0
 @onready var _spawner: SpawnDirector = $SpawnDirector
 @onready var _context: StationContext = $StationContext
 @onready var _motes: MoteServer = $MoteServer
+@onready var _catalysis: Catalysis = $Catalysis
 
 
 func _ready() -> void:
+	var world: WorldEnvironment = $WorldEnvironment
+	world.environment = world.environment.duplicate()
 	_taln.shoulder.blocked.connect(_on_shoulder_blocked)
 
 	_swarm.target_move_speed = _taln.tuning.move_speed
@@ -45,6 +48,8 @@ func _ready() -> void:
 	_motes.mote_collected.connect(_on_mote_collected)
 	_motes.mote_lost.connect(func(value: float, _tag: int) -> void: motes_lost += value)
 	_taln.investiture.station = _context
+	_taln.agony.swarm = _swarm
+	(_taln.get_node("AgonyBody") as AgonyBody).watch(_catalysis)
 	_spawner.station_index = _context.station_index
 	_context.station_changed.connect(func(index: int) -> void: _spawner.station_index = index)
 	_ground.ground_changed.connect(_on_ground_changed)

@@ -17,10 +17,18 @@ blade_glow = Color(0.8509804, 0.64705884, 0.35686275, 1)
 cracks_lift = 0.02
 cracks_fade_time = 0.4
 fan_segments = 16
+cataclysm_core = Color(0.8509804, 0.64705884, 0.35686275, 1)
+cataclysm_rim = Color(1, 0.5411765, 0.23921569, 1)
+cataclysm_flash_time = 0.6
+cataclysm_segments = 48
 
 [node name="Reticle" type="MeshInstance3D" parent="."]
 cast_shadow = 0
 
 [node name="Cracks" type="MeshInstance3D" parent="."]
+cast_shadow = 0
+material_override = SubResource("Mat_cracks")
+
+[node name="CataclysmCracks" type="MeshInstance3D" parent="."]
 cast_shadow = 0
 material_override = SubResource("Mat_cracks")

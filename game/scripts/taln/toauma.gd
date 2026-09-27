@@ -47,7 +47,7 @@ func _physics_process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("draw"):
+	if event.is_action_pressed("draw") and not _taln.control_locked:
 		draw()
 		get_viewport().set_input_as_handled()
 
@@ -165,7 +165,8 @@ func _note(effect: Effect, is_draw: bool) -> void:
 func _apply(effect: Effect) -> void:
 	match effect:
 		Effect.BURN:
-			_taln.health.damage(_taln.tuning.max_health * tuning.burn_fraction, Damage.Type.VOID)
+			# Burn ignores invulnerability (P2-06 ruling): no window can cancel its cost.
+			_taln.health.damage(_taln.tuning.max_health * tuning.burn_fraction, Damage.Type.VOID, true)
 		Effect.LURCH:
 			var swarm: SwarmServer = _taln.loadout.swarm
 			if swarm:

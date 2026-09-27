@@ -14,6 +14,10 @@
 [ext_resource type="Resource" path="res://data/tuning/toauma_tuning.tres" id="12_toauma_tune"]
 [ext_resource type="Script" path="res://scripts/taln/toauma_gem.gd" id="13_gem"]
 [ext_resource type="Script" path="res://scripts/taln/leveling.gd" id="14_leveling"]
+[ext_resource type="Script" path="res://scripts/agony/agony_meter.gd" id="15_agony"]
+[ext_resource type="Resource" path="res://data/tuning/agony_tuning.tres" id="16_agony_tune"]
+[ext_resource type="Script" path="res://scripts/agony/agony_body.gd" id="17_agony_body"]
+[ext_resource type="Shader" path="res://shaders/agony_vignette.gdshader" id="18_vignette"]
 
 [sub_resource type="CapsuleShape3D" id="Shape_body"]
 radius = 0.45
@@ -51,6 +55,9 @@ bottom_radius = 0.9
 height = 0.02
 radial_segments = 32
 rings = 0
+
+[sub_resource type="ShaderMaterial" id="Mat_vignette"]
+shader = ExtResource("18_vignette")
 
 [sub_resource type="StandardMaterial3D" id="Mat_fracture"]
 transparency = 1
@@ -123,6 +130,46 @@ tuning = ExtResource("10_loadout_tune")
 [node name="Leveling" type="Node" parent="."]
 script = ExtResource("14_leveling")
 tuning = ExtResource("8_inv_tune")
+
+[node name="AgonyMeter" type="Node" parent="."]
+script = ExtResource("15_agony")
+tuning = ExtResource("16_agony_tune")
+
+[node name="AgonyRing" type="MeshInstance3D" parent="."]
+top_level = true
+visible = false
+cast_shadow = 0
+
+[node name="AgonyVignette" type="CanvasLayer" parent="."]
+layer = 4
+
+[node name="Vignette" type="ColorRect" parent="AgonyVignette"]
+visible = false
+material = SubResource("Mat_vignette")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="AgonyBody" type="Node" parent="." node_paths=PackedStringArray("meter", "body", "ring", "vignette")]
+script = ExtResource("17_agony_body")
+meter = NodePath("../AgonyMeter")
+body = NodePath("../Body")
+ring = NodePath("../AgonyRing")
+vignette = NodePath("../AgonyVignette/Vignette")
+ember_low = Color(0.8784314, 0.34509805, 0.12156863, 1)
+ember_high = Color(1, 0.5411765, 0.23921569, 1)
+step_energy = Array[float]([0.0, 0.1, 0.35, 1.1, 2.6])
+pulse_rate = 0.6
+pulse_depth = 0.35
+shimmer_depth = 0.25
+full_saturation = 0.55
+charge_time = 0.4
+charge_energy = 6.0
+pull_time = 0.3
+ring_radius = 2.4
 
 [node name="Toauma" type="Node" parent="."]
 script = ExtResource("11_toauma")

@@ -8,6 +8,11 @@ extends SurgeBehavior
 ## through the Blade.
 ##
 ## level_params keys: damage, root_duration (s), cone_deg (full width), range (m).
+##
+## Catalyst (Lesser). Its Cataclysm (cataclysm_params: radius, damage,
+## root_duration, cone_deg; placeholders) settles the ground all around Taln: Kinetic
+## damage and a root in a full circle. The cracks flash in Stoneward ochre
+## with an Agony rim and fade fast, so they never hide telegraphs for long.
 
 @export_group("Reticle")
 @export var reticle_color: Color = Color(1.0, 1.0, 1.0, 0.0)
@@ -27,6 +32,14 @@ extends SurgeBehavior
 
 @export_range(2, 64, 1) var fan_segments: int = 16
 
+@export_group("Cataclysm")
+@export var cataclysm_core: Color = Color.BLACK
+@export var cataclysm_rim: Color = Color.BLACK
+@export_range(0.0, 2.0, 0.01, "suffix:s") var cataclysm_flash_time: float = 0.0
+@export_range(4, 128, 1) var cataclysm_segments: int = 48
+
+var cataclysm_left: float = 0.0
+
 ## Seconds left on the current cracked-ground visual.
 var cracks_left: float = 0.0
 ## The reticle's current yaw on the ground (atan2(x, z) of its direction).
@@ -35,6 +48,8 @@ var reticle_yaw: float = 0.0
 @onready var _reticle: MeshInstance3D = $Reticle
 @onready var _cracks: MeshInstance3D = $Cracks
 @onready var _cracks_material: ShaderMaterial = (_cracks.material_override as ShaderMaterial).duplicate()
+@onready var _cataclysm: MeshInstance3D = $CataclysmCracks
+@onready var _cataclysm_material: ShaderMaterial = (_cataclysm.material_override as ShaderMaterial).duplicate()
 
 
 func _ready() -> void:
@@ -52,10 +67,40 @@ func _ready() -> void:
 	_reticle.material_override = material
 	_build_meshes()
 	level_changed.connect(func(_level: int) -> void: _build_meshes())
+	_cataclysm.top_level = true
+	_cataclysm.visible = false
+	_cataclysm.material_override = _cataclysm_material
+	if not skill.cataclysm_params.is_empty():
+		_cataclysm.mesh = build_fan_mesh(skill.cataclysm_params.cone_deg, skill.cataclysm_params.radius,
+				cataclysm_segments)
+
+
+func cataclysm() -> int:
+	var p: Dictionary = skill.cataclysm_params
+	var origin: Vector3 = taln.global_position
+	var swarm: SwarmServer = taln.loadout.swarm
+	var hits: int = 0
+	if swarm:
+		hits = swarm.apply_damage_in_radius(origin, p.radius, p.damage, Damage.Type.KINETIC)
+		swarm.apply_root_in_cone(origin, Vector3.FORWARD, p.cone_deg, p.radius, p.root_duration)
+	place_on_ground(_cataclysm, origin, Vector3.FORWARD, cracks_lift)
+	_cataclysm.reset_physics_interpolation()
+	_cataclysm_material.set_shader_parameter(&"core_color", cataclysm_core)
+	_cataclysm_material.set_shader_parameter(&"rim_color", cataclysm_rim)
+	_cataclysm_material.set_shader_parameter(&"flicker", 0.0)
+	_cataclysm_material.set_shader_parameter(&"seed", randf() * 100.0)
+	_cataclysm_material.set_shader_parameter(&"fade", 1.0)
+	_cataclysm.visible = cataclysm_flash_time > 0.0
+	cataclysm_left = cataclysm_flash_time
+	return hits
 
 
 func _physics_process(delta: float) -> void:
 	super(delta)
+	if cataclysm_left > 0.0:
+		cataclysm_left = maxf(cataclysm_left - delta, 0.0)
+		_cataclysm.visible = cataclysm_left > 0.0
+		_cataclysm_material.set_shader_parameter(&"fade", cataclysm_left / cataclysm_flash_time)
 	if cracks_left > 0.0:
 		cracks_left = maxf(cracks_left - delta, 0.0)
 		_cracks.visible = cracks_left > 0.0

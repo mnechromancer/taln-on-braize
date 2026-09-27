@@ -24,6 +24,12 @@ func set_level(value: int) -> void:
 	level_changed.emit(level)
 
 
+## Override: the Cataclysm this catalyst fires (spec §4), at Taln. Returns
+## how many enemies it hit.
+func cataclysm() -> int:
+	return 0
+
+
 ## A flat fan in the XZ plane pointing along +Z, cone_deg wide and radius
 ## long. UV.x runs across the fan (0 to 1), UV.y out from the apex.
 static func build_fan_mesh(cone_deg: float, radius: float, segments: int) -> ArrayMesh:
@@ -42,6 +48,25 @@ static func build_fan_mesh(cone_deg: float, radius: float, segments: int) -> Arr
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = vertices
 	arrays[Mesh.ARRAY_TEX_UV] = uvs
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	return mesh
+
+
+## A flat ring in the XZ plane from inner to outer radius (1 m outer: scale it).
+static func build_ring_mesh(inner: float, outer: float, segments: int) -> ArrayMesh:
+	var vertices := PackedVector3Array()
+	for k in segments:
+		var a0: float = TAU * k / segments
+		var a1: float = TAU * (k + 1) / segments
+		var i0 := Vector3(sin(a0), 0.0, cos(a0)) * inner
+		var i1 := Vector3(sin(a1), 0.0, cos(a1)) * inner
+		var o0 := Vector3(sin(a0), 0.0, cos(a0)) * outer
+		var o1 := Vector3(sin(a1), 0.0, cos(a1)) * outer
+		vertices.append_array([i0, o1, o0, i0, i1, o1])
+	var arrays: Array = []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = vertices
 	var mesh := ArrayMesh.new()
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	return mesh

@@ -13,3 +13,8 @@ extends Resource
 @export_range(1, 64, 1) var surge_soft_lock_sectors: int = 0
 ## Owned at level 1 when a cycle starts, in this order.
 @export var starting_skills: Array[SkillDef] = []
+## Owned at level 1 every cycle without taking a slot (spec §4.4).
+@export var innate_skills: Array[SkillDef] = []
+## The Heraldic cost-reduction skill: its level_params hold catalyst costs in
+## ninths by tier ("lesser", "greater", "grand") (spec §4.3–4.4).
+@export var heraldic_skill: SkillDef

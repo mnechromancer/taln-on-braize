@@ -25,6 +25,9 @@ enum CatalystTier { NONE, LESSER, GREATER, GRAND }
 @export var catalyst_tier: CatalystTier = CatalystTier.NONE
 ## One Dictionary per level; index 0 is level 1. Keys are up to the behavior.
 @export var level_params: Array[Dictionary] = []
+## The Cataclysm this catalyst fires when committed (placeholder magnitudes
+## until the Content List); keys are up to the behavior.
+@export var cataclysm_params: Dictionary = {}
 ## Instantiated as a child of Taln's Loadout. Its root must be a SkillBehavior.
 @export var behavior: PackedScene
 

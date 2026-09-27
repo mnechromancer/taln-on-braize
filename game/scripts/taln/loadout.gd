@@ -23,6 +23,8 @@ var honorblade_held: bool = false
 
 ## Owned skills in the order they were added. Each takes one slot.
 var slots: Array[SkillDef] = []
+## Owned skills that take no slot (the Heraldic skill).
+var innate: Array[SkillDef] = []
 ## One entry per binding; null where nothing is bound.
 var surge_bindings: Array[SkillDef] = []
 var _levels: Dictionary[StringName, int] = {}
@@ -38,7 +40,7 @@ func _ready() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	# A click that recaptures the mouse belongs to the camera, not a Surge.
-	if event is InputEventMouseButton and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+	if _taln.control_locked or (event is InputEventMouseButton and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED):
 		return
 	for index in mini(surge_bindings.size(), SURGE_ACTIONS.size()):
 		if event.is_action_pressed(SURGE_ACTIONS[index]):
@@ -52,14 +54,20 @@ func _unhandled_input(event: InputEvent) -> void:
 func _add_starting_skills() -> void:
 	for skill: SkillDef in tuning.starting_skills:
 		add_skill(skill)
+	for skill: SkillDef in tuning.innate_skills:
+		add_skill(skill, true)
 
 
 ## Adds skill at level 1 and binds it to the first free Surge binding if it's a
-## Surge. Returns false if it's already owned or every slot is taken.
-func add_skill(skill: SkillDef) -> bool:
-	if has_skill(skill.id) or is_full():
+## Surge. An innate skill takes no slot. Returns false if it's already owned
+## or every slot is taken.
+func add_skill(skill: SkillDef, is_innate: bool = false) -> bool:
+	if has_skill(skill.id) or (is_full() and not is_innate):
 		return false
-	slots.append(skill)
+	if is_innate:
+		innate.append(skill)
+	else:
+		slots.append(skill)
 	_levels[skill.id] = 1
 	var behavior: SkillBehavior = null
 	if skill.behavior:
@@ -83,9 +91,28 @@ func has_skill(id: StringName) -> bool:
 	return _levels.has(id)
 
 
-## Every owned skill.
+## Every owned skill, slotted then innate.
 func owned() -> Array[SkillDef]:
-	return slots.duplicate()
+	return slots + innate
+
+
+## Owned skills tagged as catalysts, cheapest tier first (spec §3.4 firing order).
+func catalysts() -> Array[SkillDef]:
+	var found: Array[SkillDef] = owned().filter(func(s: SkillDef) -> bool:
+		return s.catalyst_tier != SkillDef.CatalystTier.NONE)
+	found.sort_custom(func(a: SkillDef, b: SkillDef) -> bool: return a.catalyst_tier < b.catalyst_tier)
+	return found
+
+
+## A catalyst's cost in ninths at the Heraldic skill's current level (spec §4.4).
+func catalyst_cost(skill: SkillDef) -> int:
+	var heraldic: SkillDef = tuning.heraldic_skill
+	var key: String = SkillDef.CatalystTier.keys()[skill.catalyst_tier].to_lower()
+	var costs: Dictionary = heraldic.params_for(maxi(get_level(heraldic.id), 1))
+	if not costs.has(key):
+		push_error("%s has no %s cost; %s can't be committed." % [heraldic.id, key, skill.id])
+		return 999
+	return int(costs[key])
 
 
 ## The skill's cap this cycle: its meta cap (MetaState), clamped to the levels
@@ -116,7 +143,7 @@ func level_up(id: StringName) -> bool:
 
 
 func get_skill(id: StringName) -> SkillDef:
-	for skill: SkillDef in slots:
+	for skill: SkillDef in owned():
 		if skill.id == id:
 			return skill
 	return null

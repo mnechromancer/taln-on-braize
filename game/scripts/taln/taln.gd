@@ -17,12 +17,16 @@ enum Edge { NONE, CROSSABLE, WIDE_GAP, DROP }
 
 ## This frame's movement input, camera-relative on XZ, length 0–1.
 var move_direction: Vector3 = Vector3.ZERO
+## While set (the Welcome and Catalyze windows) Taln can still walk but can't
+## Shoulder, cast Surges or Draw.
+var control_locked: bool = false
 ## Walking-speed multipliers by source (e.g. Lurch); they multiply together.
 var _speed_multipliers: Dictionary[StringName, float] = {}
 
 @onready var health: Health = $Health
 @onready var investiture: Investiture = $Investiture
 @onready var leveling: Leveling = $Leveling
+@onready var agony: AgonyMeter = $AgonyMeter
 @onready var loadout: Loadout = $Loadout
 @onready var toauma: Toauma = $Toauma
 @onready var shoulder: Shoulder = $Shoulder
@@ -57,7 +61,7 @@ func _physics_process(delta: float) -> void:
 	fracture.update(global_position, Vector2(velocity.x, velocity.z).length(), delta)
 	move_direction = _read_move_direction()
 
-	if Input.is_action_just_pressed("shoulder"):
+	if Input.is_action_just_pressed("shoulder") and not control_locked:
 		var dir: Vector3 = move_direction if not move_direction.is_zero_approx() else -global_basis.z
 		shoulder.try_start(global_position, dir)
 	anchored.update(not move_direction.is_zero_approx() or shoulder.is_charging, delta)

@@ -10,6 +10,13 @@ display_name = "Breaking Stroke"
 kind = 0
 tree = 0
 tags = Array[StringName]([&"melee", &"kinetic"])
+catalyst_tier = 2
+; Cataclysm magnitudes are PLACEHOLDERS (P2-06 ruling): 9 m, 80 Kinetic, knockback force 12.
+cataclysm_params = {
+"damage": 80.0,
+"knockback": 12.0,
+"radius": 9.0
+}
 ; Levels 1-3 are the P2-03 values. Levels 4-9 are PLACEHOLDERS (P2-05 ruling): each parameter
 ; continues its L2->L3 step, interval floored at 0.5 s. The Content List replaces them.
 level_params = Array[Dictionary]([{

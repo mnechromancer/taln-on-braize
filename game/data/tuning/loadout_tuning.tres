@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://scripts/tuning/loadout_tuning.gd" id="1_loadout"]
 [ext_resource type="Resource" path="res://data/skills/breaking_stroke.tres" id="2_stroke"]
 [ext_resource type="Resource" path="res://data/skills/settle.tres" id="3_settle"]
+[ext_resource type="Resource" path="res://data/skills/bearer_of_agonies.tres" id="4_bearer"]
 
 [resource]
 script = ExtResource("1_loadout")
@@ -11,3 +12,5 @@ surge_bindings = 3
 surge_soft_lock_half_angle_deg = 15.0
 surge_soft_lock_sectors = 9
 starting_skills = Array[Resource]([ExtResource("2_stroke"), ExtResource("3_settle")])
+innate_skills = Array[Resource]([ExtResource("4_bearer")])
+heraldic_skill = ExtResource("4_bearer")

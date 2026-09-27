@@ -443,8 +443,9 @@ func _check_invest_pick() -> void:
 	var level_before: int = taln.loadout.get_level(offer[0].id) if not offer.is_empty() else 0
 	await _tap(&"pick_1")
 	var level_after: int = taln.loadout.get_level(offer[0].id) if not offer.is_empty() else 0
-	_check("Invest with C(0) held pauses the whole game and offers both owned skills below cap",
-			opened and offer.size() == 2 and texts.size() == 2 and texts[0].begins_with("1") and texts[1].begins_with("2"),
+	# Since P2-06 the innate Bearer of Agonies is offered too.
+	_check("Invest with C(0) held pauses the whole game and offers the owned skills below cap (up to 3)",
+			opened and offer.size() == 3 and texts.size() == 3 and texts[0].begins_with("1") and texts[2].begins_with("3"),
 			"paused %s; offered %s" % [paused or opened, texts])
 	_check("A pick inside the 0.2 s input delay is ignored", early, "still open after an early 1: %s" % early)
 	_check("Key 1 takes the first: spends C(0), n → 1, that skill +1 level, heals 9% of max Health, unpauses",
@@ -498,18 +499,20 @@ func _check_offer_weights() -> void:
 			stroke_first += 1
 	var share: float = float(stroke_first) / draws
 	single.offer_size = 3
-	var both: Array[SkillDef] = taln.leveling.offer()
-	_check("Offers weight 1 / level, without replacement (ruled): L1 vs L2 → 2/3 vs 1/3",
-			absf(share - 2.0 / 3.0) < 0.02 and both.size() == 2 and both[0] != both[1],
-			"Breaking Stroke (L1) offered first %.3f of %d; a 3-wide offer of 2 eligible holds each once" % [share, draws])
+	var all: Array[SkillDef] = taln.leveling.offer()
+	# Breaking Stroke L1, Settle L2, Bearer of Agonies L1 (P2-06): weights 1, 1/2, 1.
+	_check("Offers weight 1 / level, without replacement (ruled): L1, L2, L1 → 0.4 / 0.2 / 0.4",
+			absf(share - 0.4) < 0.02 and all.size() == 3 and all[0] != all[1] and all[1] != all[2] and all[0] != all[2],
+			"Breaking Stroke (L1) offered first %.3f of %d; a 3-wide offer of 3 eligible holds each once" % [share, draws])
 
 
 func _check_consolidate() -> void:
 	await _fresh()
-	for id: StringName in [&"breaking_stroke", &"settle"]:
+	for id: StringName in [&"breaking_stroke", &"settle", &"bearer_of_agonies"]:
 		while taln.loadout.level_up(id):
 			pass
-	var capped: bool = taln.loadout.get_level(&"breaking_stroke") == 3 and taln.loadout.get_level(&"settle") == 3
+	var capped: bool = taln.loadout.get_level(&"breaking_stroke") == 3 and taln.loadout.get_level(&"settle") == 3 \
+			and taln.loadout.get_level(&"bearer_of_agonies") == 2
 	taln.investiture.add(200.0, &"debug")
 	taln.health.set_invulnerable(&"checks", false)
 	taln.health.damage(100.0, Damage.Type.KINETIC)
@@ -519,7 +522,7 @@ func _check_consolidate() -> void:
 	var texts: Array[String] = menu.option_texts()
 	await _wait_real(menu.taln.leveling.tuning.menu_input_delay)
 	await _tap(&"pick_1")
-	_check("Every owned skill at its cap (3): only Consolidate — spends C(n), n + 1, heals 25%",
+	_check("Every owned skill at its cap (3; Bearer 2): only Consolidate — spends C(n), n + 1, heals 25%",
 			capped and texts.size() == 1 and texts[0].contains("Consolidate") and taln.investiture.current == 146.0
 			and taln.leveling.levels_taken == 1 and is_equal_approx(taln.health.current, hurt + 37.5),
 			"offer %s; held %.0f, n %d, Health %.1f → %.1f" % [texts, taln.investiture.current,

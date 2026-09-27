@@ -4,5 +4,17 @@
 
 [resource]
 script = ExtResource("1_agony")
+meter_max = 900.0
+per_ninth = 100.0
+damage_per_percent = 1.0
+endurance_rate = 1.0
+pressed_rate = 2.0
+breaker_rate = 1.0
 pressed_radius = 6.0
 pressed_min_enemies = 9
+window_time_scale = 0.1
+prompt_window = 6.0
+catalyze_window = 9.0
+commit_hold = 0.6
+budget_ninths = 9
+catalyze_full_pause = false

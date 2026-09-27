@@ -3,9 +3,11 @@ extends CanvasLayer
 ## The play HUD (Art Direction, UI/HUD): flat dark-stone panels at low
 ## opacity, no gradients or bevels, color only from the world's signal hues
 ## (Investiture in Honor hue). Separate from the F3 debug overlay. Shows
-## Health, held Investiture with the next level cost and a ready mark, the
-## Surge and Draw cooldowns, nine Strain pips and the wave. Read-only: it
-## polls the systems it shows every frame.
+## Health, the Agony meter (nine segments; during Catalyze the committed
+## cost shows as consumed notches), held Investiture with the next level cost
+## and a ready mark, the Surge and Draw cooldowns, nine Strain pips and the
+## wave, plus a brief notice when Agony banks. Read-only: it polls the systems
+## it shows every frame.
 
 const PANEL := Color("2a2825", 0.55)
 const TEXT := Color("a69e8f")
@@ -15,12 +17,19 @@ const STONEWARD := Color("d9a55b")
 const VOID_CORE := Color("6b3fa0")
 const VOID_RIM := Color("7fe3d6")
 const EMPTY := Color("0b0b0e", 0.7)
+const AGONY := Color("e0581f")
+const AGONY_LIT := Color("ff8a3d")
+const AGONY_SPENT := Color("e0581f", 0.3)
+const SEGMENT_SIZE := Vector2(26.0, 12.0)
 const MARGIN := 20.0
 const BAR_SIZE := Vector2(220.0, 10.0)
 const PIP_SIZE := Vector2(14.0, 14.0)
 
 @export var taln: Taln
 @export var spawner: SpawnDirector
+## For the committed notches and the banked notice; optional.
+@export var catalysis: Catalysis
+@export_range(0.0, 10.0, 0.1, "suffix:s") var notice_time: float = 2.5
 
 var _health_fill: ColorRect
 var _health_value: Label
@@ -35,10 +44,16 @@ var _draw_fill: ColorRect
 var _pips: Array[ColorRect] = []
 var _pip_fills: Array[Panel] = []
 var _wave: Label
+var _segments: Array[ColorRect] = []
+var _segment_fills: Array[ColorRect] = []
+var _notice: Label
+var _notice_left: float = 0.0
 
 
 func _ready() -> void:
 	layer = 5
+	# Read-only, so it keeps showing through full pauses (the full-pause Catalyze option).
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	var root := Control.new()
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -46,9 +61,16 @@ func _ready() -> void:
 	_build_status(root)
 	_build_abilities(root)
 	_build_wave(root)
+	if catalysis:
+		catalysis.banked.connect(func(first: bool) -> void:
+			_notice.text = UiText.NOTICE_UNLOCKED if first else UiText.NOTICE_BANKED
+			_notice_left = notice_time)
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	_show_agony()
+	_notice_left = maxf(_notice_left - delta / maxf(Engine.time_scale, 0.001), 0.0)
+	_notice.get_parent().get_parent().visible = _notice_left > 0.0
 	var health: Health = taln.health
 	var ratio: float = health.current / taln.tuning.max_health if taln.tuning.max_health > 0.0 else 0.0
 	_health_fill.size.x = BAR_SIZE.x * clampf(ratio, 0.0, 1.0)
@@ -71,6 +93,21 @@ func _process(_delta: float) -> void:
 		var f: float = clampf(toauma.strain - i, 0.0, 1.0)
 		_pip_fills[i].size.x = PIP_SIZE.x * f
 	_wave.text = UiText.WAVE % [spawner.wave + 1, spawner.tuning.waves]
+
+
+## Nine segments filling in Agony hue; the last full ones brighten. During
+## Catalyze the committed cost is shown consumed from the top of the meter.
+func _show_agony() -> void:
+	var meter: AgonyMeter = taln.agony
+	var per: float = meter.tuning.per_ninth
+	var spent: int = 0
+	if catalysis and catalysis.state == Catalysis.State.CATALYZE:
+		spent = meter.tuning.budget_ninths - catalysis.budget_left
+	for i in _segments.size():
+		var f: float = clampf((meter.value - i * per) / per, 0.0, 1.0)
+		_segment_fills[i].size.x = SEGMENT_SIZE.x * f
+		var consumed: bool = i >= _segments.size() - spent
+		_segment_fills[i].color = AGONY_SPENT if consumed else (AGONY_LIT if meter.is_locked else AGONY)
 
 
 func _show_timer(state: Label, fill: ColorRect, left: float, total: float) -> void:
@@ -148,6 +185,26 @@ func _build_status(root: Control) -> void:
 	_label(health, UiText.HEALTH, TEXT)
 	_health_fill = _bar(health, STONEWARD, BAR_SIZE)
 	_health_value = _label(health, "", TEXT)
+	var agony: HBoxContainer = _row(box)
+	_label(agony, UiText.AGONY, TEXT)
+	var meter := HBoxContainer.new()
+	meter.add_theme_constant_override(&"separation", 2)  # The notches between ninths.
+	meter.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	agony.add_child(meter)
+	for i in roundi(taln.agony.tuning.meter_max / taln.agony.tuning.per_ninth):
+		var segment := ColorRect.new()
+		segment.color = EMPTY
+		segment.custom_minimum_size = SEGMENT_SIZE
+		segment.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		segment.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		meter.add_child(segment)
+		var fill := ColorRect.new()
+		fill.color = AGONY
+		fill.size = Vector2(0.0, SEGMENT_SIZE.y)
+		fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		segment.add_child(fill)
+		_segments.append(segment)
+		_segment_fills.append(fill)
 	var inv: HBoxContainer = _row(box)
 	_label(inv, UiText.INVESTITURE, TEXT)
 	_investiture_value = _label(inv, "", HONOR, 24)
@@ -168,7 +225,7 @@ func _build_abilities(root: Control) -> void:
 	_draw_state = _label(draw, "", TEXT)
 	var strain: HBoxContainer = _row(box)
 	_label(strain, UiText.STRAIN, TEXT)
-	for i in 9:
+	for i in roundi(taln.toauma.tuning.strain_max):
 		var pip := ColorRect.new()
 		pip.color = EMPTY
 		pip.custom_minimum_size = PIP_SIZE
@@ -191,3 +248,6 @@ func _build_abilities(root: Control) -> void:
 func _build_wave(root: Control) -> void:
 	var box: VBoxContainer = _panel(root, Control.PRESET_CENTER_TOP)
 	_wave = _label(box, "", TEXT, 18)
+	var notice: VBoxContainer = _panel(root, Control.PRESET_CENTER_TOP)
+	(notice.get_parent() as Control).position.y += 56.0
+	_notice = _label(notice, "", AGONY_LIT, 18)

@@ -27,11 +27,14 @@ func _physics_process(delta: float) -> void:
 		_set_current(minf(current + tuning.health_regen * delta, tuning.max_health))
 
 
-## Applies mitigated damage and returns the amount actually taken.
-func damage(raw: float, type: Damage.Type) -> float:
-	if raw <= 0.0 or is_invulnerable():
+## Applies mitigated damage and returns the amount actually taken. Sources
+## with ignore_invulnerability (Voidlight Burn) land through Shoulder or
+## post-hit invulnerability, so nothing can cancel their cost.
+func damage(raw: float, type: Damage.Type, ignore_invulnerability: bool = false) -> float:
+	if raw <= 0.0 or (is_invulnerable() and not ignore_invulnerability):
 		return 0.0
-	var taken: float = raw * 100.0 / (100.0 + get_armor())
+	# Past 0 nothing more is lost (so Agony counts only real Health).
+	var taken: float = minf(raw * 100.0 / (100.0 + get_armor()), current)
 	_hit_invulnerable_left = tuning.hit_invulnerability_time
 	_set_current(current - taken)
 	damaged.emit(taken, type)

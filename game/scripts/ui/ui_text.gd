@@ -17,6 +17,20 @@ const READY := "ready"
 const SECONDS := "%.1f s"
 const COST := "%d"
 
+const AGONY := "Agony"
+const NOTICE_BANKED := "Agony banked"
+const NOTICE_UNLOCKED := "Agony banked. Catalysis unlocked"
+
+# Welcome the Agony and Catalyze
+const WELCOME_TITLE := "Welcome the Agony"
+const WELCOME_OPTION := "Welcome  [1 / A]"
+const BANK_OPTION := "Bank  [2 / B]"
+const CATALYZE_TITLE := "Catalyze"
+const CATALYZE_BUDGET := "%d of %d ninths left"
+const CATALYZE_ICON := "%s   %d"
+const CATALYZE_HINT := "Hold to commit: mouse, or D-pad and A"
+const RELEASE := "Release  [R / Y]"
+
 # Invest menu
 const INVEST_TITLE := "Invest"
 const INVEST_COST := "Cost %d Investiture"

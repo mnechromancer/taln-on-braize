@@ -1,0 +1,50 @@
+[gd_resource type="Resource" script_class="SkillDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/skill_def.gd" id="1_skill"]
+
+[resource]
+script = ExtResource("1_skill")
+id = &"bearer_of_agonies"
+display_name = "Bearer of Agonies"
+kind = 2
+tree = 1
+tags = Array[StringName]([&"heraldic"])
+; Catalyst costs in ninths by level (spec §4.4). Innate: owned every cycle
+; without a slot; its cap comes from MetaState (starting 2).
+level_params = Array[Dictionary]([{
+"greater": 7,
+"grand": 9,
+"lesser": 5
+}, {
+"greater": 7,
+"grand": 8,
+"lesser": 5
+}, {
+"greater": 6,
+"grand": 8,
+"lesser": 4
+}, {
+"greater": 6,
+"grand": 7,
+"lesser": 4
+}, {
+"greater": 5,
+"grand": 7,
+"lesser": 4
+}, {
+"greater": 5,
+"grand": 6,
+"lesser": 3
+}, {
+"greater": 4,
+"grand": 6,
+"lesser": 3
+}, {
+"greater": 4,
+"grand": 5,
+"lesser": 3
+}, {
+"greater": 4,
+"grand": 5,
+"lesser": 2
+}])

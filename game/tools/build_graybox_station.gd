@@ -294,17 +294,32 @@ func _add_taln_and_camera(spawn: Vector3) -> void:
 	well.set("spawner", spawner)
 	well.set("ground", _root.get_node("StationGround"))
 	_own(well, _root)
+	# P2-06: the Welcome the Agony / Catalyze flow and its UI.
+	var catalysis := Node.new()
+	catalysis.name = "Catalysis"
+	catalysis.set_script(load("res://scripts/agony/catalysis.gd"))
+	catalysis.set("tuning", load("res://data/tuning/agony_tuning.tres"))
+	catalysis.set("taln", taln)
+	catalysis.set("camera_rig", rig)
+	_own(catalysis, _root)
 	var hud := CanvasLayer.new()
 	hud.name = "Hud"
 	hud.set_script(load("res://scripts/ui/hud.gd"))
 	hud.set("taln", taln)
 	hud.set("spawner", spawner)
+	hud.set("catalysis", catalysis)
 	_own(hud, _root)
 	var menu := CanvasLayer.new()
 	menu.name = "LevelUpMenu"
 	menu.set_script(load("res://scripts/ui/level_up_menu.gd"))
 	menu.set("taln", taln)
 	_own(menu, _root)
+	catalysis.set("menu", menu)
+	var catalyze_ui := CanvasLayer.new()
+	catalyze_ui.name = "CatalyzeUi"
+	catalyze_ui.set_script(load("res://scripts/ui/catalyze_ui.gd"))
+	catalyze_ui.set("catalysis", catalysis)
+	_own(catalyze_ui, _root)
 
 	var overlay: Node = (load("res://scenes/debug_overlay.tscn") as PackedScene).instantiate()
 	overlay.set("taln", taln)
