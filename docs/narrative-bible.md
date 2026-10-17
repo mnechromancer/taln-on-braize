@@ -1,7 +1,7 @@
 # Unbroken: Taln on Braize
-### Narrative Bible — v1.1 (Approved)
+### Narrative Bible — v1.2 (v1.1 approved; v1.2 clarifications pending approval with Design Doc v2.0)
 
-*Phase 1 deliverable. Consolidates canon, game-original fiction, and the boundary between them. Design Doc v1.0 is the parent document; where the two disagree, the Design Doc governs mechanics and this document governs fiction. v1.1 (2026-09-25): peakspren name decided (§5.2, §10 decision 3).*
+*Phase 1 deliverable. Consolidates canon, game-original fiction, and the boundary between them. Design Doc v1.0 is the parent document; where the two disagree, the Design Doc governs mechanics and this document governs fiction. v1.1 (2026-09-25): peakspren name decided (§5.2, §10 decision 3). v1.2 (2026-10-17): clarifications for Design Doc v2.0 (boons as Sja-Anat's residue, §4.5; stations on one persistent Braize, §3.4). No decision changes.*
 
 ---
 
@@ -121,6 +121,8 @@ Areas are not "levels." They are **stations of the cycle** — the Fused rotate 
 
 Each area should answer one question: **what does this place take from him?** Sleep, footing, memory, silence, the ability to see his own hands. That answer drives its hazard design and its breaker.
 
+**Clarification (v1.2, for Design Doc v2.0):** the nine stations are regions of **one persistent Braize**, not separate arenas. A cycle is the Fused dropping him at a Tier I station; he holds his way deeper, one station per tier, by whatever routes he can reach. The map does not change between cycles because Braize is one place, and he has had four and a half thousand years to learn it. Routes he could not take before (gates opened through meta-progression) read as ground he has finally worked out how to cross, not as new places appearing. **[INVENTED]**
+
 ---
 
 ## 4. Sja-Anat
@@ -160,6 +162,10 @@ But there is a second motive the game should carry, because it is more interesti
 - **She is never on-screen in the present.** Only in the opening, and in Agony-visions and fragments. If she appears, it is in reflection — a gem's facet, a wet stone, the flat of a blade.
 - She is not a villain and not an ally. She is a third party with her own war.
 - Never make her warm. Her care for her children is real and reads as ownership.
+
+### 4.5 Boons are her residue, not her voice (v1.2, for Design Doc v2.0)
+
+Design Doc v2.0 adds Hades-style boons. **They are not contact, and decision 5 stands.** Boons are bargains offered by the two things she Enlightened and left in him: **Toa'uma** (Voidlight bargains, in his voice) and **the culture** (Ashynite bargains, wordless, a boon paired with what it needs, §6.4). Her hand shows in what they offer: the shape of the Enlightening, a reflection in a facet (§4.4). She never speaks, is never addressed, and never answers. If a boon's text sounds like her, it should be Toa'uma *unreliable about who is speaking* (§5.2), not her. **[INVENTED]**
 
 ---
 
@@ -302,7 +308,7 @@ All six resolved. Section references are where each ruling is written into the d
 | 2 | Design Doc §4 "distant pinpoint sun" | Struck; no sun, dark sky, light only from Investiture | §3.2 |
 | 3 | Peakspren character name | Toa'uma (full: Toa'uma'haliki'ka'amu'a), decided in Phase 2, 2026-09-25 | §5.2 |
 | 4 | Braize's nine-centricity, structural or decorative | Structural | §3.3 |
-| 5 | Does Sja-Anat ever make contact again in-game | No | §4.2 |
+| 5 | Does Sja-Anat ever make contact again in-game | No. v1.2: boons are her residue, not contact (§4.5) | §4.2, §4.5 |
 | 6 | How explicitly the ending gestures at Kholinar | Implicit only — no cutscene, no playable epilogue | §2.3 |
 
 ---

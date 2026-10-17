@@ -1,5 +1,5 @@
 # Unbroken: Taln on Braize
-### Core Systems Spec — v1.3 (v1.0–v1.2 approved; v1.3 rows in §15 for review at the Phase 2 gate)
+### Core Systems Spec — v1.4 (v1.0–v1.2 approved; v1.3 rows for review at the Phase 2 gate; v1.4 rows follow the Design Doc v2.0 draft, see §15)
 
 *Phase 2 deliverable. Parent documents: Design Doc v1.1 (governs mechanics intent), Narrative Bible v1.1 (governs fiction), Art Direction v1.1 (governs visuals). This document turns their intent into numbers, state machines and system boundaries that the prototype can be built against. Every number here is a **starting value for the prototype**, not a balance commitment; the Phase 4 Balancing doc supersedes them.*
 
@@ -11,7 +11,7 @@
 
 **In scope:** run structure and pacing; Investiture economy and leveling curve; Agony meter, Welcome the Agony, catalyst costs and Catalyze flow; Toa'uma (peakspren) risk model; health, damage, mitigation and Return (death); movement, stance and camera values; enemy scaling and spawn budget; technical architecture boundaries (Godot / GDScript / C++); performance and light budgets.
 
-**Out of scope (owned elsewhere):** individual skill/weapon/catalyst content and Cataclysm effects (Phase 4 Full Content List); final meta cap-raise curve (Phase 4 Meta-Progression Spec — §9 here is provisional); enemy roster and attack patterns (Phase 3 Enemy Design doc); data authoring format (Phase 3 Content Pipeline doc — §11.4 here defines only the fields systems depend on); Ashynite mechanics (Design Doc §9 backlog).
+**Out of scope (owned elsewhere):** individual skill/weapon/catalyst content and Cataclysm effects (Phase 4 Full Content List); final meta cap-raise curve (Phase 4 Meta-Progression Spec — §9 here is provisional); enemy roster and attack patterns (Phase 3 Enemy Design doc); data authoring format (Phase 3 Content Pipeline doc — §11.4 here defines only the fields systems depend on); Ashynite mechanics (Design Doc §9 backlog), except the disease core that Design Doc v2.0 pulls forward (§15 v1.4).
 
 **Units:** distance in meters (1 Godot unit = 1 m), time in seconds, speeds in m/s, rates per second unless stated.
 
@@ -20,6 +20,8 @@
 ## 1. Run Structure and Pacing
 
 ### 1.1 Hierarchy [PROPOSED]
+
+> **v1.4:** stations become the nine regions of one persistent map, and a cycle crosses one region per tier by route. §1.1–1.3 hold for the gray-box stand-in until P2-10 replaces them. See §15 v1.4 #4.
 
 | Level | Name | Definition |
 |---|---|---|
@@ -272,6 +274,8 @@ A Draw can't Misfire or Echo; those results are rerolled. An Overcharged Draw gr
 
 ### 6.3 Stance: Anchored [PROPOSED — Pillar 2]
 
+> **v1.4:** §6.3 and §6.4 move behind the Earthshaper Aspect. See §15 v1.4 #2.
+
 - **Enter:** no movement input for **0.6 s**.
 - **While Anchored:** +40 Armor; immune to knockback; Well-pool draw 4/s (§2.3); Stoneward skills may key off the state.
 - **Exit:** any movement input or a Shoulder charge. Re-entering requires another 0.6 s, counted from when input stops or the charge ends.
@@ -289,6 +293,8 @@ Art Direction: "stillness is punished visually before mechanically." Timeline fo
 The Fracture timer resets after Taln has been > 3 m from the spot for 3 s. Net rhythm: plant for ~6–9 s of Anchored benefit, then relocate.
 
 ### 6.5 Shoulder (base mobility) [PROPOSED]
+
+> **v1.4:** still no base jump. Air time comes from the ground. See §15 v1.4 #3.
 
 **No jump.** Taln is infantry; the ground is the game (Pillar 2). Base mobility is a heavy charge:
 
@@ -425,6 +431,8 @@ The player should notice the counting eventually; the spec should never force a 
 
 ### 11.1 Engine and language [PROPOSED]
 
+> **v1.4:** the flow field becomes a window that follows Taln, and the swarm's target becomes a known position. See §15 v1.4 #5–6.
+
 - **Godot 4.7.x** (current stable at time of writing: 4.7.2). Pin the exact version in the repo; upgrade only between milestones.
 - **Renderer:** Forward+ (clustered lighting; required by the light budget in §12).
 - **GDScript** for everything whose design is still moving: game flow, run/station state, Agony and Investiture logic, Welcome/Catalyze state machine, skills, minibosses, breakers, UI.
@@ -482,6 +490,8 @@ No directional light exists in any scene (Art Direction v1.1).
 
 ## 13. Prototype Build Order (Phase 2 features against this spec)
 
+> **v1.4:** steps 1–7 are done (P2-01 to P2-08). The playstyle graybox order is in §15 v1.4 #9.
+
 1. **Gray-box arena:** one flat-plus-ramps station, heightfield ground, three Well pools. Camera and controller (§7), Anchored and Fracture (§6.3–6.4), Shoulder (§6.5).
 2. **SwarmServer v0 (C++):** one swarm type, seek + separation, spatial hash, MultiMesh rendering, contact damage (§6.2), alive cap (§8.4).
 3. **One Weapon + one Stoneward Surge** routed through Toa'uma with Strain (§5). Suggested prototype Surge: a Cohesion ground-cone that roots swarm for 2 s and deals Kinetic damage — tests "control the ground under the swarm" without terrain deformation.
@@ -506,24 +516,10 @@ All twelve approved 2026-09-25 as recommended.
 | 6 | Unspent ninths on Catalyze | Discarded | §3.4 |
 | 7 | Catalysis unlock | On first banked Agony point | §4.2 |
 | 8 | Honorblade routing | Removes Strain from Cohesion/Tension Surges; Voidlight skills always route through Toa'uma | §5.1 |
-| 9 | Mobility | No jump; Shoulder is base mobility | §6.5 |
+| 9 | Mobility | No jump; Shoulder is base mobility. v1.4: stands; air time comes only from the ground (Design Doc v2.0 Pillar 2) | §6.5 |
 | 10 | Stance rhythm | Anchored bonus + Fracture punishment | §6.3–6.4 |
 | 11 | Heraldic cost-reduction skill name | "Bearer of Agonies" as working name; final name open for Content List | §4.4 |
 | 12 | Tech stack | Godot 4.7.x, Forward+, GDScript + C++ (GDExtension) boundary as specified | §11 |
-
----|---|---|
-| 1 | Cycle = 3 of 9 stations, tiered | Yes (§1.1) |
-| 2 | Cycle ends Held or Closed (ninth Return); no fail state | Yes (§1.3) |
-| 3 | Leveling is player-triggered, not auto | Yes (§2.4) |
-| 4 | Nine slots, no per-tree limit | Yes; revisit after pool size is known |
-| 5 | Welcome/Catalyze use 0.1× time dilation, not full pause | Yes, with full-pause accessibility option (§3.4) |
-| 6 | Unspent ninths discarded on Catalyze | Yes (§3.4) |
-| 7 | Catalysis unlocks on first banked point | Yes (§4.2) |
-| 8 | Honorblade removes Strain from Cohesion/Tension Surges | Yes (§5.1) |
-| 9 | No jump; Shoulder is base mobility | Yes (§6.5) |
-| 10 | Anchored bonus + Fracture punishment as the stance rhythm | Yes (§6.3–6.4) |
-| 11 | Heraldic skill working name "Bearer of Agonies" | Placeholder |
-| 12 | Godot 4.7 / Forward+ / GDScript + C++ boundary as §11 | Yes |
 
 ---
 
@@ -580,6 +576,26 @@ Rows marked **(ruled)** restate design rulings given in the P2-04–P2-08 handof
 | 23 | **(ruled)** The between-run screen states Held or Closed plainly, the cycle's time, kills, Returns, fills Welcomed vs Banked, and Agony banked this cycle and in total; banked Agony raises caps there at c − 1 points per step for Breaking Stroke, Settle and Bearer of Agonies; "Begin the next cycle" loads the station again with a new seed. Placeholder dark panel, framed later as Taln's memory | §1.3, §9 | Handoff P2-07 |
 | 24 | **(ruled)** Telemetry: a TelemetryRecorder (autoload) writes each cycle as JSON Lines to `user://telemetry/cycle_<timestamp>_<seed>.jsonl`: kills (with `rewarded`), Investiture income by source and spends, level-ups (time, n, choice), Agony fills (choice, committed catalysts), Returns, Strain changes, Notices, side effects, wave and station changes; a snapshot every 10 s (alive, kill rate, held Investiture, Health, Agony, Strain) and a summary line at cycle end. `tools/telemetry_report.gd` prints kill rate per wave, income by source per station, the level-up timeline beside the C(n) prediction, fills per station and the choice split, Returns and the Strain curve | §13 step 7 | Handoff P2-08 |
 | 25 | Telemetry details. Clarified: every line carries `t`, seconds of game time into the cycle (pauses excluded); income is summed per second by source and stamped with its station (flushed at every wave, lull and station change) rather than logged per mote or per frame; Strain is logged when it changes; a Return logs its reform; a fill logs what was committed as well as what fired; a cycle freed before its end gets an `abandoned` line; check scripts record nothing unless a check turns it on. Report: kill rates are per minute of running waves (Return freezes and lulls left out); station averages are over the cycles that reached that station. Decided on ambiguity, **for confirmation at the Phase 2 gate**: the "C(n) prediction" anchors each station at its logged start and spreads §2.4's net leveling income for that station evenly over its nine waves, spending it on C(0), C(1), … in turn; that net includes miniboss and breaker income the stand-in doesn't have, so the prediction runs early | §13 step 7 | Per-frame income (ambient, pools) would swamp the file; the spec gives a pacing table, not a timeline |
+
+### v1.4 — 2026-10-17 (Phase 2 gate playtest → Design Doc v2.0 draft)
+
+Rows marked **(ruled)** restate the project owner's rulings of 2026-10-17 (Design Doc v2.0). The rest are proposals for the playstyle grayboxes to test. Their numbers are set in the milestone that builds them and logged as later revisions. Nothing here changes built behavior until that milestone lands.
+
+| # | Change | Where | Why |
+|---|---|---|---|
+| 1 | **(ruled)** **Aspects.** Chosen between cycles. An Aspect sets the starting Weapon and Surge and grants an Aspect passive that takes no slot. In-run picks can drift a run toward hybrids. Four Aspects: Earthshaper, Meteor, Doomhunter, Plaguebringer | §2.5 | Design Doc v2.0 §10: the gate loop is one playstyle, not the base loop |
+| 2 | **(ruled)** Anchored (§6.3: its Armor bonus, knockback immunity and the 4/s Anchored pool rate) and Fracture (§6.4) move behind the **Earthshaper** Aspect. Without it, Taln never Anchors or Fractures, and Well pools pay the unanchored 1/s. Pools stay as map features for every Aspect | §6.3, §6.4, §2.3 | Plant / hold / relocate is Earthshaper's loop. Fracture would tax stealth waiting (Plaguebringer) and constant motion (Meteor) for no reason |
+| 3 | **(ruled)** Decision 9 stands: base Taln has no jump. Air time comes only from the ground: launch terrain (catapults, Tension-stiffened ramps), Cohesion pillars, and Shoulder off a drop (already built, v1.1 #1). Landing damage scaled by fall speed and height belongs to the Meteor Aspect; its numbers are set in P2-12 | §6.5 | Design Doc v2.0 Pillar 2, "the ground is the weapon" |
+| 4 | **(ruled)** **One persistent map.** The nine stations are the nine regions of one hand-built, interconnected Braize, grouped into three tiers by depth, the same every cycle. Routes between regions pass **gates** that open through meta-progression. [PROPOSED] A cycle drops Taln at a Tier I entry and crosses **one region per tier**, chosen by route (still three of nine, still nine Special Rooms). v = 1 / 2 / 3 and S, D, P follow the region's tier. Inside a region, a **difficulty clock** replaces the nine timed waves: it advances w one step per wave length (45 s), so §8.2 and §8.4 carry over unchanged. Special Rooms are placed in the region. The breaker is found and player-triggered, and its fall opens the routes onward. Held = the Tier III breaker falls and Taln leaves; Closed is unchanged. Staying past a breaker is overstay (§1.2). Region size, gate rules and session fit are open until P2-10 | §1.1–1.3, §10 | Design Doc v2.0 §4–5. Nine waves were already first to drop (§10); the clock keeps the scaling math |
+| 5 | [PROPOSED] **Windowed flow field.** The field covers a window of cells (start: 128 × 128, today's whole station) that recenters on Taln when he comes within a margin of its edge. A recenter is a full rebuild, as in v1.3 #2. Spawns stay inside the window. A swarm enemy outside it seeks directly, and one beyond a despawn distance is removed unrewarded | §11.1, §8.4 | A 512 m map has ~16× the cells of today's 0.6 ms field, and the swarm only ever lives near Taln (spawn ring 18–26 m) |
+| 6 | [PROPOSED] **Awareness.** SwarmServer's flow target becomes a **known position** set from GDScript instead of Taln's node. An Awareness system (GDScript) updates it from sightings (spotters with line of sight to Taln) and noise (Toa'uma use, kills, landings), and lets it go stale when nothing reports. Until P2-13 lands, the known position is Taln's every tick, so behavior is unchanged | §11.3, §5.3 | Doomhunter's stealth approach and Plaguebringer need enemies that can lose Taln. Toa'uma's Notice already models "drawing attention" |
+| 7 | [PROPOSED] **Commanders.** A swarm-type flag for elites and minibosses that buff swarm within an aura (speed, damage, resist; numbers in P2-13) and act as spotters for Awareness (#6) | §8.1, §11.4 | Design Doc v2.0 §10, Doomhunter |
+| 8 | **(ruled)** The **Ashynite disease core** is in scope: Blight damage (§6.2, reserved until now), seeding, spread by swarm density, and infected enemies that are buffed until the disease takes them. The rest of the Ashynite tree stays backlogged. [PROPOSED] Spread runs in SwarmServer over its spatial hash, as per-enemy infection data. Plaguebringer's full-map play presses on the 400 alive cap, so §12's 800 stretch becomes a P2-15 target | §0, §6.2, §11.1, §12 | Design Doc v2.0 §9, §10 |
+| 9 | [PROPOSED] **Graybox build order** (replaces §13 for Phase 2): P2-10 shared base slice (2–3 regions, one gate stub, windowed field, difficulty clock, Aspect scaffold, Anchored/Fracture behind an Aspect flag) → P2-11 Earthshaper → P2-12 Meteor → P2-13 Awareness + commanders (shared) → P2-14 Doomhunter → P2-15 Ashynite disease core + Plaguebringer → P2-16 boons. Each playstyle is built on its own branch off the shared base and kept, reworked or cut on its own playtest | §13 | Roadmap Phase 2 rows |
+| 10 | **(ruled)** **Boons** are Sja-Anat's residue, not contact (Narrative Bible §4.5): offers of **one of three**, each tagged with its source (Toa'uma or the culture), given in Special Rooms and after some encounters. [PROPOSED] A boon takes no skill slot and ends with the cycle. Whether boons level is open until P2-16 | §2.5 | Design Doc v2.0 §11 |
+| 11 | [PROPOSED] **New records.** `AspectDef`: `id`, `starting_weapon`, `starting_surge`, `passive`, `flags` (e.g. `anchored`, `fracture`), `tags[]`. `BoonDef`: `id`, `source` (Toa'uma / culture), `tags[]`, `effects[]`, `bane` (culture boons). `Region`: `id`, `tier`, `station_value`, `gates[]`. `Gate`: `id`, `kind`, `unlock` (meta condition), `links` (two regions). The swarm type gains `commander` (aura radius, buff, spotter). Meta state gains `opened_gates[]` and `aspects_unlocked[]` | §11.4, §11.5 | The fields the systems in #1–#10 depend on |
+| 12 | Clarified: `StationGround` keeps one walkable surface per cell (the top one). Graybox regions stay within that: ledges, drops and ramps, no paths under paths. True multi-level ground is an open question (Design Doc v2.0 §8) | §11.1 | Persistent-map verticality would otherwise outrun the ground model silently |
+| 13 | Editorial: removed a duplicated, headerless copy of the decisions table that followed §14 | §14 | Stray paste from v1.0 |
 
 ---
 
