@@ -46,7 +46,7 @@ static func analyze(cycle: Dictionary) -> Dictionary:
 	var header: Dictionary = cycle.header
 	var stations: int = int(header.stations)
 	var result: Dictionary = {"waves": [], "stations": [], "levels": [], "strain": [], "play_seconds": 0.0,
-			"fills": 0, "lull_kills": 0}
+			"fills": 0, "lull_kills": 0, "regions": [], "kit": []}
 	for s in stations:
 		result.stations.append({"reached": false, "start": 0.0, "wave_seconds": 0.0, "kills": 0, "income": {},
 				"gross": 0.0, "fills": {}, "fill_count": 0, "returns": 0, "levels": 0})
@@ -107,6 +107,15 @@ static func analyze(cycle: Dictionary) -> Dictionary:
 				result.stations[int(e.get("station", w.station))].levels += 1
 				result.levels.append({"t": t, "n": int(e.n), "choice": String(e.choice), "cost": float(e.cost),
 						"station": int(e.get("station", w.station))})
+			"region":
+				# Braize slice (P2-10): when each region was entered, its siege began and its breaker fell.
+				result.regions.append({"id": String(e.region), "tier": int(e.tier), "entered": t, "siege": -1.0,
+						"fell": -1.0})
+			"siege", "breaker_fell":
+				if not result.regions.is_empty() and result.regions[-1].id == String(e.region):
+					result.regions[-1]["siege" if e.ev == "siege" else "fell"] = t
+			"kit_take":
+				result.kit.append({"t": t, "skill": String(e.skill)})
 			"strain":
 				var value: float = float(e.value)
 				if result.strain.is_empty() or result.strain[-1].value != value:

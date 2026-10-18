@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="RegionTuning" format=3]
+
+[ext_resource type="Script" path="res://scripts/tuning/region_tuning.gd" id="1_region"]
+[ext_resource type="Resource" path="res://data/swarm/notice_hunter.tres" id="2_hunter"]
+[ext_resource type="Resource" path="res://data/skills/shardfall.tres" id="3_shardfall"]
+[ext_resource type="Resource" path="res://data/skills/tremor.tres" id="4_tremor"]
+[ext_resource type="Resource" path="res://data/skills/upheave.tres" id="5_upheave"]
+[ext_resource type="Resource" path="res://data/skills/stone_skin.tres" id="6_stone_skin"]
+[ext_resource type="Resource" path="res://data/skills/second_wind.tres" id="7_second_wind"]
+
+[resource]
+script = ExtResource("1_region")
+site_radius = 4.5
+beacon_height = 40.0
+siege_seconds = 60.0
+siege_budget_scale = 2.0
+siege_pack_type = ExtResource("2_hunter")
+siege_pack_size = 9
+siege_pack_lifetime = 90.0
+breaker_income = 270.0
+breaker_offer_size = 3
+breaker_offer_pool = Array[Resource]([ExtResource("3_shardfall"), ExtResource("4_tremor"), ExtResource("5_upheave"), ExtResource("6_stone_skin"), ExtResource("7_second_wind")])

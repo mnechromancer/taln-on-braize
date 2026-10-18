@@ -1,5 +1,5 @@
 # Unbroken: Taln on Braize
-### Narrative Bible — v1.2 (v1.1 approved; v1.2 clarifications pending approval with Design Doc v2.0)
+### Narrative Bible — v1.2 (Approved; v1.2 clarifications approved with Design Doc v2.0, 2026-10-17)
 
 *Phase 1 deliverable. Consolidates canon, game-original fiction, and the boundary between them. Design Doc v1.0 is the parent document; where the two disagree, the Design Doc governs mechanics and this document governs fiction. v1.1 (2026-09-25): peakspren name decided (§5.2, §10 decision 3). v1.2 (2026-10-17): clarifications for Design Doc v2.0 (boons as Sja-Anat's residue, §4.5; stations on one persistent Braize, §3.4). No decision changes.*
 

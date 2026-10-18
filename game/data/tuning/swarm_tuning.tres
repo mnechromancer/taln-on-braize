@@ -11,3 +11,6 @@ hit_flash_time = 0.1
 root_fade_time = 0.3
 flow_rebuild_interval = 0.1
 flow_direct_range = 3.0
+flow_window_cells = 128
+flow_window_margin = 24
+despawn_distance = 70.0

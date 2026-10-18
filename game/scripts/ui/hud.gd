@@ -6,7 +6,8 @@ extends CanvasLayer
 ## Health, the Agony meter (nine segments; during Catalyze the committed
 ## cost shows as consumed notches), held Investiture with the next level cost
 ## and a ready mark, the Surge and Draw cooldowns, nine Strain pips and the
-## wave, plus a brief notice when Agony banks. Read-only: it polls the systems
+## wave (on the Braize slice: the region, its clock and the way to its
+## breaker), plus a brief notice when Agony banks. Read-only: it polls the systems
 ## it shows every frame.
 
 const PANEL := Color("2a2825", 0.55)
@@ -93,8 +94,14 @@ func _process(delta: float) -> void:
 	for i in _pips.size():
 		var f: float = clampf(toauma.strain - i, 0.0, 1.0)
 		_pip_fills[i].size.x = PIP_SIZE.x * f
-	var stations: String = UiText.STATION % [spawner.station_index + 1, _cycle_stations()]
-	_wave.text = "%s   %s" % [stations, UiText.LULL if spawner.lull else UiText.WAVE % [spawner.wave + 1, spawner.tuning.waves]]
+	var slice := spawner.get_parent() as BraizeSlice
+	if slice and slice.current:
+		_wave.text = "%s
+%s" % [UiText.REGION % [slice.current.display_name, slice.current.tier, spawner.wave + 1],
+				_objective(slice)]
+	else:
+		var stations: String = UiText.STATION % [spawner.station_index + 1, _cycle_stations()]
+		_wave.text = "%s   %s" % [stations, UiText.LULL if spawner.lull else UiText.WAVE % [spawner.wave + 1, spawner.tuning.waves]]
 	_returns.text = UiText.RETURNS % Cycle.director().returns
 
 
@@ -111,6 +118,30 @@ func _show_agony() -> void:
 		_segment_fills[i].size.x = SEGMENT_SIZE.x * f
 		var consumed: bool = i >= _segments.size() - spent
 		_segment_fills[i].color = AGONY_SPENT if consumed else (AGONY_LIT if meter.is_locked else AGONY)
+
+
+## The Braize slice's objective line: the way to the breaker site, the
+## siege's time left, or the open seals.
+func _objective(slice: BraizeSlice) -> String:
+	match slice.state:
+		BraizeSlice.State.SIEGE:
+			return UiText.SIEGE % ceili(slice.siege_left)
+		BraizeSlice.State.FALLEN:
+			return UiText.SEALS_OPEN % (slice.current.tier + 1)
+	var site: Vector3 = slice.current.site.global_position
+	return UiText.BREAKER_SITE % [roundi(slice.distance_to_site()), _arrow_to(site)]
+
+
+## An arrow for the direction from Taln to at, relative to where the camera faces.
+func _arrow_to(at: Vector3) -> String:
+	var camera: Camera3D = get_viewport().get_camera_3d()
+	if camera == null:
+		return ""
+	var forward: Vector3 = -camera.global_basis.z
+	var to: Vector3 = at - taln.global_position
+	var angle: float = atan2(forward.x * to.z - forward.z * to.x, forward.x * to.x + forward.z * to.z)
+	var index: int = posmod(roundi(angle / (TAU / UiText.ARROWS.size())), UiText.ARROWS.size())
+	return UiText.ARROWS[index]
 
 
 func _cycle_stations() -> int:

@@ -25,9 +25,13 @@ using namespace godot;
 // blocked mask. Enemies never step into blocked cells and stand on the heights.
 //
 // A flow field over the same cells (spec §11.1) routes enemies around walls
-// and cliffs toward Taln. It rebuilds when Taln changes cell (at most once per
-// flow_rebuild_interval) and whenever the ground or target changes, on the
-// next physics tick that runs no simulation step. Enemies follow it
+// and cliffs toward Taln. It covers a window of flow_window_cells around Taln
+// (spec v1.4 #5) that recenters when he nears its edge, or the whole ground
+// when that's smaller. It rebuilds when Taln changes cell (at most once per
+// flow_rebuild_interval), when the window recenters, and whenever the ground
+// or target changes, on the next physics tick that runs no simulation step.
+// Outside the window enemies seek Taln directly; swarm-tier ones beyond
+// despawn_distance are removed unrewarded. Enemies follow it
 // unless they're within flow_direct_range of Taln along it, can see his cell
 // in a straight grid line, or can't reach him at all; then they seek directly.
 // Rooted enemies don't steer, so they ignore it.
@@ -90,6 +94,9 @@ public:
 	double get_last_flow_build_ms() const;
 	int get_flow_build_count() const;
 	Vector2i get_flow_goal_cell() const;
+	// The flow window in ground cells, and how many times it has recentered.
+	Rect2i get_flow_window() const;
+	int get_flow_recenter_count() const;
 	double get_flow_distance(const Vector3 &p_position) const;
 	Vector3 get_flow_direction(const Vector3 &p_position) const;
 	bool is_flow_line_clear(const Vector3 &p_position);
@@ -137,6 +144,11 @@ private:
 	// p_step_due: a step runs this tick, so any rebuild waits for the next one.
 	void _update_flow(double p_delta, bool p_step_due);
 	void _build_flow(const Vector3 &p_goal);
+	// Moves the flow window to cover the goal if it isn't placed yet or the
+	// goal is within the margin of an inner edge; true if it moved.
+	bool _place_flow_window(const Vector3 &p_goal);
+	// Copies the window's blocked cells into the flow field.
+	void _load_flow_window(const Rect2i &p_window);
 	// Unit direction an enemy at p_position steers toward p_goal: the flow,
 	// or straight at it (see the class comment).
 	Vector2 _seek_direction(const Vector3 &p_position, const Vector3 &p_goal);
@@ -215,6 +227,10 @@ private:
 	bool grid_dirty = true;
 
 	FlowField flow;
+	// In ground cells; empty until placed.
+	Rect2i flow_window;
+	std::vector<uint8_t> flow_window_blocked;
+	int flow_recenters = 0;
 	bool flow_dirty = true;
 	double flow_since_build = 0.0;
 	double last_flow_build_ms = 0.0;

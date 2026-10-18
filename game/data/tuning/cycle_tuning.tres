@@ -1,10 +1,14 @@
 [gd_resource type="Resource" script_class="CycleTuning" format=3]
 
 [ext_resource type="Script" path="res://scripts/tuning/cycle_tuning.gd" id="1_cycle"]
+[ext_resource type="Resource" path="res://data/aspects/earthshaper.tres" id="2_earthshaper"]
+[ext_resource type="Resource" path="res://data/aspects/unaspected.tres" id="3_unaspected"]
 
 [resource]
 script = ExtResource("1_cycle")
 stations = 3
 returns_to_close = 9
 lull_seconds = 15.0
-station_scene = "res://scenes/graybox_station.tscn"
+station_scene = "res://scenes/braize_slice.tscn"
+aspects = Array[Resource]([ExtResource("2_earthshaper"), ExtResource("3_unaspected")])
+default_aspect = ExtResource("2_earthshaper")

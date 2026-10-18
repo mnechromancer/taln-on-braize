@@ -1,7 +1,7 @@
 # Unbroken: Taln on Braize
-### Design Doc — v2.0 DRAFT (for approval; v1.1 approved)
+### Design Doc — v2.0 (Approved 2026-10-17)
 
-*v2.0 draft, 2026-10-17, from the Phase 2 gate playtest. The gate verdict: the direction holds, but it has to go much further, and the gate build's plant / hold / relocate loop is one **playstyle**, not the base loop. v2.0 adds four playstyles chosen as **Aspects** (§10), boons as **Sja-Anat's residue** (§11), and **one persistent, interconnected Braize** in place of separate arenas (§4–5). It rewords Pillar 2 and pulls the Ashynite disease core forward out of the backlog (§9). These rulings were made by the project owner on 2026-10-17. Sections §10–11 are appended so existing section numbers stay stable for cross-references. Everything else in v1.1 stands unless a section says otherwise.*
+*v2.0, approved 2026-10-17, from the Phase 2 gate playtest. The gate verdict: the direction holds, but it has to go much further, and the gate build's plant / hold / relocate loop is one **playstyle**, not the base loop. v2.0 adds four playstyles chosen as **Aspects** (§10), boons as **Sja-Anat's residue** (§11), and **one persistent, interconnected Braize** in place of separate arenas (§4–5). It rewords Pillar 2 and pulls the Ashynite disease core forward out of the backlog (§9). These rulings were made by the project owner on 2026-10-17. Sections §10–11 are appended so existing section numbers stay stable for cross-references. Everything else in v1.1 stands unless a section says otherwise.*
 
 *v1.1 changes, 2026-09-25: §3 vessel provenance and §4 sky brought into line with Narrative Bible v1.0 decisions 1 and 2. No system changes.*
 
@@ -187,4 +187,4 @@ Her design shows in both, and her voice in neither. Proposed: boons don't take a
 
 ---
 
-*v1.0 approved as the Phase 1 Initial Design Doc. v2.0 is a draft for approval: the grayboxes (roadmap P2-10 onward) build against it once approved. Next system-level work builds on this baseline — see the Roadmap doc.*
+*v1.0 approved as the Phase 1 Initial Design Doc. v2.0 approved 2026-10-17: the grayboxes (roadmap P2-10 onward) build against it. Next system-level work builds on this baseline — see the Roadmap doc.*

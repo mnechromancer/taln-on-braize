@@ -166,7 +166,8 @@ func _check_loadout() -> void:
 	_check("Loadout has 9 slots and 3 Surge bindings from tuning", t.slots == 9 and t.surge_bindings == 3
 			and loadout.surge_bindings.size() == 3, "%d slots, %d bindings" % [t.slots, loadout.surge_bindings.size()])
 	var starting: Array[StringName] = []
-	for skill: SkillDef in t.starting_skills:
+	# P2-10: the starting skills come from the cycle's Aspect.
+	for skill: SkillDef in Cycle.director().aspect().starting_skills:
 		starting.append(skill.id)
 	var owned: Array[StringName] = []
 	for skill: SkillDef in loadout.slots:

@@ -157,7 +157,15 @@ void SwarmServer::set_ground(const PackedFloat32Array &p_heights, const PackedBy
 		slot.multimesh->set_custom_aabb(ground_bounds);
 	}
 	grid_dirty = true;
-	flow.set_grid(ground_blocked.data(), ground_width, ground_depth, ground_cell_size, ground_origin);
+	// Keep the window where it is (clamped onto the new ground) with fresh cells.
+	if (flow_window.has_area()) {
+		const Rect2i window = flow_window.intersection(Rect2i(0, 0, ground_width, ground_depth));
+		if (window.has_area()) {
+			_load_flow_window(window);
+		} else {
+			flow_window = Rect2i();
+		}
+	}
 	flow_dirty = true;
 }
 
@@ -468,6 +476,7 @@ void SwarmServer::rebuild_flow_field() {
 	Node3D *target = get_target();
 	ERR_FAIL_COND_MSG(target == nullptr || !target->is_inside_tree() || !has_ground,
 			"The flow field needs a target in the tree and ground.");
+	_place_flow_window(target->get_global_position());
 	_build_flow(target->get_global_position());
 }
 
@@ -485,7 +494,16 @@ int SwarmServer::get_flow_build_count() const {
 
 Vector2i SwarmServer::get_flow_goal_cell() const {
 	const int cell = flow.goal_cell();
-	return cell >= 0 ? Vector2i(cell % ground_width, cell / ground_width) : Vector2i(-1, -1);
+	return cell >= 0 ? flow_window.position + Vector2i(cell % flow.get_width(), cell / flow.get_width())
+					 : Vector2i(-1, -1);
+}
+
+Rect2i SwarmServer::get_flow_window() const {
+	return flow_window;
+}
+
+int SwarmServer::get_flow_recenter_count() const {
+	return flow_recenters;
 }
 
 double SwarmServer::get_flow_distance(const Vector3 &p_position) const {
@@ -610,8 +628,9 @@ void SwarmServer::_step(double p_dt) {
 		}
 	}
 
-	// Kills are rewarded: they drop their mote. Expiries aren't (spec v1.2 #5).
+	// Kills are rewarded: they drop their mote. Expiries and despawns aren't (spec v1.2 #5).
 	std::vector<Death> deaths;
+	const real_t despawn = has_target ? real_t(tuning->get_despawn_distance()) : 0.0f;
 	MoteServer *motes = get_mote_server();
 	for (int i = 0; i < capacity; ++i) {
 		if (!alive[i]) {
@@ -623,6 +642,11 @@ void SwarmServer::_step(double p_dt) {
 			if (motes && type->get_investiture_drop() > 0.0) {
 				motes->spawn(position[i], type->get_investiture_drop(), type->get_tier());
 			}
+			_free(i);
+		} else if (despawn > 0.0f && type->get_tier() == SwarmType::TIER_SWARM &&
+				Vector2(position[i].x - goal.x, position[i].z - goal.z).length_squared() > despawn * despawn) {
+			// Left far behind on a big map (spec v1.4 #5): not a kill.
+			deaths.push_back({ type->get_id(), position[i], false });
 			_free(i);
 		} else if (lifetime[i] > 0.0) {
 			lifetime[i] -= p_dt;
@@ -652,13 +676,62 @@ void SwarmServer::_update_flow(double p_delta, bool p_step_due) {
 		return;
 	}
 	const Vector3 goal = target->get_global_position();
+	if (_place_flow_window(goal)) {
+		_build_flow(goal);
+		return;
+	}
 	int x = 0;
 	int z = 0;
 	flow.clamped_cell(goal.x, goal.z, x, z);
-	const bool moved = z * ground_width + x != flow.goal_cell();
+	const bool moved = z * flow.get_width() + x != flow.goal_cell();
 	if (flow_dirty || (moved && flow_since_build + 1e-9 >= tuning->get_flow_rebuild_interval())) {
 		_build_flow(goal);
 	}
+}
+
+bool SwarmServer::_place_flow_window(const Vector3 &p_goal) {
+	if (!has_ground) {
+		return false;
+	}
+	const int cells = tuning->get_flow_window_cells();
+	const Vector2i size = cells > 0 ? Vector2i(std::min(cells, ground_width), std::min(cells, ground_depth))
+									: Vector2i(ground_width, ground_depth);
+	const int gx = std::clamp(int(std::floor((p_goal.x - ground_origin.x) / ground_cell_size)), 0, ground_width - 1);
+	const int gz = std::clamp(int(std::floor((p_goal.z - ground_origin.y) / ground_cell_size)), 0, ground_depth - 1);
+	if (flow_window.size == size) {
+		const int margin = tuning->get_flow_window_margin();
+		const Vector2i low = flow_window.position;
+		const Vector2i high = flow_window.position + flow_window.size - Vector2i(1, 1);
+		const bool near_edge = gx - low.x < margin || high.x - gx < margin || gz - low.y < margin || high.y - gz < margin;
+		if (!near_edge) {
+			return false;
+		}
+	}
+	// Centered on the goal, clamped onto the ground. At the ground's own edge
+	// the clamp leaves it where it was, and nothing moves.
+	const Vector2i position(std::clamp(gx - size.x / 2, 0, ground_width - size.x),
+			std::clamp(gz - size.y / 2, 0, ground_depth - size.y));
+	const Rect2i window(position, size);
+	if (window == flow_window) {
+		return false;
+	}
+	_load_flow_window(window);
+	++flow_recenters;
+	return true;
+}
+
+void SwarmServer::_load_flow_window(const Rect2i &p_window) {
+	flow_window = p_window;
+	const int w = p_window.size.x;
+	const int d = p_window.size.y;
+	flow_window_blocked.resize(size_t(w) * size_t(d));
+	for (int z = 0; z < d; ++z) {
+		const uint8_t *row = ground_blocked.data() + size_t(p_window.position.y + z) * ground_width + p_window.position.x;
+		std::copy(row, row + w, flow_window_blocked.data() + size_t(z) * w);
+	}
+	const Vector2 origin = ground_origin + Vector2(real_t(p_window.position.x), real_t(p_window.position.y)) * ground_cell_size;
+	flow.set_grid(flow_window_blocked.data(), w, d, ground_cell_size, origin);
+	flow_dirty = true;
 }
 
 void SwarmServer::_build_flow(const Vector3 &p_goal) {
@@ -1006,6 +1079,8 @@ void SwarmServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_last_flow_build_ms"), &SwarmServer::get_last_flow_build_ms);
 	ClassDB::bind_method(D_METHOD("get_flow_build_count"), &SwarmServer::get_flow_build_count);
 	ClassDB::bind_method(D_METHOD("get_flow_goal_cell"), &SwarmServer::get_flow_goal_cell);
+	ClassDB::bind_method(D_METHOD("get_flow_window"), &SwarmServer::get_flow_window);
+	ClassDB::bind_method(D_METHOD("get_flow_recenter_count"), &SwarmServer::get_flow_recenter_count);
 	ClassDB::bind_method(D_METHOD("get_flow_distance", "position"), &SwarmServer::get_flow_distance);
 	ClassDB::bind_method(D_METHOD("get_flow_direction", "position"), &SwarmServer::get_flow_direction);
 	ClassDB::bind_method(D_METHOD("is_flow_line_clear", "position"), &SwarmServer::is_flow_line_clear);

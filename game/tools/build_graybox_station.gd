@@ -3,6 +3,10 @@ extends SceneTree
 ## ramp and stair geometry is computed here so the angles and rises are exact.
 ## Rerunning it overwrites manual edits to that scene.
 ##
+## tools/build_braize_slice.gd extends this builder: it overrides the virtual
+## methods below (scene path, root, ground size, spawn, geometry, pools,
+## extras) and reuses the shared wiring (Taln, camera, swarm, UI).
+##
 ## Run: Godot_v4.7.2-stable_win64_console.exe --headless --path game --script res://tools/build_graybox_station.gd
 
 const OUT_PATH := "res://scenes/graybox_station.tscn"
@@ -29,8 +33,8 @@ var _root: Node3D
 
 func _init() -> void:
 	_root = Node3D.new()
-	_root.name = "GrayboxStation"
-	_root.set_script(load("res://scripts/station/graybox_station.gd"))
+	_root.name = _root_name()
+	_root.set_script(load(_root_script()))
 
 	_add_lighting()
 	_add_ground()
@@ -40,24 +44,57 @@ func _init() -> void:
 
 	var spawn := Marker3D.new()
 	spawn.name = "TalnSpawn"
-	spawn.position = Vector3(0.0, 0.0, 30.0)
+	spawn.position = _spawn_position()
 	_own(spawn, _root)
 	_add_taln_and_camera(spawn.position)
+	_add_extras()
 
 	var packed := PackedScene.new()
 	packed.pack(_root)
-	print("save scene: ", ResourceSaver.save(packed, OUT_PATH))
+	print("save scene: ", ResourceSaver.save(packed, _out_path()))
 	_root.free()
 	_strip_instance_overrides()
 	_update_project_settings()
 	quit()
 
 
+# --- what a builder that extends this one overrides --------------------------
+
+func _out_path() -> String:
+	return OUT_PATH
+
+
+func _root_name() -> String:
+	return "GrayboxStation"
+
+
+func _root_script() -> String:
+	return "res://scripts/station/graybox_station.gd"
+
+
+func _ground_size() -> int:
+	return GROUND_SIZE
+
+
+func _spawn_position() -> Vector3:
+	return Vector3(0.0, 0.0, 30.0)
+
+
+## Whether this scene becomes the project's main scene.
+func _is_main_scene() -> bool:
+	return false
+
+
+## Anything else the scene needs, after the shared wiring.
+func _add_extras() -> void:
+	pass
+
+
 ## pack() from a --script run writes each instanced scene's own script and
 ## tuning back out as overrides. Drop them (and the ext_resources they used)
 ## so edits to the instanced scenes (Taln, camera rig, pools, overlay) still apply.
 func _strip_instance_overrides() -> void:
-	var lines: PackedStringArray = FileAccess.get_file_as_string(OUT_PATH).split("\n")
+	var lines: PackedStringArray = FileAccess.get_file_as_string(_out_path()).split("\n")
 	var kept := PackedStringArray()
 	var in_instance := false
 	for line in lines:
@@ -74,7 +111,7 @@ func _strip_instance_overrides() -> void:
 		if found and not text.contains("ExtResource(\"%s\")" % found.get_string(1)):
 			continue
 		cleaned.append(line)
-	var file := FileAccess.open(OUT_PATH, FileAccess.WRITE)
+	var file := FileAccess.open(_out_path(), FileAccess.WRITE)
 	file.store_string("\n".join(cleaned))
 
 
@@ -118,7 +155,7 @@ func _add_ground() -> void:
 	var ground := StaticBody3D.new()
 	ground.name = "StationGround"
 	ground.set_script(load("res://scripts/station/station_ground.gd"))
-	ground.set("size_m", GROUND_SIZE)
+	ground.set("size_m", _ground_size())
 	ground.set("material", _flat_material(GROUND_COLOR))
 	ground.set("tuning", load("res://data/tuning/station_ground_tuning.tres"))
 	_own(ground, _root)
@@ -223,13 +260,14 @@ func _add_boundary() -> void:
 	var body := StaticBody3D.new()
 	body.name = "BoundaryWalls"
 	_own(body, _root)
-	var half: float = GROUND_SIZE / 2.0
+	var size: int = _ground_size()
+	var half: float = size / 2.0
 	var height := 20.0
 	var walls := {
-		"North": [Vector3(GROUND_SIZE + 2.0, height, 1.0), Vector3(0.0, height / 2.0, -half - 0.5)],
-		"South": [Vector3(GROUND_SIZE + 2.0, height, 1.0), Vector3(0.0, height / 2.0, half + 0.5)],
-		"West": [Vector3(1.0, height, GROUND_SIZE + 2.0), Vector3(-half - 0.5, height / 2.0, 0.0)],
-		"East": [Vector3(1.0, height, GROUND_SIZE + 2.0), Vector3(half + 0.5, height / 2.0, 0.0)],
+		"North": [Vector3(size + 2.0, height, 1.0), Vector3(0.0, height / 2.0, -half - 0.5)],
+		"South": [Vector3(size + 2.0, height, 1.0), Vector3(0.0, height / 2.0, half + 0.5)],
+		"West": [Vector3(1.0, height, size + 2.0), Vector3(-half - 0.5, height / 2.0, 0.0)],
+		"East": [Vector3(1.0, height, size + 2.0), Vector3(half + 0.5, height / 2.0, 0.0)],
 	}
 	for wall_name: String in walls:
 		var shape := BoxShape3D.new()
@@ -353,5 +391,7 @@ func _add_taln_and_camera(spawn: Vector3) -> void:
 
 
 func _update_project_settings() -> void:
-	ProjectSettings.set_setting("application/run/main_scene", OUT_PATH)
+	if not _is_main_scene():
+		return
+	ProjectSettings.set_setting("application/run/main_scene", _out_path())
 	print("save settings: ", ProjectSettings.save())

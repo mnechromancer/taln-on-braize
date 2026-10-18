@@ -98,9 +98,12 @@ func _on_cycle_began(cycle_seed: int) -> void:
 	_write({"ev": "cycle_begin", "schema": SCHEMA, "seed": cycle_seed, "wave_length": spawn.wave_length,
 			"waves": spawn.waves, "stations": Cycle.director().tuning.stations,
 			"lull_seconds": Cycle.director().tuning.lull_seconds, "level_cost_base": leveling.level_cost_base,
-			"level_cost_growth": leveling.level_cost_growth})
+			"level_cost_growth": leveling.level_cost_growth, "map": _station.scene_file_path.get_file().get_basename()})
 	_snapshot_t = 0.0
 	_hook()
+	# The slice's first region was entered before the cycle began.
+	if _station is BraizeSlice and (_station as BraizeSlice).current:
+		_write_region((_station as BraizeSlice).current, &"region")
 	# A station freed mid-cycle (a check, a bot, quitting) closes its file.
 	_station.tree_exiting.connect(_close, CONNECT_ONE_SHOT)
 	print("Telemetry: %s" % ProjectSettings.globalize_path(path))
@@ -154,9 +157,23 @@ func _hook() -> void:
 	_connect(taln.toauma.used, func(is_draw: bool, effect: Toauma.Effect) -> void:
 		if effect != Toauma.Effect.NONE:
 			_write({"ev": "side_effect", "effect": Toauma.Effect.keys()[effect].to_lower(), "draw": is_draw}))
+	if _station is BraizeSlice:
+		var slice: BraizeSlice = _station
+		_connect(slice.region_entered, _write_region.bind(&"region"))
+		_connect(slice.siege_began, _write_region.bind(&"siege"))
+		_connect(slice.breaker_fell, _write_region.bind(&"breaker_fell"))
+		_connect(slice.kit_offered, func(offer: Array[SkillDef]) -> void:
+			_write({"ev": "kit_offer", "offer": offer.map(func(s: SkillDef) -> StringName: return s.id)}))
+		_connect(slice.kit_taken, func(skill: SkillDef) -> void: _write({"ev": "kit_take", "skill": skill.id}))
 	_connect(spawner.wave_changed, func(wave: int) -> void:
 		_flush_income()
 		_write({"ev": "wave", "wave": wave, "station": _station.station_index()}))
+
+
+## Region events on the Braize slice (P2-10): entered, siege began, breaker fell.
+func _write_region(region: Region, ev: StringName) -> void:
+	_flush_income()
+	_write({"ev": ev, "region": region.id, "tier": region.tier, "station": _station.station_index()})
 
 
 func _connect(sig: Signal, callable: Callable) -> void:

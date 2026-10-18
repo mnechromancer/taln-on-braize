@@ -12,4 +12,8 @@ void SwarmTuning::_bind_methods() {
 	ADD_GROUP("Flow field", "flow_");
 	SWARM_BIND_PROPERTY(SwarmTuning, Variant::FLOAT, flow_rebuild_interval, PROPERTY_HINT_RANGE, "0,2,0.01,suffix:s");
 	SWARM_BIND_PROPERTY(SwarmTuning, Variant::FLOAT, flow_direct_range, PROPERTY_HINT_RANGE, "0,20,0.1,suffix:m");
+	SWARM_BIND_PROPERTY(SwarmTuning, Variant::INT, flow_window_cells, PROPERTY_HINT_RANGE, "0,1024,1,suffix:cells");
+	SWARM_BIND_PROPERTY(SwarmTuning, Variant::INT, flow_window_margin, PROPERTY_HINT_RANGE, "0,512,1,suffix:cells");
+	ADD_GROUP("Despawn", "despawn_");
+	SWARM_BIND_PROPERTY(SwarmTuning, Variant::FLOAT, despawn_distance, PROPERTY_HINT_RANGE, "0,500,1,suffix:m");
 }

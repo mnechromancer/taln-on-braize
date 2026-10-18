@@ -11,3 +11,9 @@ extends Resource
 @export_range(0.0, 300.0, 0.5, "suffix:s") var lull_seconds: float = 0.0
 ## The scene a new cycle loads.
 @export_file("*.tscn") var station_scene: String = ""
+
+@export_group("Aspects")
+## Every Aspect the between-run screen offers, in order (Design Doc v2.0 §10).
+@export var aspects: Array[AspectDef] = []
+## The Aspect a cycle uses until one is chosen.
+@export var default_aspect: AspectDef

@@ -1,0 +1,60 @@
+[gd_resource type="Resource" script_class="SkillDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/skill_def.gd" id="1_skill"]
+[ext_resource type="PackedScene" path="res://scenes/skills/shardfall.tscn" id="2_behavior"]
+
+[resource]
+script = ExtResource("1_skill")
+id = &"shardfall"
+display_name = "Shardfall"
+kind = 0
+tree = 0
+tags = Array[StringName]([&"ranged", &"kinetic"])
+; P2-10 kit pool PLACEHOLDER: every number here is a stand-in until the Content List.
+level_params = Array[Dictionary]([{
+"burst_radius": 1.5,
+"damage": 20.0,
+"interval": 1.2,
+"range": 12.0
+}, {
+"burst_radius": 1.6,
+"damage": 24.0,
+"interval": 1.15,
+"range": 12.0
+}, {
+"burst_radius": 1.7,
+"damage": 28.0,
+"interval": 1.1,
+"range": 12.0
+}, {
+"burst_radius": 1.8,
+"damage": 32.0,
+"interval": 1.05,
+"range": 12.0
+}, {
+"burst_radius": 1.9,
+"damage": 36.0,
+"interval": 1.0,
+"range": 12.0
+}, {
+"burst_radius": 2.0,
+"damage": 40.0,
+"interval": 0.95,
+"range": 12.0
+}, {
+"burst_radius": 2.1,
+"damage": 44.0,
+"interval": 0.9,
+"range": 12.0
+}, {
+"burst_radius": 2.2,
+"damage": 48.0,
+"interval": 0.85,
+"range": 12.0
+}, {
+"burst_radius": 2.3,
+"damage": 52.0,
+"interval": 0.8,
+"range": 12.0
+}])
+behavior = ExtResource("2_behavior")

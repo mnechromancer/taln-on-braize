@@ -2,7 +2,8 @@ extends SceneTree
 ## Reads cycle telemetry (JSON Lines from TelemetryRecorder) and prints, per
 ## file and across all of them: kill rate per wave; income by source per
 ## station; the level-up timeline beside the spec §2.4 C(n) prediction; Agony
-## fills per station and the choice split; Returns; the Strain curve. The
+## fills per station and the choice split; Returns; on the Braize slice, each
+## region's entry, siege and breaker times; the Strain curve. The
 ## numbers come from TelemetryAnalysis. Report only.
 ##
 ## Run: Godot_v4.7.2-stable_win64_console.exe --headless --path game --script res://tools/telemetry_report.gd -- [--file=<path>] [--dir=<dir>]
@@ -67,6 +68,12 @@ func _report(c: Dictionary) -> void:
 		var st: Dictionary = a.stations[i]
 		if st.reached:
 			print("Station %d: %d Agony fills %s; %d Returns" % [i + 1, st.fill_count, JSON.stringify(st.fills), st.returns])
+	for region: Dictionary in a.regions:
+		var found: String = "siege at %s (%s after entering)" % [A.mmss(region.siege), A.mmss(region.siege - region.entered)] 				if region.siege >= 0.0 else "no siege"
+		var fell: String = ", breaker fell at %s" % A.mmss(region.fell) if region.fell >= 0.0 else ""
+		print("Region %s (Tier %d): entered %s, %s%s" % [region.id, region.tier, A.mmss(region.entered), found, fell])
+	if not a.kit.is_empty():
+		print("Breaker drops taken: " + ", ".join(a.kit.map(func(k: Dictionary) -> String: return "%s at %s" % [k.skill, A.mmss(k.t)])))
 	var curve: Array[String] = []
 	for point: Dictionary in a.strain:
 		curve.append("%s %.2f" % [A.mmss(point.t), point.value])

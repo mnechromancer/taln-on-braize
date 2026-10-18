@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/stone_skin.gd" id="1_behavior"]
+
+[node name="StoneSkin" type="Node3D"]
+script = ExtResource("1_behavior")

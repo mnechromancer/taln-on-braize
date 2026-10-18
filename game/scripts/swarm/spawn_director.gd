@@ -11,6 +11,11 @@ extends Node
 ## (between stand-in stations, spec §1.2) there's no wave clock and the budget
 ## is lull_budget_fraction of the last wave's. begin_station() starts a
 ## station's waves over. Frozen (the Return sequence), nothing happens.
+##
+## On the persistent map (P2-10, spec v1.4 #4) the spawner runs endless: the
+## wave index is a difficulty clock that keeps rising with no last wave, the
+## budget can be scaled (a breaker siege), and spawns stay inside area (the
+## region Taln is in).
 
 signal wave_changed(wave: int)
 ## The station's last wave ran its full length.
@@ -34,6 +39,12 @@ var frozen: bool = false
 var lull: bool = false
 ## Debug stress mode: stress alive cap and budget scale from tuning.
 var stress: bool = false
+## Endless: the wave index keeps rising every wave_length; waves_done never fires.
+var endless: bool = false
+## Multiplies the budget (a breaker siege).
+var budget_scale: float = 1.0
+## World XZ rect spawns must land in; an empty rect allows the whole ground.
+var area: Rect2 = Rect2()
 
 var wave: int:
 	get:
@@ -66,10 +77,10 @@ func _physics_process(delta: float) -> void:
 		_station_time += delta
 		while _wave_time >= tuning.wave_length:
 			_wave_time -= tuning.wave_length
-			if _wave < tuning.waves - 1:
+			if endless or _wave < tuning.waves - 1:
 				_wave += 1
 				wave_changed.emit(_wave)
-		if not _done and _station_time >= tuning.wave_length * tuning.waves - 0.0001:
+		if not endless and not _done and _station_time >= tuning.wave_length * tuning.waves - 0.0001:
 			_done = true
 			waves_done.emit()
 
@@ -132,11 +143,12 @@ func begin_station(index: int) -> void:
 
 ## B = B0 × (1 + wave_slope × w) × P_s × return_pressure^returns (spec §8.4).
 func budget_per_second() -> float:
-	var w: int = tuning.waves - 1 if lull else _wave
+	var w: int = tuning.waves - 1 if lull and not endless else _wave
 	var rate: float = tuning.base_budget * (1.0 + tuning.wave_slope * w) \
 			* tuning.station_pressure[station_index] * pow(tuning.return_pressure, returns_this_station)
 	if lull:
 		rate *= tuning.lull_budget_fraction
+	rate *= budget_scale
 	return rate * tuning.stress_budget_scale if stress else rate
 
 
@@ -170,7 +182,7 @@ func _pick_point(min_dist: float, max_dist: float) -> Variant:
 		# Uniform over the ring's area, not bunched at its inner edge.
 		var dist: float = sqrt(_rng.randf_range(min_dist * min_dist, max_dist * max_dist))
 		var at: Vector3 = center + Vector3(cos(angle), 0.0, sin(angle)) * dist
-		if ground.is_blocked_at(at.x, at.z):
+		if ground.is_blocked_at(at.x, at.z) or (area.has_area() and not area.has_point(Vector2(at.x, at.z))):
 			continue
 		at.y = ground.get_surface_height_at(at.x, at.z)
 		if camera == null or not camera.is_position_in_frustum(at):

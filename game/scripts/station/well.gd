@@ -8,6 +8,8 @@ extends Node
 ## respawn_delay, reappears at a random spot whose whole disc is open, flat
 ## ground, at least min_distance_taln from Taln and min_distance_pools from
 ## the other pools. The pools are the WellPool nodes in the "well_pools" group.
+## On the persistent map, spots stay inside area (Taln's region) and within
+## max_distance_taln of him (P2-10).
 
 signal pool_depleted(pool: WellPool)
 signal pool_moved(pool: WellPool, position: Vector3)
@@ -19,6 +21,8 @@ signal pool_moved(pool: WellPool, position: Vector3)
 
 ## Seed it for reproducible runs (spec §11.5).
 var rng := RandomNumberGenerator.new()
+## World XZ rect new spots must lie in; an empty rect allows the whole ground.
+var area: Rect2 = Rect2()
 ## While frozen (the Return sequence) the Well pays nothing and pools wait.
 var frozen: bool = false
 ## Seconds until each depleted pool reappears.
@@ -70,14 +74,21 @@ func respawn_left(pool: WellPool) -> float:
 ## tries): its whole disc on open cells within max_height_spread of each
 ## other, far enough from Taln and the other active pools.
 func find_spot(pool: WellPool) -> Variant:
-	var origin: Vector2 = ground.get_origin()
-	var size := Vector2(ground.get_width(), ground.get_depth()) * ground.get_cell_size()
+	var bounds := Rect2(ground.get_origin(), Vector2(ground.get_width(), ground.get_depth()) * ground.get_cell_size())
+	if area.has_area():
+		bounds = bounds.intersection(area)
+	if tuning.max_distance_taln > 0.0:
+		var reach: float = tuning.max_distance_taln
+		var around := Rect2(Vector2(taln.global_position.x, taln.global_position.z) - Vector2(reach, reach),
+				Vector2(reach, reach) * 2.0)
+		bounds = bounds.intersection(around)
 	var r: float = tuning.pool_radius
 	for attempt in tuning.placement_attempts:
-		var x: float = rng.randf_range(origin.x + r, origin.x + size.x - r)
-		var z: float = rng.randf_range(origin.y + r, origin.y + size.y - r)
+		var x: float = rng.randf_range(bounds.position.x + r, bounds.end.x - r)
+		var z: float = rng.randf_range(bounds.position.y + r, bounds.end.y - r)
 		var at := Vector3(x, 0.0, z)
-		if Vector2(x - taln.global_position.x, z - taln.global_position.z).length() < tuning.min_distance_taln:
+		var from_taln: float = Vector2(x - taln.global_position.x, z - taln.global_position.z).length()
+		if from_taln < tuning.min_distance_taln 				or (tuning.max_distance_taln > 0.0 and from_taln > tuning.max_distance_taln):
 			continue
 		var crowded: bool = false
 		for other in pools():
@@ -122,6 +133,19 @@ func _disc_height(center: Vector3, radius: float) -> Variant:
 	if high - low > tuning.max_height_spread:
 		return null
 	return ground.get_surface_height_at(center.x, center.z)
+
+
+## Moves every pool to a fresh spot now (Taln entered a new region). A pool
+## with no spot found waits retry_delay and tries again.
+func relocate_all() -> void:
+	for pool in pools():
+		var at: Variant = find_spot(pool)
+		if at == null:
+			_respawn_left[pool] = tuning.retry_delay
+			continue
+		_respawn_left.erase(pool)
+		pool.reappear(at)
+		pool_moved.emit(pool, at)
 
 
 func _on_pool_depleted(pool: WellPool) -> void:

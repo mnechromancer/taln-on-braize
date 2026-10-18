@@ -22,6 +22,9 @@ var move_direction: Vector3 = Vector3.ZERO
 var control_locked: bool = false
 ## While set (the Return sequence) Taln doesn't move at all and Fracture holds.
 var frozen: bool = false
+## This cycle's Aspect (Design Doc v2.0 §10): whether Taln can Anchor and
+## whether Fracture builds (spec v1.4 #2).
+var aspect: AspectDef
 ## Walking-speed multipliers by source (e.g. Lurch); they multiply together.
 var _speed_multipliers: Dictionary[StringName, float] = {}
 
@@ -49,6 +52,7 @@ func _ready() -> void:
 	mesh.radius = tuning.capsule_radius
 	_body_mesh.position.y = tuning.capsule_height / 2.0
 
+	aspect = Cycle.director().aspect()
 	floor_max_angle = deg_to_rad(tuning.max_slope_deg)
 	floor_snap_length = tuning.step_height
 	floor_constant_speed = true
@@ -63,13 +67,15 @@ func _physics_process(delta: float) -> void:
 	if frozen:
 		velocity = Vector3.ZERO
 		return
-	fracture.update(global_position, Vector2(velocity.x, velocity.z).length(), delta)
+	if aspect.fracture:
+		fracture.update(global_position, Vector2(velocity.x, velocity.z).length(), delta)
 	move_direction = _read_move_direction()
 
 	if Input.is_action_just_pressed("shoulder") and not control_locked:
 		var dir: Vector3 = move_direction if not move_direction.is_zero_approx() else -global_basis.z
 		shoulder.try_start(global_position, dir)
-	anchored.update(not move_direction.is_zero_approx() or shoulder.is_charging, delta)
+	# Without the Aspect's stance, Taln reads as always moving: never Anchored.
+	anchored.update(not aspect.anchored or not move_direction.is_zero_approx() or shoulder.is_charging, delta)
 	if shoulder.is_charging:
 		_charge(delta)
 		return

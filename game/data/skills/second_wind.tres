@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="SkillDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/skill_def.gd" id="1_skill"]
+[ext_resource type="PackedScene" path="res://scenes/skills/second_wind.tscn" id="2_behavior"]
+
+[resource]
+script = ExtResource("1_skill")
+id = &"second_wind"
+display_name = "Second Wind"
+kind = 2
+tree = 1
+tags = Array[StringName]([&"regen"])
+; P2-10 kit pool PLACEHOLDER: every number here is a stand-in until the Content List.
+level_params = Array[Dictionary]([{
+"regen": 0.5
+}, {
+"regen": 0.75
+}, {
+"regen": 1.0
+}, {
+"regen": 1.25
+}, {
+"regen": 1.5
+}, {
+"regen": 1.75
+}, {
+"regen": 2.0
+}, {
+"regen": 2.25
+}, {
+"regen": 2.5
+}])
+behavior = ExtResource("2_behavior")

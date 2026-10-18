@@ -2,8 +2,8 @@ class_name Loadout
 extends Node3D
 ## Taln's owned skills (spec §2.5): the slots, the Surge bindings and each
 ## skill's level. Every owned skill's behavior scene is a child of this node.
-## New skills start at level 1. Starting skills are added once Taln is ready,
-## so behaviors can use his components in _ready.
+## New skills start at level 1. Starting skills (the cycle's Aspect's) are
+## added once Taln is ready, so behaviors can use his components in _ready.
 
 ## Input action per Surge binding, in binding order.
 const SURGE_ACTIONS: Array[StringName] = [&"surge_1", &"surge_2", &"surge_3"]
@@ -52,7 +52,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _add_starting_skills() -> void:
-	for skill: SkillDef in tuning.starting_skills:
+	for skill: SkillDef in Cycle.director().aspect().starting_skills:
 		add_skill(skill)
 	for skill: SkillDef in tuning.innate_skills:
 		add_skill(skill, true)

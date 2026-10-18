@@ -16,6 +16,13 @@ const WAVE := "Wave %d / %d"
 const STATION := "Station %d / %d"
 const LULL := "Lull"
 const RETURNS := "Returns %d"
+# Braize slice: region name, tier and the difficulty clock; then the objective.
+const REGION := "%s   Tier %d   Clock %d"
+const BREAKER_SITE := "Breaker site  %d m  %s"
+const SIEGE := "Siege  %d s"
+const SEALS_OPEN := "Seals open: Tier %d ahead"
+## Direction to a point relative to the camera, clockwise from straight ahead.
+const ARROWS: Array[String] = ["↑", "↗", "→", "↘", "↓", "↙", "←", "↖"]
 const READY := "ready"
 const SECONDS := "%.1f s"
 const COST := "%d"
@@ -46,6 +53,18 @@ const CAPS_TITLE := "Raise a cap"
 const CAP_RAISE := "%s   cap %d → %d   (costs %d)"
 const CAP_MAX := "%s   cap %d"
 const BEGIN_NEXT := "Begin the next cycle"
+const ASPECT_TITLE := "Aspect"
+const ASPECT_OPTION := "%s"
+const ASPECT_CHOSEN := "%s   (next cycle)"
+const GATES_TITLE := "Open a way"
+const GATE_OPEN := "%s   (costs %d)"
+const GATE_OPENED := "%s   open"
+
+# A felled breaker's drop (Braize slice)
+const KIT_TITLE := "Take one"
+const KIT_OPTION := "%d   %s   %s"
+## By SkillDef.Kind.
+const KIT_KINDS: Array[String] = ["Weapon", "Surge", "Perk"]
 
 # Invest menu
 const INVEST_TITLE := "Invest"

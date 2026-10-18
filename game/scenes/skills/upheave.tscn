@@ -1,0 +1,12 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/upheave.gd" id="1_behavior"]
+[ext_resource type="Script" path="res://scripts/skills/flash_ring.gd" id="2_flash"]
+
+[node name="Upheave" type="Node3D"]
+script = ExtResource("1_behavior")
+flash_color = Color(0.8509804, 0.64705884, 0.35686275, 0.85)
+flash_time = 0.2
+
+[node name="Flash" type="MeshInstance3D" parent="."]
+script = ExtResource("2_flash")

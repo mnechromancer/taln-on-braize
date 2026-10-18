@@ -23,6 +23,8 @@ public:
 	// (index = z * width + x), nonzero where closed.
 	void set_grid(const uint8_t *p_blocked, int p_width, int p_depth, real_t p_cell_size, const Vector2 &p_origin);
 	bool has_grid() const { return width > 0; }
+	int get_width() const { return width; }
+	int get_depth() const { return depth; }
 
 	// Rebuilds the field toward cell (x, z). A closed goal cell (Taln can
 	// stand on cells the swarm can't) still seeds the field: it expands into

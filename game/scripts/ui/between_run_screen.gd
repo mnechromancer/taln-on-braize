@@ -6,7 +6,9 @@ extends CanvasLayer
 ## Closed, never framed as winning or losing), the cycle's time, kills,
 ## Returns, fills Welcomed and Banked, and Agony banked this cycle and in
 ## total. Banked Agony raises skill caps here at c − 1 points per step (§9).
-## "Begin the next cycle" loads the station again with a new seed.
+## The next cycle's Aspect is chosen here, and banked Agony opens gates on
+## the persistent map for good (P2-10, spec v1.4 #1, #4). "Begin the next
+## cycle" loads the station again with a new seed.
 
 signal next_cycle_requested
 
@@ -20,17 +22,25 @@ const TEXT := Color("a69e8f")
 const DIM := Color("5a564f")
 const HONOR := Color("cfe8ff")
 const AGONY := Color("ff8a3d")
+## The panel never grows past this share of the screen's height; past it, it scrolls.
+const MAX_HEIGHT_FRACTION := 0.85
 
 ## Skills whose caps can be raised here.
 @export var cap_skills: Array[SkillDef] = []
+## Gates that can be opened here.
+@export var gates: Array[GateDef] = []
 
 var is_open: bool = false
 var stats: Dictionary = {}
 var _panel: PanelContainer
+var _scroll: ScrollContainer
+var _box: VBoxContainer
 var _title: Label
 var _lines: Label
 var _banked: Label
 var _cap_rows: Array[Button] = []
+var _aspect_rows: Array[Button] = []
+var _gate_rows: Array[Button] = []
 var _begin: Button
 var _wipe_held: float = 0.0
 var _wiped: bool = false
@@ -80,6 +90,8 @@ func show_summary(outcome: Cycle.Outcome, summary: Dictionary) -> void:
 	])
 	_refresh_caps()
 	_panel.visible = true
+	_fit_scroll()
+	_scroll.scroll_vertical = 0
 	_begin.grab_focus.call_deferred()
 
 
@@ -99,12 +111,33 @@ func _refresh_caps() -> void:
 		else:
 			button.text = UiText.CAP_RAISE % [skill.display_name, cap, cap + 1, cost]
 			button.disabled = meta.banked_agony < cost
+	var chosen: AspectDef = Cycle.director().aspect()
+	var aspects: Array[AspectDef] = Cycle.director().tuning.aspects
+	for i in _aspect_rows.size():
+		var aspect: AspectDef = aspects[i]
+		_aspect_rows[i].text = (UiText.ASPECT_CHOSEN if aspect == chosen else UiText.ASPECT_OPTION) % aspect.display_name
+	for i in _gate_rows.size():
+		var gate: GateDef = gates[i]
+		var open: bool = meta.is_gate_open(gate.id)
+		_gate_rows[i].text = UiText.GATE_OPENED % gate.display_name if open 				else UiText.GATE_OPEN % [gate.display_name, gate.cost]
+		_gate_rows[i].disabled = open or meta.banked_agony < gate.cost
 
 
 func raise(index: int) -> bool:
 	var raised: bool = Meta.state().raise_cap(cap_skills[index].id)
 	_refresh_caps()
 	return raised
+
+
+func choose_aspect(index: int) -> void:
+	Meta.state().set_aspect(Cycle.director().tuning.aspects[index].id)
+	_refresh_caps()
+
+
+func open_gate(index: int) -> bool:
+	var opened: bool = Meta.state().open_gate(gates[index].id, gates[index].cost)
+	_refresh_caps()
+	return opened
 
 
 func begin_next() -> void:
@@ -126,9 +159,15 @@ func _build() -> void:
 	style.set_content_margin_all(28.0)
 	_panel.add_theme_stylebox_override(&"panel", style)
 	center.add_child(_panel)
+	# The panel scrolls once its rows outgrow the screen (focus follows for the pad).
+	_scroll = ScrollContainer.new()
+	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_scroll.follow_focus = true
+	_panel.add_child(_scroll)
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override(&"separation", 12)
-	_panel.add_child(box)
+	_scroll.add_child(box)
+	_box = box
 	_title = Label.new()
 	_title.add_theme_color_override(&"font_color", HONOR)
 	_title.add_theme_font_size_override(&"font_size", 34)
@@ -149,9 +188,36 @@ func _build() -> void:
 		var button: Button = _button(box)
 		button.pressed.connect(raise.bind(i))
 		_cap_rows.append(button)
+	var aspects: Array[AspectDef] = Cycle.director().tuning.aspects
+	if aspects.size() > 1:
+		_title_label(box, UiText.ASPECT_TITLE)
+		for i in aspects.size():
+			var button: Button = _button(box)
+			button.pressed.connect(choose_aspect.bind(i))
+			_aspect_rows.append(button)
+	if not gates.is_empty():
+		_title_label(box, UiText.GATES_TITLE)
+		for i in gates.size():
+			var button: Button = _button(box)
+			button.pressed.connect(open_gate.bind(i))
+			_gate_rows.append(button)
 	_begin = _button(box)
 	_begin.text = UiText.BEGIN_NEXT
 	_begin.pressed.connect(begin_next)
+
+
+## Sizes the scroll area to the rows, capped at MAX_HEIGHT_FRACTION of the screen.
+func _fit_scroll() -> void:
+	var rows: Vector2 = _box.get_combined_minimum_size()
+	var cap: float = get_viewport().get_visible_rect().size.y * MAX_HEIGHT_FRACTION
+	_scroll.custom_minimum_size = Vector2(rows.x, minf(rows.y, cap))
+
+
+func _title_label(box: Control, text: String) -> void:
+	var label := Label.new()
+	label.text = text
+	label.add_theme_color_override(&"font_color", TEXT)
+	box.add_child(label)
 
 
 func _button(box: Control) -> Button:

@@ -1,8 +1,9 @@
 class_name Meta
 extends Node
 ## Meta state that outlives a cycle (spec §9, §11.5), autoloaded as MetaState:
-## per-skill caps, banked Agony, whether Catalysis is unlocked and whether the
-## Return sequence has been seen. Saved to user://meta.json as versioned JSON
+## per-skill caps, banked Agony, whether Catalysis is unlocked, whether the
+## Return sequence has been seen, the chosen Aspect and the opened gates
+## (P2-10; optional keys, so older files still load). Saved to user://meta.json as versioned JSON
 ## on every change, so quitting mid-cycle loses nothing already banked.
 ##
 ## Checks and bots call redirect() first so they never touch the player's file.
@@ -26,6 +27,10 @@ var banked_agony: int = 0
 var banked_total: int = 0
 var catalysis_unlocked: bool = false
 var return_seen: bool = false
+## The Aspect chosen for the next cycle (Design Doc v2.0 §10); empty for the default.
+var aspect: StringName = &""
+## Gates opened on the persistent map; they stay open (spec v1.4 #4).
+var opened_gates: Array[StringName] = []
 
 
 ## The MetaState autoload.
@@ -91,6 +96,27 @@ func unlock_catalysis() -> void:
 		_changed()
 
 
+func set_aspect(id: StringName) -> void:
+	if aspect != id:
+		aspect = id
+		_changed()
+
+
+func is_gate_open(id: StringName) -> bool:
+	return opened_gates.has(id)
+
+
+## Spends banked Agony to open a gate for good (spec v1.4 #4). False if it's
+## already open or there aren't enough points.
+func open_gate(id: StringName, cost: int) -> bool:
+	if is_gate_open(id) or banked_agony < cost:
+		return false
+	banked_agony -= cost
+	opened_gates.append(id)
+	_changed()
+	return true
+
+
 func mark_return_seen() -> void:
 	if not return_seen:
 		return_seen = true
@@ -104,6 +130,8 @@ func wipe() -> void:
 	banked_total = 0
 	catalysis_unlocked = false
 	return_seen = false
+	aspect = &""
+	opened_gates.clear()
 	_changed()
 
 
@@ -113,6 +141,8 @@ func load_state() -> void:
 	banked_total = 0
 	catalysis_unlocked = false
 	return_seen = false
+	aspect = &""
+	opened_gates.clear()
 	if FileAccess.file_exists(path):
 		var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
 		if data is Dictionary and int((data as Dictionary).get("schema_version", 0)) == SCHEMA_VERSION:
@@ -124,6 +154,9 @@ func load_state() -> void:
 			banked_total = int(d.get("banked_total", banked_agony))
 			catalysis_unlocked = bool(d.get("catalysis_unlocked", false))
 			return_seen = bool(d.get("return_seen", false))
+			aspect = StringName(d.get("aspect", ""))
+			for gate: Variant in d.get("opened_gates", []):
+				opened_gates.append(StringName(gate))
 		else:
 			push_warning("%s isn't meta state schema %d; starting fresh." % [path, SCHEMA_VERSION])
 	changed.emit()
@@ -144,6 +177,8 @@ func save() -> void:
 		"banked_total": banked_total,
 		"catalysis_unlocked": catalysis_unlocked,
 		"return_seen": return_seen,
+		"aspect": String(aspect),
+		"opened_gates": opened_gates.map(func(g: StringName) -> String: return String(g)),
 	}, "\t"))
 
 

@@ -59,6 +59,16 @@ func begin_cycle(new_station: GrayboxStation) -> void:
 	station_began.emit(0)
 
 
+## The Aspect this cycle plays (Design Doc v2.0 §10): MetaState's choice if
+## it names one of tuning.aspects, otherwise the default.
+func aspect() -> AspectDef:
+	var chosen: StringName = Meta.state().aspect
+	for candidate: AspectDef in tuning.aspects:
+		if candidate.id == chosen:
+			return candidate
+	return tuning.default_aspect
+
+
 ## A stream's seed, derived from the cycle's.
 func seed_for(stream: String) -> int:
 	return hash([cycle_seed, stream])

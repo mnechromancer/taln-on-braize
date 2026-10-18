@@ -12,6 +12,7 @@ pool_capacity = 90.0
 respawn_delay = 20.0
 min_distance_taln = 12.0
 min_distance_pools = 15.0
+max_distance_taln = 60.0
 max_height_spread = 0.2
 placement_attempts = 200
 retry_delay = 1.0

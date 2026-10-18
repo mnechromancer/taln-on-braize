@@ -636,6 +636,13 @@ func _check_ui_words() -> void:
 			strings.append(found.get_string(1))
 	for path in _files("res://data/skills", ".tres"):
 		strings.append((load(path) as SkillDef).display_name)
+	# P2-10: Aspect and gate names, and region names in scenes.
+	for path in _files("res://data/aspects", ".tres") + _files("res://data/map", ".tres"):
+		strings.append(String(load(path).get("display_name")))
+	var name_prop := RegEx.create_from_string("(?m)^display_name = \"((?:[^\"\\\\]|\\\\.)*)\"")
+	for path in _files("res://scenes", ".tscn"):
+		for found in name_prop.search_all(FileAccess.get_file_as_string(path)):
+			strings.append(found.get_string(1))
 	strings.append_array((load("res://data/tuning/toauma_tuning.tres") as ToaumaTuning).speaks_lines)
 	var pattern := RegEx.create_from_string("(?i)\\b(" + "|".join(BANNED) + ")\\b")
 	var hits: Array[String] = []

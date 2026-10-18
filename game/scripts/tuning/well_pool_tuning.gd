@@ -21,6 +21,8 @@ extends Resource
 ## and from the other pools' centers.
 @export_range(0.0, 100.0, 0.5, "suffix:m") var min_distance_taln: float = 0.0
 @export_range(0.0, 100.0, 0.5, "suffix:m") var min_distance_pools: float = 0.0
+## New spots stay within this distance of Taln (P2-10, a big map); 0 for no limit.
+@export_range(0.0, 500.0, 0.5, "suffix:m") var max_distance_taln: float = 0.0
 ## Its cells' heights may differ by at most this much (a pool is a flat disc).
 @export_range(0.0, 2.0, 0.05, "suffix:m") var max_height_spread: float = 0.0
 ## Random spots tried per placement, and the wait before trying again if none fit.

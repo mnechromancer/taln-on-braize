@@ -1,0 +1,63 @@
+[gd_resource type="Resource" script_class="SkillDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/skill_def.gd" id="1_skill"]
+[ext_resource type="PackedScene" path="res://scenes/skills/upheave.tscn" id="2_behavior"]
+
+[resource]
+script = ExtResource("1_skill")
+id = &"upheave"
+display_name = "Upheave"
+kind = 1
+tree = 0
+tags = Array[StringName]([&"tension", &"kinetic", &"knockback"])
+investiture_cost = 30.0
+cooldown = 6.0
+routing = 1
+; P2-10 kit pool PLACEHOLDER: every number here is a stand-in until the Content List.
+level_params = Array[Dictionary]([{
+"damage": 30.0,
+"distance": 6.0,
+"knockback": 14.0,
+"radius": 3.5
+}, {
+"damage": 36.0,
+"distance": 6.0,
+"knockback": 14.0,
+"radius": 3.7
+}, {
+"damage": 42.0,
+"distance": 6.0,
+"knockback": 14.0,
+"radius": 3.9
+}, {
+"damage": 48.0,
+"distance": 6.0,
+"knockback": 14.0,
+"radius": 4.1
+}, {
+"damage": 54.0,
+"distance": 6.0,
+"knockback": 14.0,
+"radius": 4.3
+}, {
+"damage": 60.0,
+"distance": 6.0,
+"knockback": 14.0,
+"radius": 4.5
+}, {
+"damage": 66.0,
+"distance": 6.0,
+"knockback": 14.0,
+"radius": 4.7
+}, {
+"damage": 72.0,
+"distance": 6.0,
+"knockback": 14.0,
+"radius": 4.9
+}, {
+"damage": 78.0,
+"distance": 6.0,
+"knockback": 14.0,
+"radius": 5.1
+}])
+behavior = ExtResource("2_behavior")
