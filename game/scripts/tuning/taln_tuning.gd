@@ -15,6 +15,9 @@ extends Resource
 @export_range(0.0, 89.0, 0.5, "suffix:°") var max_slope_deg: float = 0.0
 @export_range(0.0, 1.0, 0.01, "suffix:m") var step_height: float = 0.0
 @export_range(0.0, 100.0, 0.1, "suffix:m/s²") var gravity: float = 0.0
+## Steering while launched (P2-12): horizontal acceleration toward the input, with no
+## braking; it can't push past the launch's own speed or move_speed, whichever is higher.
+@export_range(0.0, 100.0, 0.1, "suffix:m/s²") var air_acceleration: float = 0.0
 
 @export_group("Health")
 @export_range(0.0, 10000.0, 1.0) var max_health: float = 0.0

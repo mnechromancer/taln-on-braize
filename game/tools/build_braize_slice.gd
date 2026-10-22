@@ -15,7 +15,8 @@ const SLICE_SIZE := 256
 const SEAL_COLOR := Color("3a2f4a")
 const GATE_COLOR := Color("6b3fa0")
 
-const RIDGE_HEIGHT := 4.0
+## Taller than any launch peaks, so a launch can't clear a seal (P2-12).
+const RIDGE_HEIGHT := 12.0
 const RIDGE_THICKNESS := 2.0
 const PASSAGE_WIDTH := 8.0
 ## Ridge lines (z) and the passages through each (x centers).
@@ -26,6 +27,19 @@ const RIDGE_II_OPEN_X := -108.0
 const RIDGE_II_GATED_X := 40.0
 ## The gate blocker sits this far along z from the ridge line: just north of the Tier II seal.
 const GATE_OFFSET := -1.5
+
+## Launch pads (P2-12): position, landing target, apex above the pad. Each
+## lands inside its own region: onto plateaus and ledges, or across the region.
+const LAUNCH_PADS := [
+	[Vector3(48.0, 0.0, 104.0), Vector3(20.0, 1.5, 82.0), 6.0],
+	[Vector3(-10.0, 0.0, 110.0), Vector3(-30.0, 3.0, 100.0), 6.0],
+	[Vector3(60.0, 0.0, 52.0), Vector3(-20.0, 0.0, 70.0), 10.0],
+	[Vector3(0.0, 0.0, 35.0), Vector3(-40.0, 3.0, 0.0), 7.0],
+	[Vector3(60.0, 0.0, 30.0), Vector3(30.0, 4.5, 18.0), 7.0],
+	[Vector3(-90.0, 0.0, 0.0), Vector3(-100.0, 0.0, -30.0), 8.0],
+	[Vector3(-100.0, 0.0, -60.0), Vector3(-40.0, 0.0, -100.0), 10.0],
+	[Vector3(20.0, 0.0, -60.0), Vector3(60.0, 1.5, -90.0), 7.0],
+]
 
 ## id, display name, tier, bounds (x, z, width, depth), breaker site.
 const REGIONS := [
@@ -143,10 +157,28 @@ func _add_extras() -> void:
 	var gates: Array[GateDef] = [gate_def]
 	var screen: Node = _root.get_node("BetweenRunScreen")
 	screen.set("gates", gates)
-	# The breaker-drop skills' caps can be raised too.
+	# Meteor's kit and the breaker-drop skills' caps can be raised too.
 	var cap_skills: Array[SkillDef] = screen.get("cap_skills")
+	cap_skills.append_array([load("res://data/skills/impact.tres"), load("res://data/skills/heave.tres")])
 	cap_skills.append_array(tuning.breaker_offer_pool)
 	screen.set("cap_skills", cap_skills)
+
+	var launch_tuning: LaunchTuning = load("res://data/tuning/launch_tuning.tres")
+	for i in LAUNCH_PADS.size():
+		var pad := Node3D.new()
+		pad.name = "LaunchPad%d" % (i + 1)
+		pad.set_script(load("res://scripts/map/launch_pad.gd"))
+		pad.set("tuning", launch_tuning)
+		pad.position = LAUNCH_PADS[i][0]
+		pad.set("target", LAUNCH_PADS[i][1])
+		pad.set("apex", LAUNCH_PADS[i][2])
+		_own(pad, _root)
+
+	var start := CanvasLayer.new()
+	start.name = "StartScreen"
+	start.set_script(load("res://scripts/ui/start_screen.gd"))
+	start.set("slice", _root)
+	_own(start, _root)
 
 	var kit_menu := CanvasLayer.new()
 	kit_menu.name = "KitOfferMenu"

@@ -1,8 +1,10 @@
 class_name Taln
 extends CharacterBody3D
 ## Taln's movement (spec §7.1): camera-relative on the ground plane, no jump,
-## gravity for ledge drops only, and a manual step-up that CharacterBody3D
-## lacks. While a Shoulder charge runs it replaces normal movement. The origin
+## gravity for ledge drops and launches, and a manual step-up that
+## CharacterBody3D lacks. Only the ground launches him (spec v1.4 #3): launch()
+## throws him on an arc he can steer a little (air_acceleration); landing after
+## any time in the air emits landed with the fall speed (P2-12). While a Shoulder charge runs it replaces normal movement. The origin
 ## is at his feet; the collider and placeholder mesh are sized from tuning in
 ## _ready.
 
@@ -22,6 +24,19 @@ var move_direction: Vector3 = Vector3.ZERO
 var control_locked: bool = false
 ## While set (the Return sequence) Taln doesn't move at all and Fracture holds.
 var frozen: bool = false
+## Off the ground (a launch, a ledge drop, a Shoulder off a drop).
+var airborne: bool = false
+## On a launch's arc: air steering instead of walking.
+var launched: bool = false
+
+## Touched down after time in the air: fall speed (m/s, downward) at impact.
+signal landed(fall_speed: float, at: Vector3)
+## Thrown by the ground (Heave, a launch pad).
+signal launched_by(velocity: Vector3)
+
+var _launch_pending: bool = false
+var _launch_speed: float = 0.0
+var _fall_speed: float = 0.0
 ## This cycle's Aspect (Design Doc v2.0 §10): whether Taln can Anchor and
 ## whether Fracture builds (spec v1.4 #2).
 var aspect: AspectDef
@@ -65,7 +80,12 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	if frozen:
+		# The Return holds him in place; he reforms on the ground, not mid-fall.
 		velocity = Vector3.ZERO
+		airborne = false
+		launched = false
+		_launch_pending = false
+		_fall_speed = 0.0
 		return
 	if aspect.fracture:
 		fracture.update(global_position, Vector2(velocity.x, velocity.z).length(), delta)
@@ -81,11 +101,16 @@ func _physics_process(delta: float) -> void:
 		return
 
 	var horizontal := Vector3(velocity.x, 0.0, velocity.z)
-	var rate: float = tuning.deceleration if move_direction.is_zero_approx() else tuning.acceleration
-	horizontal = horizontal.move_toward(move_direction * tuning.move_speed * get_speed_multiplier(), rate * delta)
+	if launched:
+		# Steer, never brake; no faster than the launch (or walking, if that's faster).
+		horizontal += move_direction * tuning.air_acceleration * delta
+		horizontal = horizontal.limit_length(maxf(_launch_speed, tuning.move_speed))
+	else:
+		var rate: float = tuning.deceleration if move_direction.is_zero_approx() else tuning.acceleration
+		horizontal = horizontal.move_toward(move_direction * tuning.move_speed * get_speed_multiplier(), rate * delta)
 	velocity.x = horizontal.x
 	velocity.z = horizontal.z
-	velocity.y = 0.0 if is_on_floor() else velocity.y - tuning.gravity * delta
+	_apply_vertical(delta)
 
 	if not move_direction.is_zero_approx():
 		var target_yaw: float = atan2(-move_direction.x, -move_direction.z)
@@ -93,6 +118,44 @@ func _physics_process(delta: float) -> void:
 
 	_try_step_up(horizontal * delta)
 	move_and_slide()
+	_track_air()
+
+
+## Throws Taln along velocity (m/s). He leaves the ground on the next physics
+## frame and steers in the air until he lands.
+func launch(velocity_in: Vector3) -> void:
+	if frozen:
+		return
+	velocity = velocity_in
+	_launch_pending = true
+	launched = true
+	airborne = true
+	_launch_speed = Vector2(velocity_in.x, velocity_in.z).length()
+	launched_by.emit(velocity_in)
+
+
+## The launch's vertical speed on the frame it starts; otherwise gravity, or
+## nothing on the ground.
+func _apply_vertical(delta: float) -> void:
+	if _launch_pending:
+		_launch_pending = false
+	elif is_on_floor():
+		velocity.y = 0.0
+	else:
+		velocity.y -= tuning.gravity * delta
+
+
+## After a move: a landing ends the air time and reports its fall speed.
+func _track_air() -> void:
+	if is_on_floor() and not _launch_pending:
+		if airborne:
+			airborne = false
+			launched = false
+			landed.emit(_fall_speed, global_position)
+		_fall_speed = 0.0
+	else:
+		airborne = true
+		_fall_speed = maxf(-velocity.y, 0.0)
 
 
 ## One frame of a Shoulder charge: fixed direction, no steering. Off a drop
@@ -110,9 +173,10 @@ func _charge(delta: float) -> void:
 	var horizontal: Vector3 = dir * (step / delta)
 	velocity.x = horizontal.x
 	velocity.z = horizontal.z
-	velocity.y = 0.0 if is_on_floor() else velocity.y - tuning.gravity * delta
+	_apply_vertical(delta)
 	_try_step_up(horizontal * delta)
 	move_and_slide()
+	_track_air()
 
 	if is_on_wall():
 		var into_wall: float = dir.dot(-get_wall_normal())

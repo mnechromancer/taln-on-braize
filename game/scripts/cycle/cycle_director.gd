@@ -31,6 +31,9 @@ var play_time: float = 0.0
 var station: GrayboxStation
 ## A seed for the next cycle, or 0 for a random one.
 var next_seed: int = 0
+## Set once the session's first cycle is under way (picked on the start
+## screen, or any later cycle): the start screen shows only at launch.
+var start_chosen: bool = false
 
 
 ## The CycleDirector autoload.
@@ -125,6 +128,7 @@ func summary() -> Dictionary:
 ## Loads a fresh station for the next cycle.
 func begin_next_cycle(seed_override: int = 0) -> void:
 	next_seed = seed_override
+	start_chosen = true
 	get_tree().paused = false
 	Engine.time_scale = 1.0
 	var old: GrayboxStation = station

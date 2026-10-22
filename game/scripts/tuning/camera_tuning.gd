@@ -35,3 +35,11 @@ extends Resource
 ## Player setting; multiplies all shake.
 @export_range(0.0, 2.0, 0.05) var shake_global_scale: float = 0.0
 @export_range(0.0, 1.0, 0.05) var shoulder_wall_trauma: float = 0.0
+## Trauma per m/s of fall speed when Taln lands, past landing_trauma_min_speed (P2-12).
+@export_range(0.0, 0.2, 0.005) var landing_trauma_per_speed: float = 0.0
+@export_range(0.0, 50.0, 0.5, "suffix:m/s") var landing_trauma_min_speed: float = 0.0
+
+@export_group("Airborne")
+## While Taln is airborne the camera pulls out this much farther, easing at airborne_zoom_rate.
+@export_range(0.0, 20.0, 0.1, "suffix:m") var airborne_zoom_add: float = 0.0
+@export_range(0.0, 20.0, 0.1, "suffix:/s") var airborne_zoom_rate: float = 0.0

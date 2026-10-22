@@ -72,6 +72,11 @@ func _report(c: Dictionary) -> void:
 		var found: String = "siege at %s (%s after entering)" % [A.mmss(region.siege), A.mmss(region.siege - region.entered)] 				if region.siege >= 0.0 else "no siege"
 		var fell: String = ", breaker fell at %s" % A.mmss(region.fell) if region.fell >= 0.0 else ""
 		print("Region %s (Tier %d): entered %s, %s%s" % [region.id, region.tier, A.mmss(region.entered), found, fell])
+	if a.landings > 0:
+		var air: float = float(c.summary.get("airtime", 0.0))
+		print("Air: %s airborne (%.0f%% of play); %d landings, %d Impacts hitting %d (%.1f per Impact)" % [A.mmss(air),
+				air / maxf(a.play_seconds, 0.01) * 100.0, a.landings, a.impacts, a.impact_hits,
+				float(a.impact_hits) / maxf(a.impacts, 1)])
 	if not a.kit.is_empty():
 		print("Breaker drops taken: " + ", ".join(a.kit.map(func(k: Dictionary) -> String: return "%s at %s" % [k.skill, A.mmss(k.t)])))
 	var curve: Array[String] = []

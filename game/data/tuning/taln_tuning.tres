@@ -32,3 +32,4 @@ fracture_base_rate = 0.03
 fracture_rate_ramp = 0.01
 fracture_pulse_interval = 1.0
 fracture_reset_time = 3.0
+air_acceleration = 12.0

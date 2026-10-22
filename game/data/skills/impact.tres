@@ -1,0 +1,87 @@
+[gd_resource type="Resource" script_class="SkillDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/skill_def.gd" id="1_skill"]
+[ext_resource type="PackedScene" path="res://scenes/skills/impact.tscn" id="2_behavior"]
+
+[resource]
+script = ExtResource("1_skill")
+id = &"impact"
+display_name = "Impact"
+kind = 0
+tree = 0
+tags = Array[StringName]([&"landing", &"kinetic"])
+; P2-12 PLACEHOLDER numbers until the Content List.
+level_params = Array[Dictionary]([{
+"damage": 24.0,
+"damage_per_speed": 3.0,
+"knockback": 10.0,
+"max_radius": 7.0,
+"min_speed": 6.0,
+"radius": 3.0,
+"radius_per_speed": 0.2
+}, {
+"damage": 30.0,
+"damage_per_speed": 3.5,
+"knockback": 10.0,
+"max_radius": 7.0,
+"min_speed": 6.0,
+"radius": 3.0,
+"radius_per_speed": 0.2
+}, {
+"damage": 36.0,
+"damage_per_speed": 4.0,
+"knockback": 10.0,
+"max_radius": 7.0,
+"min_speed": 6.0,
+"radius": 3.0,
+"radius_per_speed": 0.2
+}, {
+"damage": 42.0,
+"damage_per_speed": 4.5,
+"knockback": 10.0,
+"max_radius": 7.0,
+"min_speed": 6.0,
+"radius": 3.0,
+"radius_per_speed": 0.2
+}, {
+"damage": 48.0,
+"damage_per_speed": 5.0,
+"knockback": 10.0,
+"max_radius": 7.0,
+"min_speed": 6.0,
+"radius": 3.0,
+"radius_per_speed": 0.2
+}, {
+"damage": 54.0,
+"damage_per_speed": 5.5,
+"knockback": 10.0,
+"max_radius": 7.0,
+"min_speed": 6.0,
+"radius": 3.0,
+"radius_per_speed": 0.2
+}, {
+"damage": 60.0,
+"damage_per_speed": 6.0,
+"knockback": 10.0,
+"max_radius": 7.0,
+"min_speed": 6.0,
+"radius": 3.0,
+"radius_per_speed": 0.2
+}, {
+"damage": 66.0,
+"damage_per_speed": 6.5,
+"knockback": 10.0,
+"max_radius": 7.0,
+"min_speed": 6.0,
+"radius": 3.0,
+"radius_per_speed": 0.2
+}, {
+"damage": 72.0,
+"damage_per_speed": 7.0,
+"knockback": 10.0,
+"max_radius": 7.0,
+"min_speed": 6.0,
+"radius": 3.0,
+"radius_per_speed": 0.2
+}])
+behavior = ExtResource("2_behavior")

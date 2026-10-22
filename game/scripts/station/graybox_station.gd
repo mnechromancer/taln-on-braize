@@ -50,6 +50,7 @@ func _ready() -> void:
 	var world: WorldEnvironment = $WorldEnvironment
 	world.environment = world.environment.duplicate()
 	_taln.shoulder.blocked.connect(_on_shoulder_blocked)
+	_taln.landed.connect(_on_landed)
 
 	_swarm.target_move_speed = _taln.tuning.move_speed
 	_swarm.target_radius = _taln.tuning.capsule_radius
@@ -69,7 +70,14 @@ func _ready() -> void:
 	_swarm.enemy_died.connect(_on_enemy_died)
 	_taln.toauma.notice.connect(_on_notice)
 	_spawner.waves_done.connect(_on_waves_done)
-	Cycle.director().begin_cycle(self)
+	if not _holds_for_start():
+		Cycle.director().begin_cycle(self)
+
+
+## Override: true to hold the cycle back until something (a start screen)
+## begins it.
+func _holds_for_start() -> bool:
+	return false
 
 
 func station_index() -> int:
@@ -165,6 +173,13 @@ func _on_notice(threshold: float, hunters: int, lifetime: float) -> void:
 
 func _on_shoulder_blocked(_position: Vector3, _normal: Vector3) -> void:
 	_camera_rig.add_trauma(_camera_rig.tuning.shoulder_wall_trauma)
+
+
+## Hard landings shake the camera, more the faster Taln came down (P2-12).
+func _on_landed(fall_speed: float, _at: Vector3) -> void:
+	var t: CameraTuning = _camera_rig.tuning
+	if fall_speed > t.landing_trauma_min_speed:
+		_camera_rig.add_trauma((fall_speed - t.landing_trauma_min_speed) * t.landing_trauma_per_speed)
 
 
 func _unhandled_input(event: InputEvent) -> void:

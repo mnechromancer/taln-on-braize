@@ -54,6 +54,8 @@ const CAP_RAISE := "%s   cap %d → %d   (costs %d)"
 const CAP_MAX := "%s   cap %d"
 const BEGIN_NEXT := "Begin the next cycle"
 const ASPECT_TITLE := "Aspect"
+# Launch pick (Braize slice)
+const START_TITLE := "Begin the cycle as"
 const ASPECT_OPTION := "%s"
 const ASPECT_CHOSEN := "%s   (next cycle)"
 const GATES_TITLE := "Open a way"

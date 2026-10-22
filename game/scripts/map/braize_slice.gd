@@ -17,6 +17,10 @@ enum State { EXPLORING, SIEGE, FALLEN }
 signal region_entered(region: Region)
 signal siege_began(region: Region)
 signal breaker_fell(region: Region)
+## Launched as the game's first scene, the slice waits for the start screen's
+## Aspect pick before its cycle begins (begin_as).
+var waiting_for_start: bool = false
+
 ## A felled breaker's offer of new skills, and the one taken.
 signal kit_offered(offer: Array[SkillDef])
 signal kit_taken(skill: SkillDef)
@@ -40,6 +44,8 @@ func _ready() -> void:
 			regions.append(node)
 		elif node is Gate:
 			gates.append(node)
+		elif node is LaunchPad:
+			(node as LaunchPad).taln = _taln
 	regions.sort_custom(func(a: Region, b: Region) -> bool: return a.tier < b.tier)
 	_spawner.endless = true
 	super._ready()
@@ -63,6 +69,30 @@ func reset_for_cycle() -> void:
 	kit_rng.seed = Cycle.director().seed_for("kit")
 	_follow_taln()
 	region_entered.emit(current)
+
+
+## Waits at launch: only as the session's first scene. Stations added by
+## check and bot scripts aren't the current scene, so they never wait.
+func _holds_for_start() -> bool:
+	waiting_for_start = get_tree().current_scene == self and not Cycle.director().start_chosen
+	if waiting_for_start:
+		get_tree().paused = true  # Nothing runs until the pick.
+	return waiting_for_start
+
+
+## The start screen's pick: this cycle if Taln already has that Aspect,
+## otherwise the slice loads again with it (his kit comes from the Aspect).
+func begin_as(aspect: AspectDef) -> void:
+	if not waiting_for_start:
+		return
+	waiting_for_start = false
+	var cycle: Cycle = Cycle.director()
+	cycle.start_chosen = true
+	Meta.state().set_aspect(aspect.id)
+	if aspect == _taln.aspect:
+		cycle.begin_cycle(self)
+	else:
+		cycle.begin_next_cycle()
 
 
 ## The region containing at, or null.

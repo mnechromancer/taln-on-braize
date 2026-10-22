@@ -1,0 +1,45 @@
+[gd_resource type="Resource" script_class="SkillDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/skill_def.gd" id="1_skill"]
+[ext_resource type="PackedScene" path="res://scenes/skills/heave.tscn" id="2_behavior"]
+
+[resource]
+script = ExtResource("1_skill")
+id = &"heave"
+display_name = "Heave"
+kind = 1
+tree = 0
+tags = Array[StringName]([&"cohesion", &"launch"])
+investiture_cost = 0.0
+cooldown = 1.6
+routing = 1
+; P2-12 PLACEHOLDER numbers. Cost 0 (decided on ambiguity, spec v1.6): Meteor starts with no weapon and no Investiture, so a paid launch would leave it stuck.
+level_params = Array[Dictionary]([{
+"apex": 4.5,
+"distance": 9.0
+}, {
+"apex": 4.75,
+"distance": 9.5
+}, {
+"apex": 5.0,
+"distance": 10.0
+}, {
+"apex": 5.25,
+"distance": 10.5
+}, {
+"apex": 5.5,
+"distance": 11.0
+}, {
+"apex": 5.75,
+"distance": 11.5
+}, {
+"apex": 6.0,
+"distance": 12.0
+}, {
+"apex": 6.25,
+"distance": 12.5
+}, {
+"apex": 6.5,
+"distance": 13.0
+}])
+behavior = ExtResource("2_behavior")

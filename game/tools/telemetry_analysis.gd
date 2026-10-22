@@ -46,7 +46,7 @@ static func analyze(cycle: Dictionary) -> Dictionary:
 	var header: Dictionary = cycle.header
 	var stations: int = int(header.stations)
 	var result: Dictionary = {"waves": [], "stations": [], "levels": [], "strain": [], "play_seconds": 0.0,
-			"fills": 0, "lull_kills": 0, "regions": [], "kit": []}
+			"fills": 0, "lull_kills": 0, "regions": [], "kit": [], "landings": 0, "impacts": 0, "impact_hits": 0}
 	for s in stations:
 		result.stations.append({"reached": false, "start": 0.0, "wave_seconds": 0.0, "kills": 0, "income": {},
 				"gross": 0.0, "fills": {}, "fill_count": 0, "returns": 0, "levels": 0})
@@ -114,6 +114,11 @@ static func analyze(cycle: Dictionary) -> Dictionary:
 			"siege", "breaker_fell":
 				if not result.regions.is_empty() and result.regions[-1].id == String(e.region):
 					result.regions[-1]["siege" if e.ev == "siege" else "fell"] = t
+			"landing":
+				result.landings += 1
+			"impact":
+				result.impacts += 1
+				result.impact_hits += int(e.hits)
 			"kit_take":
 				result.kit.append({"t": t, "skill": String(e.skill)})
 			"strain":

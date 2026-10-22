@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="AspectDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/aspect/aspect_def.gd" id="1_aspect"]
+[ext_resource type="Resource" path="res://data/skills/impact.tres" id="2_impact"]
+[ext_resource type="Resource" path="res://data/skills/heave.tres" id="3_heave"]
+
+[resource]
+script = ExtResource("1_aspect")
+id = &"meteor"
+display_name = "Meteor"
+starting_skills = Array[Resource]([ExtResource("2_impact"), ExtResource("3_heave")])
+tags = Array[StringName]([&"traversal", &"landing"])

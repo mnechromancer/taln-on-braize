@@ -38,6 +38,8 @@ var _last_strain: float = -1.0
 var _snapshot_t: float = 0.0
 var _last_t: float = 0.0
 var _finished: bool = false
+## Game seconds Taln spent airborne this cycle (P2-12).
+var _airtime: float = 0.0
 
 
 static func recorder() -> Telemetry:
@@ -63,6 +65,8 @@ func _process(delta: float) -> void:
 	if _file == null or get_tree().paused or not is_instance_valid(_station):
 		return
 	# Game-time intervals (the windows' slow-down stretches them in real time).
+	if (_station.get_node("Taln") as Taln).airborne:
+		_airtime += delta
 	_income_left -= delta
 	if _income_left <= 0.0:
 		_income_left += INCOME_INTERVAL
@@ -93,6 +97,7 @@ func _on_cycle_began(cycle_seed: int) -> void:
 	_income_left = INCOME_INTERVAL
 	_snapshot_left = SNAPSHOT_INTERVAL
 	_kills_at_snapshot = 0
+	_airtime = 0.0
 	var spawn: SpawnTuning = (_station.get_node("SpawnDirector") as SpawnDirector).tuning
 	var leveling: InvestitureTuning = (_station.get_node("Taln") as Taln).leveling.tuning
 	_write({"ev": "cycle_begin", "schema": SCHEMA, "seed": cycle_seed, "wave_length": spawn.wave_length,
@@ -122,6 +127,7 @@ func _on_cycle_ended(outcome: Cycle.Outcome, summary: Dictionary) -> void:
 	out["spent"] = _as_strings(taln.investiture.spent_by_reason)
 	out["levels"] = taln.leveling.levels_taken
 	out["agony"] = _as_strings(taln.agony.gained_by_source)
+	out["airtime"] = snappedf(_airtime, 0.01)
 	_write(out)
 	_finished = true
 	_close()
@@ -165,6 +171,12 @@ func _hook() -> void:
 		_connect(slice.kit_offered, func(offer: Array[SkillDef]) -> void:
 			_write({"ev": "kit_offer", "offer": offer.map(func(s: SkillDef) -> StringName: return s.id)}))
 		_connect(slice.kit_taken, func(skill: SkillDef) -> void: _write({"ev": "kit_take", "skill": skill.id}))
+	# P2-12: every landing, and Impact's strikes (its behavior may come later, from a drop).
+	_connect(taln.landed, func(speed: float, _at: Vector3) -> void:
+		_write({"ev": "landing", "speed": snappedf(speed, 0.01)}))
+	for behavior: Node in taln.loadout.get_children():
+		_hook_impact(behavior)
+	_connect(taln.loadout.skill_added, func(_skill: SkillDef, behavior: SkillBehavior) -> void: _hook_impact(behavior))
 	_connect(spawner.wave_changed, func(wave: int) -> void:
 		_flush_income()
 		_write({"ev": "wave", "wave": wave, "station": _station.station_index()}))
@@ -174,6 +186,12 @@ func _hook() -> void:
 func _write_region(region: Region, ev: StringName) -> void:
 	_flush_income()
 	_write({"ev": ev, "region": region.id, "tier": region.tier, "station": _station.station_index()})
+
+
+func _hook_impact(behavior: Node) -> void:
+	if behavior is Impact:
+		_connect((behavior as Impact).impacted, func(speed: float, hits: int) -> void:
+			_write({"ev": "impact", "speed": snappedf(speed, 0.01), "hits": hits}))
 
 
 func _connect(sig: Signal, callable: Callable) -> void:

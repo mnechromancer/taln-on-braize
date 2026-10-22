@@ -25,6 +25,7 @@ public:
 	SWARM_ACCESSORS(int, flow_window_cells)
 	SWARM_ACCESSORS(int, flow_window_margin)
 	SWARM_ACCESSORS(double, despawn_distance)
+	SWARM_ACCESSORS(double, contact_height)
 
 protected:
 	static void _bind_methods();
@@ -60,4 +61,8 @@ private:
 	// Swarm-tier enemies farther than this from Taln (XZ) are removed
 	// unrewarded; 0 never removes them. Elites are never removed.
 	double despawn_distance = 0.0;
+	// Enemies touch Taln (push-out and contact damage) only within this
+	// vertical distance of his feet: a launched Taln passes over the swarm
+	// (P2-12). 0 ignores height.
+	double contact_height = 0.0;
 };

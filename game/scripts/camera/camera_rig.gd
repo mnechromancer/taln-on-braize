@@ -25,6 +25,8 @@ var capture_locked: bool = false
 var _pitch_deg: float = 0.0
 var _distance: float = 0.0
 var _trauma: float = 0.0
+## Extra distance while the target (Taln) is airborne (P2-12).
+var _air_zoom: float = 0.0
 
 @onready var _pitch_pivot: Node3D = $PitchPivot
 @onready var _spring_arm: SpringArm3D = $PitchPivot/SpringArm3D
@@ -47,6 +49,9 @@ func _process(delta: float) -> void:
 	var stick_step: float = tuning.orbit_speed_deg * delta
 	_orbit(-stick.x * stick_step, -stick.y * stick_step)
 	_distance += Input.get_axis("cam_zoom_in", "cam_zoom_out") * tuning.zoom_rate * delta
+	var airborne: bool = target is Taln and (target as Taln).airborne
+	_air_zoom = move_toward(_air_zoom, tuning.airborne_zoom_add if airborne else 0.0,
+			tuning.airborne_zoom_rate * delta)
 	_apply_pitch_and_zoom()
 
 	if target:
@@ -94,7 +99,7 @@ func _apply_pitch_and_zoom() -> void:
 	_pitch_deg = clampf(_pitch_deg, tuning.pitch_min_deg, tuning.pitch_max_deg)
 	_distance = clampf(_distance, tuning.zoom_min, tuning.zoom_max)
 	_pitch_pivot.rotation.x = deg_to_rad(_pitch_deg)
-	_spring_arm.spring_length = _distance
+	_spring_arm.spring_length = _distance + _air_zoom
 
 
 func _focus_point() -> Vector3:

@@ -14,3 +14,4 @@ flow_direct_range = 3.0
 flow_window_cells = 128
 flow_window_margin = 24
 despawn_distance = 70.0
+contact_height = 1.6

@@ -76,6 +76,7 @@ func _run() -> void:
 	await _check_screen()
 	await _check_aspects()
 	await _check_telemetry()
+	await _check_start_screen()
 	print("")
 	print("MANUAL  Roaming the slice (scale, the beacons through fog, the seals and the gate, the siege) needs a rendered recording.")
 	print("")
@@ -172,11 +173,11 @@ func _check_data() -> void:
 	_check("The shortcut gate costs 3 banked Agony", gate.cost == 3 and gate.id == &"descent_shortcut", "%d" % gate.cost)
 	var ct: CycleTuning = load("res://data/tuning/cycle_tuning.tres")
 	var ids: Array = ct.aspects.map(func(a: AspectDef) -> StringName: return a.id)
-	_check("Cycles load the slice; Aspects Earthshaper (default) and Unaspected",
-			ct.station_scene == SLICE and ids == [&"earthshaper", &"unaspected"] and ct.default_aspect.id == &"earthshaper",
+	_check("Cycles load the slice; Aspects Earthshaper (default), Meteor and Unaspected",
+			ct.station_scene == SLICE and ids == [&"earthshaper", &"meteor", &"unaspected"] and ct.default_aspect.id == &"earthshaper",
 			"%s, %s, default %s" % [ct.station_scene, ids, ct.default_aspect.id])
 	var earth: AspectDef = ct.aspects[0]
-	var bare: AspectDef = ct.aspects[1]
+	var bare: AspectDef = ct.aspects[2]
 	var kit := func(a: AspectDef) -> Array: return a.starting_skills.map(func(s: SkillDef) -> StringName: return s.id)
 	_check("Both Aspects start with Breaking Stroke and Settle; only Earthshaper has Anchored and Fracture (spec v1.4 #2)",
 			kit.call(earth) == [&"breaking_stroke", &"settle"] and kit.call(bare) == kit.call(earth)
@@ -603,16 +604,16 @@ func _check_screen() -> void:
 	await _fresh()
 	cycle.end_cycle(Cycle.Outcome.CLOSED)
 	await _frames(2)
-	var rows_ok: bool = screen._aspect_rows.size() == 2 and screen._gate_rows.size() == 1 and screen._cap_rows.size() == 8 \
-			and screen._aspect_rows[0].text == "Earthshaper   (next cycle)" and screen._aspect_rows[1].text == "Unaspected" \
+	var rows_ok: bool = screen._aspect_rows.size() == 3 and screen._gate_rows.size() == 1 and screen._cap_rows.size() == 10 \
+			and screen._aspect_rows[0].text == "Earthshaper   (next cycle)" and screen._aspect_rows[1].text == "Meteor" and screen._aspect_rows[2].text == "Unaspected" \
 			and screen._gate_rows[0].disabled and screen._gate_rows[0].text == "The short way down   (costs 3)"
 	var cap: float = screen.get_viewport().get_visible_rect().size.y * BetweenRunScreen.MAX_HEIGHT_FRACTION
 	var rows: float = screen._box.get_combined_minimum_size().y
 	var fits: bool = absf(screen._scroll.custom_minimum_size.y - minf(rows, cap)) < 0.5
 	_check("The between-run screen scrolls once its rows outgrow 85% of the screen's height", fits,
 			"rows %.0f px, cap %.0f px, scroll area %.0f px" % [rows, cap, screen._scroll.custom_minimum_size.y])
-	screen.choose_aspect(1)
-	var chose: bool = meta.aspect == &"unaspected" and screen._aspect_rows[1].text == "Unaspected   (next cycle)"
+	screen.choose_aspect(2)
+	var chose: bool = meta.aspect == &"unaspected" and screen._aspect_rows[2].text == "Unaspected   (next cycle)"
 	meta.grant(3)
 	var opened: bool = screen.open_gate(0) and screen._gate_rows[0].text == "The short way down   open" \
 			and screen._gate_rows[0].disabled
@@ -673,3 +674,43 @@ func _check_telemetry() -> void:
 	for file in DirAccess.get_files_at(CHECKS_TELEMETRY):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(CHECKS_TELEMETRY.path_join(file)))
 	paused = false
+
+
+## The launch pick, driven the way a real launch runs: the slice as the current scene.
+func _check_start_screen() -> void:
+	paused = false
+	if is_instance_valid(station):
+		station.queue_free()
+		await _frames(1)
+	meta.wipe()
+	cycle.start_chosen = false
+	var seed_before: int = cycle.cycle_seed
+	change_scene_to_file(SLICE)
+	await _frames(4)
+	var first := current_scene as BraizeSlice
+	var screen_node: StartScreen = first.get_node("StartScreen")
+	var waiting: bool = first.waiting_for_start and screen_node.is_open and paused and cycle.station != first \
+			and screen_node.option_texts() == ["Earthshaper", "Meteor", "Unaspected"]
+	_check("Launched as the first scene, the slice waits paused on the Aspect pick before its cycle begins",
+			waiting, "waiting %s, open %s, paused %s, rows %s" % [first.waiting_for_start, screen_node.is_open,
+			paused, screen_node.option_texts()])
+	# Same Aspect as Taln has (the default): the cycle begins here, no reload.
+	screen_node.pick(0)
+	await _frames(2)
+	var same: bool = cycle.station == first and not paused and cycle.cycle_seed != seed_before \
+			and is_instance_valid(first) and cycle.start_chosen
+	# A different one: the slice loads again with that kit, and doesn't ask again.
+	cycle.start_chosen = false
+	change_scene_to_file(SLICE)
+	await _frames(4)
+	var second := current_scene as BraizeSlice
+	(second.get_node("StartScreen") as StartScreen).pick(1)
+	await _frames(4)
+	var third := current_scene as BraizeSlice
+	var reloaded: bool = third != second and cycle.station == third and not third.waiting_for_start \
+			and not (third.get_node("StartScreen") as StartScreen).is_open \
+			and (third.get_node("Taln") as Taln).aspect.id == &"meteor" and meta.aspect == &"meteor" and not paused
+	_check("Picking Taln's Aspect begins the cycle at once; picking another reloads the slice with that kit, without asking again",
+			same and reloaded, "same %s, reloaded as Meteor %s" % [same, reloaded])
+	_bind(third)
+	meta.wipe()

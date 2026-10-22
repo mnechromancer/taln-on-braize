@@ -608,8 +608,13 @@ void SwarmServer::_step(double p_dt) {
 	// Push out of Taln's radius (Taln isn't pushed back); touching enemies deal contact damage.
 	std::vector<Contact> contacts;
 	if (has_target) {
+		const real_t reach_up = real_t(tuning->get_contact_height());
 		for (int i = 0; i < capacity; ++i) {
 			if (!alive[i] || hp[i] <= 0.0) {
+				continue;
+			}
+			// Above or below the swarm (a launch, a ledge): no touch.
+			if (reach_up > 0.0f && std::abs(position[i].y - goal.y) > reach_up) {
 				continue;
 			}
 			const real_t touch = real_t(target_radius) + _radius(i);
