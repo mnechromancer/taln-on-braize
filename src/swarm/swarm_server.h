@@ -35,6 +35,15 @@ using namespace godot;
 // unless they're within flow_direct_range of Taln along it, can see his cell
 // in a straight grid line, or can't reach him at all; then they seek directly.
 // Rooted enemies don't steer, so they ignore it.
+//
+// Awareness (spec v1.4 #6, P2-13): with use_awareness on, the swarm hunts a
+// known position set from GDScript instead of Taln himself, and with none
+// known (set_known(false)) it wanders. Contact, despawn and spotting always
+// use Taln's real position. Lures (P2-11): structures the swarm attacks.
+// Enemies within a lure's pull radius seek it instead and deal their contact
+// damage to it (lure_contacted). Commanders (P2-13) buff the enemies in
+// their aura; the Ashynite disease (P2-15) buffs the infected, kills them
+// after its incubation and spreads through the crowd.
 class SwarmServer : public Node3D {
 	GDCLASS(SwarmServer, Node3D);
 
@@ -107,6 +116,38 @@ public:
 	// Checks: seconds of root and slow left on the enemy in this slot.
 	double get_enemy_root_time(int p_index) const;
 	double get_enemy_slow_time(int p_index) const;
+	StringName get_enemy_type_id(int p_index) const;
+	double get_enemy_hp(int p_index) const;
+
+	// Awareness: the position the swarm hunts, or none (then it wanders).
+	// Off (the default) it hunts Taln every tick, as before.
+	void set_use_awareness(bool p_use);
+	bool is_using_awareness() const;
+	void set_known_position(const Vector3 &p_position);
+	void set_known(bool p_known);
+	bool is_known() const;
+	// Where the swarm is heading (Taln, the known position); INF with none.
+	Vector3 get_goal_position() const;
+	// True if the straight line between two points crosses no blocked cell.
+	bool has_line_of_sight(const Vector3 &p_from, const Vector3 &p_to) const;
+	// Spotters whose sight_range × p_range_mult reaches p_position in a clear line.
+	int count_spotters_seeing(const Vector3 &p_position, double p_range_mult) const;
+	// Lures: one position, pull radius and body radius per lure, replacing
+	// the last set (an empty set clears them).
+	void set_lures(const PackedVector3Array &p_positions, const PackedFloat32Array &p_pull_radii,
+			const PackedFloat32Array &p_body_radii);
+	// Commanders alive, by slot; the nearest live enemy of a tier within a
+	// radius (INF if none).
+	PackedInt32Array get_commander_slots() const;
+	Vector3 find_nearest_of_tier(const Vector3 &p_center, double p_radius, int p_tier);
+	bool is_enemy_buffed(int p_index) const;
+	// The disease: infects every live enemy in the radius (returns how many
+	// were newly infected); counts and per-slot state.
+	int infect_in_radius(const Vector3 &p_center, double p_radius);
+	// The nearest live enemy in the radius that isn't infected yet (INF if none).
+	Vector3 find_nearest_uninfected(const Vector3 &p_center, double p_radius);
+	int get_infected_count() const;
+	bool is_enemy_infected(int p_index) const;
 
 	void set_capacity(int p_capacity);
 	int get_capacity() const;
@@ -135,6 +176,14 @@ private:
 		StringName type_id;
 		Vector3 position;
 		bool rewarded;
+		bool blighted;
+	};
+
+	struct Lure {
+		Vector3 position;
+		real_t pull;
+		real_t body;
+		double damage;
 	};
 
 	void _allocate();
@@ -152,6 +201,14 @@ private:
 	// Unit direction an enemy at p_position steers toward p_goal: the flow,
 	// or straight at it (see the class comment).
 	Vector2 _seek_direction(const Vector3 &p_position, const Vector3 &p_goal);
+	// The position the swarm hunts this tick; false if there is none.
+	bool _goal(Vector3 &r_goal) const;
+	// Index of the lure pulling the enemy, or -1.
+	int _lure_for(int p_index) const;
+	// Commander auras onto their neighbors; the disease's damage and spread.
+	void _apply_commanders(double p_dt);
+	void _apply_blight(double p_dt);
+	void _infect(int p_index);
 	void _free(int p_index);
 	void _hit(int p_index, double p_amount, int p_type);
 	// Inside the range, and either within the angle or overlapping the origin.
@@ -200,6 +257,18 @@ private:
 	std::vector<double> slow_time;
 	// Seconds left to live; 0 means no limit.
 	std::vector<double> lifetime;
+	// A commander's buff: seconds left, and the multipliers it gave.
+	std::vector<double> buff_time;
+	std::vector<double> buff_speed;
+	std::vector<double> buff_damage;
+	// The disease: infected, seconds since infection, and whether the last
+	// hit that would kill came from it.
+	std::vector<uint8_t> infected;
+	std::vector<double> infect_age;
+	std::vector<uint8_t> blight_kill;
+	// Wandering with nothing known: a direction and how long to hold it.
+	std::vector<Vector2> wander_dir;
+	std::vector<double> wander_time;
 	std::vector<uint8_t> alive;
 	std::vector<int> free_slots;
 	int alive_count = 0;
@@ -235,6 +304,12 @@ private:
 	double flow_since_build = 0.0;
 	double last_flow_build_ms = 0.0;
 	int flow_builds = 0;
+
+	bool use_awareness = false;
+	bool known = false;
+	Vector3 known_position;
+	std::vector<Lure> lures;
+	int infected_count = 0;
 
 	bool frozen = false;
 	double accumulator = 0.0;

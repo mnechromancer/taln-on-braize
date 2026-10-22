@@ -79,6 +79,20 @@ func _report(c: Dictionary) -> void:
 				float(a.impact_hits) / maxf(a.impacts, 1)])
 	if not a.kit.is_empty():
 		print("Breaker drops taken: " + ", ".join(a.kit.map(func(k: Dictionary) -> String: return "%s at %s" % [k.skill, A.mmss(k.t)])))
+	if not a.seen.is_empty():
+		print("Awareness: unseen %s (%.0f%% of play); %d commanders came, %d killed%s" % [A.mmss(a.unseen_seconds),
+				a.unseen_seconds / maxf(a.play_seconds, 0.01) * 100.0, a.commanders_spawned, a.commanders_killed,
+				", first at %s" % A.mmss(a.first_commander_kill) if a.first_commander_kill >= 0.0 else ""])
+	if not a.structures.is_empty():
+		var kinds: Dictionary = {}
+		for st: Dictionary in a.structures:
+			kinds[st.kind] = kinds.get(st.kind, 0) + 1
+		print("Structures raised %s; lost to the swarm %d; struck %s for %s; Fracture bit %d times" % [JSON.stringify(kinds),
+				int(s.get("structures_lost_to_swarm", 0)), JSON.stringify(s.get("structure_hits", {})),
+				JSON.stringify(s.get("structure_damage", {})), a.fractures])
+	if int(s.get("blight_kills", 0)) > 0 or a.infected_peak > 0:
+		print("Disease: %d of %d kills (%.0f%%); infected peaked at %d" % [int(s.get("blight_kills", 0)), int(s.get("kills", 0)),
+				100.0 * int(s.get("blight_kills", 0)) / maxi(int(s.get("kills", 0)), 1), a.infected_peak])
 	var curve: Array[String] = []
 	for point: Dictionary in a.strain:
 		curve.append("%s %.2f" % [A.mmss(point.t), point.value])

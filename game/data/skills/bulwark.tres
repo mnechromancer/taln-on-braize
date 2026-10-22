@@ -1,0 +1,81 @@
+[gd_resource type="Resource" script_class="SkillDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/skill_def.gd" id="1_skill"]
+[ext_resource type="PackedScene" path="res://scenes/skills/bulwark.tscn" id="2_behavior"]
+
+[resource]
+script = ExtResource("1_skill")
+id = &"bulwark"
+display_name = "Bulwark"
+kind = 1
+tree = 0
+tags = Array[StringName]([&"cohesion", &"wall", &"structure"])
+investiture_cost = 25.0
+cooldown = 5.0
+routing = 1
+; P2-11 PLACEHOLDER numbers until the Content List.
+level_params = Array[Dictionary]([{
+"distance": 4.0,
+"duration": 20.0,
+"height": 2.5,
+"max": 3.0,
+"thickness": 1.0,
+"width": 7.0
+}, {
+"distance": 4.0,
+"duration": 23.0,
+"height": 2.5,
+"max": 3.0,
+"thickness": 1.0,
+"width": 7.5
+}, {
+"distance": 4.0,
+"duration": 26.0,
+"height": 2.5,
+"max": 3.0,
+"thickness": 1.0,
+"width": 8.0
+}, {
+"distance": 4.0,
+"duration": 29.0,
+"height": 2.5,
+"max": 3.0,
+"thickness": 1.0,
+"width": 8.5
+}, {
+"distance": 4.0,
+"duration": 32.0,
+"height": 2.5,
+"max": 3.0,
+"thickness": 1.0,
+"width": 9.0
+}, {
+"distance": 4.0,
+"duration": 35.0,
+"height": 2.5,
+"max": 3.0,
+"thickness": 1.0,
+"width": 9.5
+}, {
+"distance": 4.0,
+"duration": 38.0,
+"height": 2.5,
+"max": 3.0,
+"thickness": 1.0,
+"width": 10.0
+}, {
+"distance": 4.0,
+"duration": 41.0,
+"height": 2.5,
+"max": 3.0,
+"thickness": 1.0,
+"width": 10.5
+}, {
+"distance": 4.0,
+"duration": 44.0,
+"height": 2.5,
+"max": 3.0,
+"thickness": 1.0,
+"width": 11.0
+}])
+behavior = ExtResource("2_behavior")

@@ -157,11 +157,32 @@ func _add_extras() -> void:
 	var gates: Array[GateDef] = [gate_def]
 	var screen: Node = _root.get_node("BetweenRunScreen")
 	screen.set("gates", gates)
-	# Meteor's kit and the breaker-drop skills' caps can be raised too.
+	# Every Aspect's kit and the breaker-drop skills' caps can be raised too.
 	var cap_skills: Array[SkillDef] = screen.get("cap_skills")
-	cap_skills.append_array([load("res://data/skills/impact.tres"), load("res://data/skills/heave.tres")])
-	cap_skills.append_array(tuning.breaker_offer_pool)
+	for aspect: AspectDef in (load("res://data/tuning/cycle_tuning.tres") as CycleTuning).aspects:
+		for skill: SkillDef in aspect.starting_skills:
+			if not cap_skills.has(skill):
+				cap_skills.append(skill)
+	for skill: SkillDef in tuning.breaker_offer_pool:
+		if not cap_skills.has(skill):
+			cap_skills.append(skill)
 	screen.set("cap_skills", cap_skills)
+
+	# P2-11: what Earthshaper raises; P2-13: the swarm's Awareness of Taln.
+	var structures := Node3D.new()
+	structures.name = "Structures"
+	structures.set_script(load("res://scripts/structures/structures.gd"))
+	structures.set("taln", _root.get_node("Taln"))
+	structures.set("swarm", _root.get_node("SwarmServer"))
+	structures.set("ground", _root.get_node("StationGround"))
+	_own(structures, _root)
+	var awareness := Node.new()
+	awareness.name = "Awareness"
+	awareness.set_script(load("res://scripts/swarm/awareness.gd"))
+	awareness.set("tuning", load("res://data/tuning/awareness_tuning.tres"))
+	awareness.set("taln", _root.get_node("Taln"))
+	awareness.set("swarm", _root.get_node("SwarmServer"))
+	_own(awareness, _root)
 
 	var launch_tuning: LaunchTuning = load("res://data/tuning/launch_tuning.tres")
 	for i in LAUNCH_PADS.size():

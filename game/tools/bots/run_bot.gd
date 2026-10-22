@@ -52,6 +52,8 @@ func _init() -> void:
 func _run() -> void:
 	await physics_frame
 	Meta.state().redirect("user://bot_meta.json")
+	# The bot kites with Stroke + Settle: the gate build's kit (P2-11 gave Earthshaper its own).
+	Cycle.director().tuning.default_aspect = load("res://data/aspects/gate_build.tres")
 	# Bot files stay out of the playtest folder (the report's default).
 	Telemetry.recorder().directory = telemetry_dir if telemetry_dir != "" else "user://telemetry_bot"
 	var runs: Array[Dictionary] = []

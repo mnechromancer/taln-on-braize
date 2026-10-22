@@ -1,0 +1,30 @@
+[gd_resource type="SwarmType" format=3]
+
+[ext_resource type="CylinderMesh" path="res://data/swarm/ash_commander_mesh.tres" id="1_mesh"]
+[ext_resource type="ShaderMaterial" path="res://data/swarm/ash_commander_material.tres" id="2_mat"]
+
+[resource]
+id = &"ash_commander"
+family = 0
+tier = 1
+hp = 360.0
+contact_damage = 16.0
+contact_damage_type = 0
+speed_min = 3.4
+speed_max = 4.0
+mass = 6.0
+radius = 0.6
+separation_weight = 1.5
+resist_kinetic = 1.0
+resist_void = 1.0
+resist_blight = 1.0
+spawn_cost = 30
+behavior = 0
+investiture_drop = 27.0
+commander_radius = 9.0
+commander_speed_mult = 1.35
+commander_damage_mult = 1.5
+spotter = true
+sight_range = 26.0
+mesh = ExtResource("1_mesh")
+material = ExtResource("2_mat")

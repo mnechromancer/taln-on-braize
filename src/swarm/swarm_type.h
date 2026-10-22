@@ -48,7 +48,14 @@ public:
 	SWARM_ACCESSORS(int, spawn_cost)
 	SWARM_ACCESSORS(int, behavior)
 	SWARM_ACCESSORS(double, investiture_drop)
+	SWARM_ACCESSORS(double, commander_radius)
+	SWARM_ACCESSORS(double, commander_speed_mult)
+	SWARM_ACCESSORS(double, commander_damage_mult)
+	SWARM_ACCESSORS(bool, spotter)
+	SWARM_ACCESSORS(double, sight_range)
 	SWARM_ACCESSORS(Ref<Mesh>, mesh)
+
+	bool is_commander() const { return commander_radius > 0.0; }
 	SWARM_ACCESSORS(Ref<Material>, material)
 
 	// Multiplier for damage of the given DamageType.
@@ -77,6 +84,16 @@ private:
 	int behavior = BEHAVIOR_SEEK;
 	// Base Investiture in the one mote a rewarded kill drops (spec §2.3); 0 drops none.
 	double investiture_drop = 0.0;
+	// Commanders (spec v1.4 #7, P2-13): enemies within commander_radius move
+	// commander_speed_mult faster and hit commander_damage_mult harder; 0
+	// means not a commander.
+	double commander_radius = 0.0;
+	double commander_speed_mult = 1.0;
+	double commander_damage_mult = 1.0;
+	// Spotters report Taln to the swarm's Awareness when he's within
+	// sight_range with a clear line over the ground (spec v1.4 #6).
+	bool spotter = false;
+	double sight_range = 0.0;
 	Ref<Mesh> mesh;
 	Ref<Material> material;
 };

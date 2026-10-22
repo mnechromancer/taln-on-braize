@@ -1,0 +1,126 @@
+[gd_resource type="Resource" script_class="SkillDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/skill_def.gd" id="1_skill"]
+[ext_resource type="PackedScene" path="res://scenes/skills/warden.tscn" id="2_behavior"]
+
+[resource]
+script = ExtResource("1_skill")
+id = &"warden"
+display_name = "Warden"
+kind = 1
+tree = 0
+tags = Array[StringName]([&"cohesion", &"construct", &"structure", &"kinetic"])
+investiture_cost = 40.0
+cooldown = 10.0
+routing = 1
+; P2-11 PLACEHOLDER numbers until the Content List.
+level_params = Array[Dictionary]([{
+"body_radius": 0.7,
+"damage": 12.0,
+"duration": 35.0,
+"hp": 320.0,
+"interval": 0.9,
+"max": 1.0,
+"pull_radius": 8.0,
+"rally_cooldown": 0.5,
+"rally_distance": 8.0,
+"speed": 4.5,
+"strike_radius": 2.2
+}, {
+"body_radius": 0.7,
+"damage": 15.0,
+"duration": 39.0,
+"hp": 360.0,
+"interval": 0.9,
+"max": 1.0,
+"pull_radius": 8.0,
+"rally_cooldown": 0.5,
+"rally_distance": 8.0,
+"speed": 4.5,
+"strike_radius": 2.2
+}, {
+"body_radius": 0.7,
+"damage": 18.0,
+"duration": 43.0,
+"hp": 400.0,
+"interval": 0.9,
+"max": 1.0,
+"pull_radius": 8.0,
+"rally_cooldown": 0.5,
+"rally_distance": 8.0,
+"speed": 4.5,
+"strike_radius": 2.2
+}, {
+"body_radius": 0.7,
+"damage": 21.0,
+"duration": 47.0,
+"hp": 440.0,
+"interval": 0.9,
+"max": 1.0,
+"pull_radius": 8.0,
+"rally_cooldown": 0.5,
+"rally_distance": 8.0,
+"speed": 4.5,
+"strike_radius": 2.2
+}, {
+"body_radius": 0.7,
+"damage": 24.0,
+"duration": 51.0,
+"hp": 480.0,
+"interval": 0.9,
+"max": 1.0,
+"pull_radius": 8.0,
+"rally_cooldown": 0.5,
+"rally_distance": 8.0,
+"speed": 4.5,
+"strike_radius": 2.2
+}, {
+"body_radius": 0.7,
+"damage": 27.0,
+"duration": 55.0,
+"hp": 520.0,
+"interval": 0.9,
+"max": 1.0,
+"pull_radius": 8.0,
+"rally_cooldown": 0.5,
+"rally_distance": 8.0,
+"speed": 4.5,
+"strike_radius": 2.2
+}, {
+"body_radius": 0.7,
+"damage": 30.0,
+"duration": 59.0,
+"hp": 560.0,
+"interval": 0.9,
+"max": 1.0,
+"pull_radius": 8.0,
+"rally_cooldown": 0.5,
+"rally_distance": 8.0,
+"speed": 4.5,
+"strike_radius": 2.2
+}, {
+"body_radius": 0.7,
+"damage": 33.0,
+"duration": 63.0,
+"hp": 600.0,
+"interval": 0.9,
+"max": 1.0,
+"pull_radius": 8.0,
+"rally_cooldown": 0.5,
+"rally_distance": 8.0,
+"speed": 4.5,
+"strike_radius": 2.2
+}, {
+"body_radius": 0.7,
+"damage": 36.0,
+"duration": 67.0,
+"hp": 640.0,
+"interval": 0.9,
+"max": 1.0,
+"pull_radius": 8.0,
+"rally_cooldown": 0.5,
+"rally_distance": 8.0,
+"speed": 4.5,
+"strike_radius": 2.2
+}])
+behavior = ExtResource("2_behavior")

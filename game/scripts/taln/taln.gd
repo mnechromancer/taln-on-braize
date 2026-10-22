@@ -38,8 +38,12 @@ var _launch_pending: bool = false
 var _launch_speed: float = 0.0
 var _fall_speed: float = 0.0
 ## This cycle's Aspect (Design Doc v2.0 §10): whether Taln can Anchor and
-## whether Fracture builds (spec v1.4 #2).
+## whether Fracture builds (spec v1.4 #2), and its passive.
 var aspect: AspectDef
+## Taln's mass (P2-12 mass ruling): Impact's levels add to it; heavier
+## landings hit harder and Heave throws him less far. tuning.base_mass until
+## something changes it.
+var mass: float = 1.0
 ## Walking-speed multipliers by source (e.g. Lurch); they multiply together.
 var _speed_multipliers: Dictionary[StringName, float] = {}
 
@@ -68,6 +72,9 @@ func _ready() -> void:
 	_body_mesh.position.y = tuning.capsule_height / 2.0
 
 	aspect = Cycle.director().aspect()
+	mass = tuning.base_mass
+	if aspect.armor_bonus > 0.0:
+		health.set_armor_bonus(&"aspect", aspect.armor_bonus)
 	floor_max_angle = deg_to_rad(tuning.max_slope_deg)
 	floor_snap_length = tuning.step_height
 	floor_constant_speed = true

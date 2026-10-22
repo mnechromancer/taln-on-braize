@@ -99,6 +99,9 @@ func _process(delta: float) -> void:
 		_wave.text = "%s
 %s" % [UiText.REGION % [slice.current.display_name, slice.current.tier, spawner.wave + 1],
 				_objective(slice)]
+		var field: String = _field_line(slice)
+		if not field.is_empty():
+			_wave.text += "\n" + field
 	else:
 		var stations: String = UiText.STATION % [spawner.station_index + 1, _cycle_stations()]
 		_wave.text = "%s   %s" % [stations, UiText.LULL if spawner.lull else UiText.WAVE % [spawner.wave + 1, spawner.tuning.waves]]
@@ -130,6 +133,27 @@ func _objective(slice: BraizeSlice) -> String:
 			return UiText.SEALS_OPEN % (slice.current.tier + 1)
 	var site: Vector3 = slice.current.site.global_position
 	return UiText.BREAKER_SITE % [roundi(slice.distance_to_site()), _arrow_to(site)]
+
+
+## The slice's third line: whether the swarm sees Taln, the nearest
+## commander, standing structures and the infected (each only when there is
+## something to say).
+func _field_line(slice: BraizeSlice) -> String:
+	var parts: Array[String] = []
+	var awareness: Awareness = taln.loadout.awareness
+	if awareness and awareness.enabled:
+		parts.append(UiText.AWARENESS[awareness.state])
+	var commander: Vector3 = slice.nearest_commander()
+	if commander != Vector3.INF:
+		var d: float = Vector2(commander.x - taln.global_position.x, commander.z - taln.global_position.z).length()
+		parts.append(UiText.COMMANDER % [roundi(d), _arrow_to(commander)])
+	var structures: Structures = taln.loadout.structures
+	if structures and not structures.standing().is_empty():
+		parts.append(UiText.STRUCTURES % structures.standing().size())
+	var infected: int = taln.loadout.swarm.get_infected_count() if taln.loadout.swarm else 0
+	if infected > 0:
+		parts.append(UiText.INFECTED % infected)
+	return "   ".join(parts)
 
 
 ## An arrow for the direction from Taln to at, relative to where the camera faces.

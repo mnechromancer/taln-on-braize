@@ -17,6 +17,10 @@ signal surge_bindings_changed
 ## The station's swarm, for behaviors that hit or query enemies. Set by
 ## whoever wires the station up; null until then.
 var swarm: SwarmServer
+## The station's structures (P2-11) and Awareness (P2-13), for behaviors
+## that raise stone or hide; set with swarm, null until then.
+var structures: Structures
+var awareness: Awareness
 ## Whether Taln holds the Honorblade this cycle (spec §5.1). Its Special Room
 ## comes later; until then Blade-eligible Surges route through Toa'uma.
 var honorblade_held: bool = false

@@ -7,6 +7,8 @@
 [ext_resource type="Resource" path="res://data/skills/upheave.tres" id="5_upheave"]
 [ext_resource type="Resource" path="res://data/skills/stone_skin.tres" id="6_stone_skin"]
 [ext_resource type="Resource" path="res://data/skills/second_wind.tres" id="7_second_wind"]
+[ext_resource type="Resource" path="res://data/skills/settle.tres" id="8_settle"]
+[ext_resource type="Resource" path="res://data/swarm/ash_commander.tres" id="9_commander"]
 
 [resource]
 script = ExtResource("1_region")
@@ -19,4 +21,9 @@ siege_pack_size = 9
 siege_pack_lifetime = 90.0
 breaker_income = 270.0
 breaker_offer_size = 3
-breaker_offer_pool = Array[Resource]([ExtResource("3_shardfall"), ExtResource("4_tremor"), ExtResource("5_upheave"), ExtResource("6_stone_skin"), ExtResource("7_second_wind")])
+breaker_offer_pool = Array[Resource]([ExtResource("3_shardfall"), ExtResource("4_tremor"), ExtResource("5_upheave"), ExtResource("6_stone_skin"), ExtResource("7_second_wind"), ExtResource("8_settle")])
+commander_type = ExtResource("9_commander")
+commander_first_delay = 25.0
+commander_interval = 50.0
+commanders_max = 3
+commander_escort = 6

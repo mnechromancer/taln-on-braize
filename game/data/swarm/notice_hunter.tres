@@ -21,5 +21,7 @@ resist_blight = 1.0
 spawn_cost = 9
 behavior = 0
 investiture_drop = 9.0
+spotter = true
+sight_range = 20.0
 mesh = ExtResource("1_mesh")
 material = ExtResource("2_mat")

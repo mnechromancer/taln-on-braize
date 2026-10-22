@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="AspectDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/aspect/aspect_def.gd" id="1_aspect"]
+[ext_resource type="Resource" path="res://data/skills/culture.tres" id="2_culture"]
+[ext_resource type="Resource" path="res://data/skills/spore_burst.tres" id="3_spore_burst"]
+[ext_resource type="Resource" path="res://data/skills/fade.tres" id="4_fade"]
+
+[resource]
+script = ExtResource("1_aspect")
+id = &"plaguebringer"
+display_name = "Plaguebringer"
+starting_skills = Array[Resource]([ExtResource("2_culture"), ExtResource("3_spore_burst"), ExtResource("4_fade")])
+tags = Array[StringName]([&"outlast", &"stealth", &"blight"])
+detection_mult = 0.6

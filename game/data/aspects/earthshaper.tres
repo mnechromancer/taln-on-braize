@@ -1,13 +1,16 @@
 [gd_resource type="Resource" script_class="AspectDef" format=3]
 
 [ext_resource type="Script" path="res://scripts/aspect/aspect_def.gd" id="1_aspect"]
-[ext_resource type="Resource" path="res://data/skills/breaking_stroke.tres" id="2_stroke"]
-[ext_resource type="Resource" path="res://data/skills/settle.tres" id="3_settle"]
+[ext_resource type="Resource" path="res://data/skills/breaking_stroke.tres" id="2_breaking_stroke"]
+[ext_resource type="Resource" path="res://data/skills/bulwark.tres" id="3_bulwark"]
+[ext_resource type="Resource" path="res://data/skills/sentinel.tres" id="4_sentinel"]
+[ext_resource type="Resource" path="res://data/skills/warden.tres" id="5_warden"]
 
 [resource]
 script = ExtResource("1_aspect")
 id = &"earthshaper"
 display_name = "Earthshaper"
-starting_skills = Array[Resource]([ExtResource("2_stroke"), ExtResource("3_settle")])
+starting_skills = Array[Resource]([ExtResource("2_breaking_stroke"), ExtResource("3_bulwark"), ExtResource("4_sentinel"), ExtResource("5_warden")])
 anchored = true
 fracture = true
+tags = Array[StringName]([&"fortify"])

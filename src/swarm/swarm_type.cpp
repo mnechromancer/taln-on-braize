@@ -42,6 +42,13 @@ void SwarmType::_bind_methods() {
 	SWARM_BIND_PROPERTY(SwarmType, Variant::INT, spawn_cost, PROPERTY_HINT_RANGE, "0,100,1");
 	SWARM_BIND_PROPERTY(SwarmType, Variant::INT, behavior, PROPERTY_HINT_ENUM, "Seek");
 	SWARM_BIND_PROPERTY(SwarmType, Variant::FLOAT, investiture_drop, PROPERTY_HINT_RANGE, "0,1000,0.5");
+	ADD_GROUP("Commander", "commander_");
+	SWARM_BIND_PROPERTY(SwarmType, Variant::FLOAT, commander_radius, PROPERTY_HINT_RANGE, "0,50,0.5,suffix:m");
+	SWARM_BIND_PROPERTY(SwarmType, Variant::FLOAT, commander_speed_mult, PROPERTY_HINT_RANGE, "0,5,0.05");
+	SWARM_BIND_PROPERTY(SwarmType, Variant::FLOAT, commander_damage_mult, PROPERTY_HINT_RANGE, "0,5,0.05");
+	ADD_GROUP("Awareness", "");
+	SWARM_BIND_PROPERTY(SwarmType, Variant::BOOL, spotter, PROPERTY_HINT_NONE, "");
+	SWARM_BIND_PROPERTY(SwarmType, Variant::FLOAT, sight_range, PROPERTY_HINT_RANGE, "0,100,0.5,suffix:m");
 	ADD_GROUP("Rendering", "");
 	SWARM_BIND_PROPERTY(SwarmType, Variant::OBJECT, mesh, PROPERTY_HINT_RESOURCE_TYPE, "Mesh");
 	SWARM_BIND_PROPERTY(SwarmType, Variant::OBJECT, material, PROPERTY_HINT_RESOURCE_TYPE, "Material");

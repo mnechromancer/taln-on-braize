@@ -4,6 +4,9 @@
 [ext_resource type="Resource" path="res://data/aspects/earthshaper.tres" id="2_earthshaper"]
 [ext_resource type="Resource" path="res://data/aspects/unaspected.tres" id="3_unaspected"]
 [ext_resource type="Resource" path="res://data/aspects/meteor.tres" id="4_meteor"]
+[ext_resource type="Resource" path="res://data/aspects/doomhunter_shade.tres" id="5_shade"]
+[ext_resource type="Resource" path="res://data/aspects/doomhunter_bastion.tres" id="6_bastion"]
+[ext_resource type="Resource" path="res://data/aspects/plaguebringer.tres" id="7_plague"]
 
 [resource]
 script = ExtResource("1_cycle")
@@ -11,5 +14,5 @@ stations = 3
 returns_to_close = 9
 lull_seconds = 15.0
 station_scene = "res://scenes/braize_slice.tscn"
-aspects = Array[Resource]([ExtResource("2_earthshaper"), ExtResource("4_meteor"), ExtResource("3_unaspected")])
+aspects = Array[Resource]([ExtResource("2_earthshaper"), ExtResource("4_meteor"), ExtResource("5_shade"), ExtResource("6_bastion"), ExtResource("7_plague"), ExtResource("3_unaspected")])
 default_aspect = ExtResource("2_earthshaper")

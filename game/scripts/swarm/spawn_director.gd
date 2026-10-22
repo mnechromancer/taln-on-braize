@@ -100,11 +100,12 @@ func _physics_process(delta: float) -> void:
 
 
 ## Spawns count enemies of type around one walkable point pack_distance from
-## the target, preferring one off-camera, at this wave's multipliers. It
-## spends nothing from the bank and ignores pause and the alive cap.
-func spawn_pack(type: SwarmType, count: int) -> Array[int]:
+## the target, preferring one off-camera (or around the given point), at
+## this wave's multipliers. It spends nothing from the bank and ignores
+## pause and the alive cap.
+func spawn_pack(type: SwarmType, count: int, around: Variant = null) -> Array[int]:
 	var slots: Array[int] = []
-	var center: Variant = _pick_point(tuning.pack_distance, tuning.pack_distance)
+	var center: Variant = around if around != null else _pick_point(tuning.pack_distance, tuning.pack_distance)
 	if center == null:
 		push_warning("No walkable point %.0f m out for a %s pack." % [tuning.pack_distance, type.id])
 		return slots

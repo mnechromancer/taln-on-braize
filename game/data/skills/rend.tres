@@ -1,0 +1,79 @@
+[gd_resource type="Resource" script_class="SkillDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/skill_def.gd" id="1_skill"]
+[ext_resource type="PackedScene" path="res://scenes/skills/rend.tscn" id="2_behavior"]
+
+[resource]
+script = ExtResource("1_skill")
+id = &"rend"
+display_name = "Rend"
+kind = 0
+tree = 0
+tags = Array[StringName]([&"kinetic", &"single", &"hunt"])
+routing = 0
+; P2-14 PLACEHOLDER numbers until the Content List.
+level_params = Array[Dictionary]([{
+"acquire_margin": 1.0,
+"damage": 40.0,
+"elite_range": 5.0,
+"interval": 1.0,
+"range": 3.0,
+"strike_radius": 0.6
+}, {
+"acquire_margin": 1.0,
+"damage": 48.0,
+"elite_range": 5.0,
+"interval": 1.0,
+"range": 3.0,
+"strike_radius": 0.6
+}, {
+"acquire_margin": 1.0,
+"damage": 56.0,
+"elite_range": 5.0,
+"interval": 1.0,
+"range": 3.0,
+"strike_radius": 0.6
+}, {
+"acquire_margin": 1.0,
+"damage": 64.0,
+"elite_range": 5.0,
+"interval": 1.0,
+"range": 3.0,
+"strike_radius": 0.6
+}, {
+"acquire_margin": 1.0,
+"damage": 72.0,
+"elite_range": 5.0,
+"interval": 1.0,
+"range": 3.0,
+"strike_radius": 0.6
+}, {
+"acquire_margin": 1.0,
+"damage": 80.0,
+"elite_range": 5.0,
+"interval": 1.0,
+"range": 3.0,
+"strike_radius": 0.6
+}, {
+"acquire_margin": 1.0,
+"damage": 88.0,
+"elite_range": 5.0,
+"interval": 1.0,
+"range": 3.0,
+"strike_radius": 0.6
+}, {
+"acquire_margin": 1.0,
+"damage": 96.0,
+"elite_range": 5.0,
+"interval": 1.0,
+"range": 3.0,
+"strike_radius": 0.6
+}, {
+"acquire_margin": 1.0,
+"damage": 104.0,
+"elite_range": 5.0,
+"interval": 1.0,
+"range": 3.0,
+"strike_radius": 0.6
+}])
+behavior = ExtResource("2_behavior")

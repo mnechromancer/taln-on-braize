@@ -23,6 +23,17 @@ extends Resource
 ## Base Investiture paid when the breaker falls, auto-collected, times v (spec §2.3).
 @export_range(0.0, 2000.0, 1.0) var breaker_income: float = 0.0
 
+@export_group("Commanders (P2-13)")
+## The commander elite type (spec v1.4 #7); none spawns if unset.
+@export var commander_type: SwarmType
+## Seconds into a region before its first commander, and between commanders after.
+@export_range(0.0, 600.0, 1.0, "suffix:s") var commander_first_delay: float = 0.0
+@export_range(0.0, 600.0, 1.0, "suffix:s") var commander_interval: float = 0.0
+## No new commander while this many are alive.
+@export_range(0, 20, 1) var commanders_max: int = 0
+## Swarm enemies spawned around each new commander.
+@export_range(0, 50, 1) var commander_escort: int = 0
+
 @export_group("Breaker drop (P2-10)")
 ## A felled breaker (not the last tier's) offers up to this many skills from
 ## the pool that Taln doesn't own; he takes one (spec §2.4: new kit comes from

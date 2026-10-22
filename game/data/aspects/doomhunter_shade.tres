@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="AspectDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/aspect/aspect_def.gd" id="1_aspect"]
+[ext_resource type="Resource" path="res://data/skills/rend.tres" id="2_rend"]
+[ext_resource type="Resource" path="res://data/skills/lunge.tres" id="3_lunge"]
+
+[resource]
+script = ExtResource("1_aspect")
+id = &"doomhunter_shade"
+display_name = "Doomhunter (Shade)"
+starting_skills = Array[Resource]([ExtResource("2_rend"), ExtResource("3_lunge")])
+tags = Array[StringName]([&"hunt", &"stealth"])
+detection_mult = 0.5

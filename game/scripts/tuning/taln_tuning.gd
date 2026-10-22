@@ -19,6 +19,9 @@ extends Resource
 ## braking; it can't push past the launch's own speed or move_speed, whichever is higher.
 @export_range(0.0, 100.0, 0.1, "suffix:m/s²") var air_acceleration: float = 0.0
 
+## Taln's mass before any skill adds to it (P2-12 mass ruling).
+@export_range(0.0, 10.0, 0.05) var base_mass: float = 0.0
+
 @export_group("Health")
 @export_range(0.0, 10000.0, 1.0) var max_health: float = 0.0
 @export_range(0.0, 100.0, 0.1, "suffix:/s") var health_regen: float = 0.0

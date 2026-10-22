@@ -40,6 +40,15 @@ var _last_t: float = 0.0
 var _finished: bool = false
 ## Game seconds Taln spent airborne this cycle (P2-12).
 var _airtime: float = 0.0
+## Structures (P2-11): raised and lost by kind, and what they struck.
+var _structures_raised: Dictionary[StringName, int] = {}
+var _structures_lost: Dictionary[StringName, int] = {}
+var _structures_lost_to_swarm: int = 0
+var _structure_damage: Dictionary[StringName, float] = {}
+var _structure_hits: Dictionary[StringName, int] = {}
+## The disease's kills (P2-15) and the infected count's peak.
+var _blight_kills: int = 0
+var _infected_peak: int = 0
 
 
 static func recorder() -> Telemetry:
@@ -98,6 +107,13 @@ func _on_cycle_began(cycle_seed: int) -> void:
 	_snapshot_left = SNAPSHOT_INTERVAL
 	_kills_at_snapshot = 0
 	_airtime = 0.0
+	_structures_raised.clear()
+	_structures_lost.clear()
+	_structures_lost_to_swarm = 0
+	_structure_damage.clear()
+	_structure_hits.clear()
+	_blight_kills = 0
+	_infected_peak = 0
 	var spawn: SpawnTuning = (_station.get_node("SpawnDirector") as SpawnDirector).tuning
 	var leveling: InvestitureTuning = (_station.get_node("Taln") as Taln).leveling.tuning
 	_write({"ev": "cycle_begin", "schema": SCHEMA, "seed": cycle_seed, "wave_length": spawn.wave_length,
@@ -128,6 +144,19 @@ func _on_cycle_ended(outcome: Cycle.Outcome, summary: Dictionary) -> void:
 	out["levels"] = taln.leveling.levels_taken
 	out["agony"] = _as_strings(taln.agony.gained_by_source)
 	out["airtime"] = snappedf(_airtime, 0.01)
+	var awareness: Awareness = _station.get_node_or_null("Awareness")
+	if awareness:
+		out["seen_time"] = snappedf(awareness.seen_time, 0.01)
+		out["unseen_time"] = snappedf(awareness.unseen_time, 0.01)
+	if _station is BraizeSlice:
+		out["commanders_killed"] = (_station as BraizeSlice).commanders_killed
+	out["structures_raised"] = _as_ints(_structures_raised)
+	out["structures_lost"] = _as_ints(_structures_lost)
+	out["structures_lost_to_swarm"] = _structures_lost_to_swarm
+	out["structure_damage"] = _as_strings(_structure_damage)
+	out["structure_hits"] = _as_ints(_structure_hits)
+	out["blight_kills"] = _blight_kills
+	out["infected_peak"] = _infected_peak
 	_write(out)
 	_finished = true
 	_close()
@@ -171,6 +200,34 @@ func _hook() -> void:
 		_connect(slice.kit_offered, func(offer: Array[SkillDef]) -> void:
 			_write({"ev": "kit_offer", "offer": offer.map(func(s: SkillDef) -> StringName: return s.id)}))
 		_connect(slice.kit_taken, func(skill: SkillDef) -> void: _write({"ev": "kit_take", "skill": skill.id}))
+		# P2-13: commanders coming and going.
+		_connect(slice.commander_spawned, func(_slot: int, escort: Array[int]) -> void:
+			_write({"ev": "commander", "escort": escort.size()}))
+		_connect(slice.commander_killed, func(_at: Vector3) -> void: _write({"ev": "commander_kill"}))
+	# P2-13: whether the swarm sees Taln, on every change.
+	var awareness: Awareness = _station.get_node_or_null("Awareness")
+	if awareness:
+		_connect(awareness.state_changed, func(state: Awareness.State) -> void:
+			_write({"ev": "seen", "state": Awareness.State.keys()[state].to_lower()}))
+	# P2-11: structures raised, lost and striking (their damage is summed for the summary).
+	var structures: Structures = _station.get_node_or_null("Structures")
+	if structures:
+		_connect(structures.raised, func(s: Structure) -> void:
+			_structures_raised[s.kind] = _structures_raised.get(s.kind, 0) + 1
+			_write({"ev": "structure", "kind": s.kind}))
+		_connect(structures.lost, func(s: Structure, by_swarm: bool) -> void:
+			_structures_lost[s.kind] = _structures_lost.get(s.kind, 0) + 1
+			if by_swarm:
+				_structures_lost_to_swarm += 1
+			_write({"ev": "structure_lost", "kind": s.kind, "by_swarm": by_swarm}))
+		_connect(structures.struck, func(kind: StringName, hits: int, damage: float) -> void:
+			_structure_damage[kind] = _structure_damage.get(kind, 0.0) + damage
+			_structure_hits[kind] = _structure_hits.get(kind, 0) + hits)
+	# P2-15: the disease's kills.
+	_connect(swarm.enemy_blighted, func(_id: StringName, _at: Vector3) -> void: _blight_kills += 1)
+	# P2-11: Fracture's rhythm (warning, active, clear).
+	_connect(taln.fracture.fracture_state_changed, func(state: Fracture.State) -> void:
+		_write({"ev": "fracture", "state": Fracture.State.keys()[state].to_lower()}))
 	# P2-12: every landing, and Impact's strikes (its behavior may come later, from a drop).
 	_connect(taln.landed, func(speed: float, _at: Vector3) -> void:
 		_write({"ev": "landing", "speed": snappedf(speed, 0.01)}))
@@ -217,7 +274,9 @@ func _snapshot() -> void:
 	var now: float = Cycle.director().play_time
 	var span: float = maxf(now - _snapshot_t, 0.001)
 	_snapshot_t = now
-	_write({"ev": "snapshot", "alive": swarm.get_alive_count(),
+	_infected_peak = maxi(_infected_peak, swarm.get_infected_count())
+	_write({"ev": "snapshot", "alive": swarm.get_alive_count(), "infected": swarm.get_infected_count(),
+			"commanders": swarm.get_commander_slots().size(),
 			"kill_rate": snappedf((kills - _kills_at_snapshot) / span * 60.0, 0.01),
 			"investiture": snappedf(taln.investiture.current, 0.01), "health": snappedf(taln.health.current, 0.01),
 			"agony": snappedf(taln.agony.value, 0.01), "strain": taln.toauma.strain,
@@ -256,4 +315,11 @@ func _as_strings(d: Dictionary) -> Dictionary:
 	var out: Dictionary = {}
 	for key in d:
 		out[String(key)] = snappedf(d[key], 0.01)
+	return out
+
+
+func _as_ints(d: Dictionary) -> Dictionary:
+	var out: Dictionary = {}
+	for key in d:
+		out[String(key)] = int(d[key])
 	return out

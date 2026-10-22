@@ -120,12 +120,13 @@ void SwarmServer::_process(double p_delta) {
 		w[12] = phase[i];
 		w[13] = flash_time > 0.0 ? float(hit_flash[i] / flash_time) : 0.0f;
 		w[14] = float(std::max(0.0, age[i] - (1.0 - alpha) * step));
-		// Rooted amount: 1 while rooted, easing to 0 over the root's last root_fade_time.
+		// Rooted amount: 1 while rooted, easing to 0 over the root's last root_fade_time;
+		// plus 10 while a commander's buff holds and 20 while infected (the shader unpacks them).
 		float rooted = 0.0f;
 		if (root_time[i] > 0.0) {
 			rooted = root_fade > 0.0 ? float(std::min(1.0, root_time[i] / root_fade)) : 1.0f;
 		}
-		w[15] = rooted;
+		w[15] = rooted + (buff_time[i] > 0.0 ? 10.0f : 0.0f) + (infected[i] ? 20.0f : 0.0f);
 	}
 	for (TypeSlot &slot : types) {
 		slot.multimesh->set_buffer(slot.buffer);
@@ -223,6 +224,14 @@ int SwarmServer::spawn(const Ref<SwarmType> &p_type, const Vector3 &p_position, 
 	slow_mult[i] = 1.0;
 	slow_time[i] = 0.0;
 	lifetime[i] = 0.0;
+	buff_time[i] = 0.0;
+	buff_speed[i] = 1.0;
+	buff_damage[i] = 1.0;
+	infected[i] = 0;
+	infect_age[i] = 0.0;
+	blight_kill[i] = 0;
+	wander_dir[i] = Vector2();
+	wander_time[i] = 0.0;
 	if (Node3D *target = get_target()) {
 		const Vector3 to = target->get_global_position() - p;
 		if (Vector2(to.x, to.z).length() > kTiny) {
@@ -308,7 +317,7 @@ int SwarmServer::kill_in_radius(const Vector3 &p_center, double p_radius, double
 		const real_t reach = real_t(p_radius) + _radius(i);
 		const Vector2 d(position[i].x - p_center.x, position[i].z - p_center.z);
 		if (hp[i] > 0.0 && type->get_mass() <= p_max_mass && d.length_squared() <= reach * reach) {
-			deaths.push_back({ type->get_id(), position[i], false });
+			deaths.push_back({ type->get_id(), position[i], false, false });
 			_free(i);
 		}
 	});
@@ -316,6 +325,266 @@ int SwarmServer::kill_in_radius(const Vector3 &p_center, double p_radius, double
 		emit_signal("enemy_died", death.type_id, death.position, death.rewarded);
 	}
 	return int(deaths.size());
+}
+
+// --- awareness, lures, commanders, the disease ---------------------------------
+
+void SwarmServer::set_use_awareness(bool p_use) {
+	use_awareness = p_use;
+	flow_dirty = true;
+}
+
+bool SwarmServer::is_using_awareness() const {
+	return use_awareness;
+}
+
+void SwarmServer::set_known_position(const Vector3 &p_position) {
+	known_position = p_position;
+}
+
+void SwarmServer::set_known(bool p_known) {
+	if (p_known && !known) {
+		flow_dirty = true;
+	}
+	known = p_known;
+}
+
+bool SwarmServer::is_known() const {
+	return known;
+}
+
+Vector3 SwarmServer::get_goal_position() const {
+	Vector3 goal;
+	return _goal(goal) ? goal : Vector3(INFINITY, INFINITY, INFINITY);
+}
+
+bool SwarmServer::_goal(Vector3 &r_goal) const {
+	if (use_awareness) {
+		r_goal = known_position;
+		return known;
+	}
+	Node3D *target = get_target();
+	if (target == nullptr || !target->is_inside_tree()) {
+		return false;
+	}
+	r_goal = target->get_global_position();
+	return true;
+}
+
+bool SwarmServer::has_line_of_sight(const Vector3 &p_from, const Vector3 &p_to) const {
+	if (!has_ground) {
+		return true;
+	}
+	// Sample the segment every half cell; any blocked cell on it hides the far end.
+	const Vector2 from(p_from.x, p_from.z);
+	const Vector2 to(p_to.x, p_to.z);
+	const real_t length = from.distance_to(to);
+	const int samples = std::max(1, int(std::ceil(length / (ground_cell_size * 0.5f))));
+	for (int k = 1; k < samples; ++k) {
+		const Vector2 at = from.lerp(to, real_t(k) / real_t(samples));
+		if (_blocked_at(at.x, at.y)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+int SwarmServer::count_spotters_seeing(const Vector3 &p_position, double p_range_mult) const {
+	int seen = 0;
+	for (int i = 0; i < capacity; ++i) {
+		if (!alive[i] || hp[i] <= 0.0) {
+			continue;
+		}
+		const Ref<SwarmType> &type = types[type_index[i]].type;
+		if (!type->get_spotter()) {
+			continue;
+		}
+		const real_t range = real_t(type->get_sight_range() * p_range_mult);
+		const Vector2 d(position[i].x - p_position.x, position[i].z - p_position.z);
+		if (d.length_squared() <= range * range && has_line_of_sight(position[i], p_position)) {
+			++seen;
+		}
+	}
+	return seen;
+}
+
+void SwarmServer::set_lures(const PackedVector3Array &p_positions, const PackedFloat32Array &p_pull_radii,
+		const PackedFloat32Array &p_body_radii) {
+	ERR_FAIL_COND_MSG(p_pull_radii.size() != p_positions.size() || p_body_radii.size() != p_positions.size(),
+			"Every lure needs a position, a pull radius and a body radius.");
+	lures.resize(size_t(p_positions.size()));
+	for (int k = 0; k < p_positions.size(); ++k) {
+		lures[k] = { p_positions[k], real_t(p_pull_radii[k]), real_t(p_body_radii[k]), 0.0 };
+	}
+}
+
+int SwarmServer::_lure_for(int p_index) const {
+	int best = -1;
+	real_t best_dist_sq = INFINITY;
+	for (size_t k = 0; k < lures.size(); ++k) {
+		const Vector2 d(position[p_index].x - lures[k].position.x, position[p_index].z - lures[k].position.z);
+		const real_t dist_sq = d.length_squared();
+		if (dist_sq <= lures[k].pull * lures[k].pull && dist_sq < best_dist_sq) {
+			best = int(k);
+			best_dist_sq = dist_sq;
+		}
+	}
+	return best;
+}
+
+PackedInt32Array SwarmServer::get_commander_slots() const {
+	PackedInt32Array slots;
+	for (int i = 0; i < capacity; ++i) {
+		if (alive[i] && hp[i] > 0.0 && types[type_index[i]].type->is_commander()) {
+			slots.push_back(i);
+		}
+	}
+	return slots;
+}
+
+Vector3 SwarmServer::find_nearest_of_tier(const Vector3 &p_center, double p_radius, int p_tier) {
+	int best = -1;
+	real_t best_dist_sq = real_t(p_radius * p_radius);
+	_for_each_near(p_center.x, p_center.z, real_t(p_radius), [&](int i) {
+		if (hp[i] <= 0.0 || types[type_index[i]].type->get_tier() != p_tier) {
+			return;
+		}
+		const Vector2 d(position[i].x - p_center.x, position[i].z - p_center.z);
+		const real_t dist_sq = d.length_squared();
+		if (dist_sq < best_dist_sq || (best < 0 && dist_sq == best_dist_sq)) {
+			best = i;
+			best_dist_sq = dist_sq;
+		}
+	});
+	return best >= 0 ? position[best] : Vector3(INFINITY, INFINITY, INFINITY);
+}
+
+bool SwarmServer::is_enemy_buffed(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, capacity, false);
+	return alive[p_index] && buff_time[p_index] > 0.0;
+}
+
+int SwarmServer::infect_in_radius(const Vector3 &p_center, double p_radius) {
+	int newly = 0;
+	_for_each_near(p_center.x, p_center.z, real_t(p_radius) + max_radius, [&](int i) {
+		const real_t reach = real_t(p_radius) + _radius(i);
+		const Vector2 d(position[i].x - p_center.x, position[i].z - p_center.z);
+		if (hp[i] > 0.0 && !infected[i] && d.length_squared() <= reach * reach) {
+			_infect(i);
+			++newly;
+		}
+	});
+	return newly;
+}
+
+Vector3 SwarmServer::find_nearest_uninfected(const Vector3 &p_center, double p_radius) {
+	int best = -1;
+	real_t best_dist_sq = real_t(p_radius * p_radius);
+	_for_each_near(p_center.x, p_center.z, real_t(p_radius), [&](int i) {
+		if (hp[i] <= 0.0 || infected[i]) {
+			return;
+		}
+		const Vector2 d(position[i].x - p_center.x, position[i].z - p_center.z);
+		const real_t dist_sq = d.length_squared();
+		if (dist_sq < best_dist_sq || (best < 0 && dist_sq == best_dist_sq)) {
+			best = i;
+			best_dist_sq = dist_sq;
+		}
+	});
+	return best >= 0 ? position[best] : Vector3(INFINITY, INFINITY, INFINITY);
+}
+
+void SwarmServer::_infect(int p_index) {
+	infected[p_index] = 1;
+	infect_age[p_index] = 0.0;
+	++infected_count;
+}
+
+int SwarmServer::get_infected_count() const {
+	return infected_count;
+}
+
+bool SwarmServer::is_enemy_infected(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, capacity, false);
+	return alive[p_index] && infected[p_index] != 0;
+}
+
+void SwarmServer::_apply_commanders(double p_dt) {
+	for (int i = 0; i < capacity; ++i) {
+		if (alive[i] && buff_time[i] > 0.0) {
+			buff_time[i] -= p_dt;
+			if (buff_time[i] <= 0.0) {
+				buff_time[i] = 0.0;
+				buff_speed[i] = 1.0;
+				buff_damage[i] = 1.0;
+			}
+		}
+	}
+	const double linger = std::max(tuning->get_commander_buff_linger(), p_dt);
+	for (int i = 0; i < capacity; ++i) {
+		if (!alive[i] || hp[i] <= 0.0) {
+			continue;
+		}
+		const Ref<SwarmType> &type = types[type_index[i]].type;
+		if (!type->is_commander()) {
+			continue;
+		}
+		const real_t radius = real_t(type->get_commander_radius());
+		const Vector3 at = position[i];
+		_for_each_near(at.x, at.z, radius + max_radius, [&](int j) {
+			if (j == i || hp[j] <= 0.0) {
+				return;
+			}
+			const Vector2 d(position[j].x - at.x, position[j].z - at.z);
+			if (d.length_squared() > radius * radius) {
+				return;
+			}
+			// The strongest aura wins where they overlap.
+			buff_time[j] = linger;
+			buff_speed[j] = std::max(buff_speed[j], type->get_commander_speed_mult());
+			buff_damage[j] = std::max(buff_damage[j], type->get_commander_damage_mult());
+		});
+	}
+}
+
+void SwarmServer::_apply_blight(double p_dt) {
+	if (infected_count == 0) {
+		return;
+	}
+	const double incubation = tuning->get_blight_incubation();
+	const double dps = tuning->get_blight_dps();
+	const real_t spread = real_t(tuning->get_blight_spread_radius());
+	const double chance = std::clamp(tuning->get_blight_spread_rate() * p_dt, 0.0, 1.0);
+	std::uniform_real_distribution<double> roll(0.0, 1.0);
+	for (int i = 0; i < capacity; ++i) {
+		if (!alive[i] || !infected[i] || hp[i] <= 0.0) {
+			continue;
+		}
+		infect_age[i] += p_dt;
+		if (infect_age[i] < incubation) {
+			continue;
+		}
+		if (dps > 0.0) {
+			hp[i] -= dps * p_dt * types[type_index[i]].type->get_resist(SwarmType::DAMAGE_BLIGHT);
+			if (hp[i] <= 0.0) {
+				blight_kill[i] = 1;
+			}
+		}
+		if (spread <= 0.0f || chance <= 0.0) {
+			continue;
+		}
+		const Vector3 at = position[i];
+		_for_each_near(at.x, at.z, spread + max_radius, [&](int j) {
+			if (j == i || infected[j] || hp[j] <= 0.0) {
+				return;
+			}
+			const real_t reach = spread + _radius(j);
+			const Vector2 d(position[j].x - at.x, position[j].z - at.z);
+			if (d.length_squared() <= reach * reach && roll(rng) < chance) {
+				_infect(j);
+			}
+		});
+	}
 }
 
 void SwarmServer::set_frozen(bool p_frozen) {
@@ -473,11 +742,10 @@ double SwarmServer::get_last_step_ms() const {
 }
 
 void SwarmServer::rebuild_flow_field() {
-	Node3D *target = get_target();
-	ERR_FAIL_COND_MSG(target == nullptr || !target->is_inside_tree() || !has_ground,
-			"The flow field needs a target in the tree and ground.");
-	_place_flow_window(target->get_global_position());
-	_build_flow(target->get_global_position());
+	Vector3 goal;
+	ERR_FAIL_COND_MSG(!_goal(goal) || !has_ground, "The flow field needs a goal (a target in the tree) and ground.");
+	_place_flow_window(goal);
+	_build_flow(goal);
 }
 
 double SwarmServer::get_last_tick_ms() const {
@@ -549,6 +817,16 @@ double SwarmServer::get_enemy_slow_time(int p_index) const {
 	return alive[p_index] ? slow_time[p_index] : 0.0;
 }
 
+StringName SwarmServer::get_enemy_type_id(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, capacity, StringName());
+	return alive[p_index] ? types[type_index[p_index]].type->get_id() : StringName();
+}
+
+double SwarmServer::get_enemy_hp(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, capacity, 0.0);
+	return alive[p_index] ? hp[p_index] : 0.0;
+}
+
 // --- simulation --------------------------------------------------------------
 
 void SwarmServer::_step(double p_dt) {
@@ -558,11 +836,21 @@ void SwarmServer::_step(double p_dt) {
 
 	Node3D *target = get_target();
 	const bool has_target = target != nullptr && target->is_inside_tree();
-	const Vector3 goal = has_target ? target->get_global_position() : Vector3();
+	// Taln himself (contact, despawn) and what the swarm hunts (him, or Awareness's known position).
+	const Vector3 taln = has_target ? target->get_global_position() : Vector3();
+	Vector3 goal;
+	const bool has_goal = _goal(goal);
 	const double top_speed = tuning->get_max_speed_ratio() * target_move_speed;
 	const real_t decay = real_t(std::exp(-tuning->get_impulse_decay() * p_dt));
+	const real_t wander_ratio = real_t(tuning->get_wander_speed_ratio());
+	const real_t blight_speed = real_t(tuning->get_blight_speed_mult());
+	std::uniform_real_distribution<real_t> wander_angle(0.0f, real_t(kTau));
+	std::uniform_real_distribution<double> wander_hold(1.0, 3.0);
 
-	// Steer: seek toward Taln at the enemy's own speed, plus separation, plus impulse.
+	_apply_commanders(p_dt);
+	_apply_blight(p_dt);
+
+	// Steer: seek the goal (or a lure, or wander) at the enemy's own speed, plus separation, plus impulse.
 	for (int i = 0; i < capacity; ++i) {
 		if (!alive[i]) {
 			continue;
@@ -585,8 +873,28 @@ void SwarmServer::_step(double p_dt) {
 			continue;
 		}
 
-		const real_t max_speed = real_t(std::min(speed[i], top_speed) * slow_mult[i]);
-		const Vector2 seek = has_target ? _seek_direction(position[i], goal) : Vector2();
+		// Buffs multiply after the cap: a commander's or the disease's crowd outruns Taln.
+		real_t max_speed = real_t(std::min(speed[i], top_speed) * slow_mult[i] * buff_speed[i]);
+		if (infected[i]) {
+			max_speed *= blight_speed;
+		}
+		Vector2 seek;
+		const int lure = _lure_for(i);
+		if (lure >= 0) {
+			const Vector2 to(lures[lure].position.x - position[i].x, lures[lure].position.z - position[i].z);
+			seek = to.length() > kTiny ? to.normalized() : Vector2();
+		} else if (has_goal) {
+			seek = _seek_direction(position[i], goal);
+		} else if (use_awareness && wander_ratio > 0.0f) {
+			// Lost him. (With no target at all, as before, they stand.)
+			wander_time[i] -= p_dt;
+			if (wander_time[i] <= 0.0) {
+				const real_t angle = wander_angle(rng);
+				wander_dir[i] = Vector2(std::cos(angle), std::sin(angle));
+				wander_time[i] = wander_hold(rng);
+			}
+			seek = wander_dir[i] * wander_ratio;
+		}
 		const real_t weight = real_t(types[type_index[i]].type->get_separation_weight());
 		const Vector2 steer = ((seek + _separation(i) * weight) * max_speed).limit_length(max_speed);
 		velocity[i] = Vector3(steer.x, 0.0f, steer.y) + impulse[i];
@@ -607,6 +915,11 @@ void SwarmServer::_step(double p_dt) {
 
 	// Push out of Taln's radius (Taln isn't pushed back); touching enemies deal contact damage.
 	std::vector<Contact> contacts;
+	const real_t blight_damage = real_t(tuning->get_blight_damage_mult());
+	const auto contact_damage = [&](int i) {
+		const Ref<SwarmType> &type = types[type_index[i]].type;
+		return type->get_contact_damage() * dmg_mult[i] * buff_damage[i] * (infected[i] ? blight_damage : 1.0);
+	};
 	if (has_target) {
 		const real_t reach_up = real_t(tuning->get_contact_height());
 		for (int i = 0; i < capacity; ++i) {
@@ -614,11 +927,11 @@ void SwarmServer::_step(double p_dt) {
 				continue;
 			}
 			// Above or below the swarm (a launch, a ledge): no touch.
-			if (reach_up > 0.0f && std::abs(position[i].y - goal.y) > reach_up) {
+			if (reach_up > 0.0f && std::abs(position[i].y - taln.y) > reach_up) {
 				continue;
 			}
 			const real_t touch = real_t(target_radius) + _radius(i);
-			const Vector2 d(position[i].x - goal.x, position[i].z - goal.z);
+			const Vector2 d(position[i].x - taln.x, position[i].z - taln.z);
 			const real_t dist = d.length();
 			if (dist > touch) {
 				continue;
@@ -626,11 +939,31 @@ void SwarmServer::_step(double p_dt) {
 			const Vector2 out = (dist > kTiny ? d / dist : fallback_direction(i)) * (touch - dist);
 			_slide(i, out.x, out.y);
 			if (contact_cooldown[i] <= 0.0) {
-				const Ref<SwarmType> &type = types[type_index[i]].type;
-				contacts.push_back({ type->get_contact_damage() * dmg_mult[i], type->get_contact_damage_type() });
+				contacts.push_back({ contact_damage(i), types[type_index[i]].type->get_contact_damage_type() });
 				contact_cooldown[i] = tuning->get_contact_cooldown();
 			}
 		}
+	}
+	// The same against every lure: pushed out of its body, hitting it on the contact cooldown.
+	for (Lure &lure : lures) {
+		lure.damage = 0.0;
+		_for_each_near(lure.position.x, lure.position.z, lure.body + max_radius, [&](int i) {
+			if (hp[i] <= 0.0) {
+				return;
+			}
+			const real_t touch = lure.body + _radius(i);
+			const Vector2 d(position[i].x - lure.position.x, position[i].z - lure.position.z);
+			const real_t dist = d.length();
+			if (dist > touch) {
+				return;
+			}
+			const Vector2 out = (dist > kTiny ? d / dist : fallback_direction(i)) * (touch - dist);
+			_slide(i, out.x, out.y);
+			if (contact_cooldown[i] <= 0.0) {
+				lure.damage += contact_damage(i);
+				contact_cooldown[i] = tuning->get_contact_cooldown();
+			}
+		});
 	}
 
 	// Kills are rewarded: they drop their mote. Expiries and despawns aren't (spec v1.2 #5).
@@ -643,20 +976,20 @@ void SwarmServer::_step(double p_dt) {
 		}
 		const Ref<SwarmType> &type = types[type_index[i]].type;
 		if (hp[i] <= 0.0) {
-			deaths.push_back({ type->get_id(), position[i], true });
+			deaths.push_back({ type->get_id(), position[i], true, blight_kill[i] != 0 });
 			if (motes && type->get_investiture_drop() > 0.0) {
 				motes->spawn(position[i], type->get_investiture_drop(), type->get_tier());
 			}
 			_free(i);
 		} else if (despawn > 0.0f && type->get_tier() == SwarmType::TIER_SWARM &&
-				Vector2(position[i].x - goal.x, position[i].z - goal.z).length_squared() > despawn * despawn) {
+				Vector2(position[i].x - taln.x, position[i].z - taln.z).length_squared() > despawn * despawn) {
 			// Left far behind on a big map (spec v1.4 #5): not a kill.
-			deaths.push_back({ type->get_id(), position[i], false });
+			deaths.push_back({ type->get_id(), position[i], false, false });
 			_free(i);
 		} else if (lifetime[i] > 0.0) {
 			lifetime[i] -= p_dt;
 			if (lifetime[i] <= 0.0) {
-				deaths.push_back({ type->get_id(), position[i], false });
+				deaths.push_back({ type->get_id(), position[i], false, false });
 				_free(i);
 			}
 		}
@@ -669,18 +1002,25 @@ void SwarmServer::_step(double p_dt) {
 	for (const Contact &contact : contacts) {
 		emit_signal("taln_contacted", contact.damage, contact.type);
 	}
+	for (size_t k = 0; k < lures.size(); ++k) {
+		if (lures[k].damage > 0.0) {
+			emit_signal("lure_contacted", int(k), lures[k].damage);
+		}
+	}
 	for (const Death &death : deaths) {
+		if (death.blighted) {
+			emit_signal("enemy_blighted", death.type_id, death.position);
+		}
 		emit_signal("enemy_died", death.type_id, death.position, death.rewarded);
 	}
 }
 
 void SwarmServer::_update_flow(double p_delta, bool p_step_due) {
 	flow_since_build += p_delta;
-	Node3D *target = get_target();
-	if (p_step_due || !has_ground || target == nullptr || !target->is_inside_tree()) {
+	Vector3 goal;
+	if (p_step_due || !has_ground || !_goal(goal)) {
 		return;
 	}
-	const Vector3 goal = target->get_global_position();
 	if (_place_flow_window(goal)) {
 		_build_flow(goal);
 		return;
@@ -822,6 +1162,12 @@ void SwarmServer::_slide(int p_index, real_t p_dx, real_t p_dz) {
 void SwarmServer::_free(int p_index) {
 	alive[p_index] = 0;
 	hp[p_index] = 0.0;
+	if (infected[p_index]) {
+		infected[p_index] = 0;
+		--infected_count;
+	}
+	blight_kill[p_index] = 0;
+	buff_time[p_index] = 0.0;
 	free_slots.push_back(p_index);
 	--alive_count;
 	grid_dirty = true;
@@ -830,6 +1176,8 @@ void SwarmServer::_free(int p_index) {
 void SwarmServer::_hit(int p_index, double p_amount, int p_type) {
 	hp[p_index] -= p_amount * types[type_index[p_index]].type->get_resist(p_type);
 	hit_flash[p_index] = tuning.is_valid() ? tuning->get_hit_flash_time() : 0.0;
+	// A struck enemy dies of the blow, not the disease.
+	blight_kill[p_index] = 0;
 }
 
 bool SwarmServer::_in_cone(int p_index, const Vector3 &p_origin, const Vector2 &p_forward, real_t p_min_cos,
@@ -978,6 +1326,15 @@ void SwarmServer::_allocate() {
 	slow_mult.assign(n, 1.0);
 	slow_time.assign(n, 0.0);
 	lifetime.assign(n, 0.0);
+	buff_time.assign(n, 0.0);
+	buff_speed.assign(n, 1.0);
+	buff_damage.assign(n, 1.0);
+	infected.assign(n, 0);
+	infect_age.assign(n, 0.0);
+	blight_kill.assign(n, 0);
+	wander_dir.assign(n, Vector2());
+	wander_time.assign(n, 0.0);
+	infected_count = 0;
 	alive.assign(n, 0);
 	grid_items.assign(n, 0);
 	grid_cell_of.assign(n, 0);
@@ -1093,6 +1450,26 @@ void SwarmServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_enemy_position", "index"), &SwarmServer::get_enemy_position);
 	ClassDB::bind_method(D_METHOD("get_enemy_root_time", "index"), &SwarmServer::get_enemy_root_time);
 	ClassDB::bind_method(D_METHOD("get_enemy_slow_time", "index"), &SwarmServer::get_enemy_slow_time);
+	ClassDB::bind_method(D_METHOD("get_enemy_type_id", "index"), &SwarmServer::get_enemy_type_id);
+	ClassDB::bind_method(D_METHOD("get_enemy_hp", "index"), &SwarmServer::get_enemy_hp);
+	ClassDB::bind_method(D_METHOD("set_use_awareness", "use"), &SwarmServer::set_use_awareness);
+	ClassDB::bind_method(D_METHOD("is_using_awareness"), &SwarmServer::is_using_awareness);
+	ClassDB::bind_method(D_METHOD("set_known_position", "position"), &SwarmServer::set_known_position);
+	ClassDB::bind_method(D_METHOD("set_known", "known"), &SwarmServer::set_known);
+	ClassDB::bind_method(D_METHOD("is_known"), &SwarmServer::is_known);
+	ClassDB::bind_method(D_METHOD("get_goal_position"), &SwarmServer::get_goal_position);
+	ClassDB::bind_method(D_METHOD("has_line_of_sight", "from", "to"), &SwarmServer::has_line_of_sight);
+	ClassDB::bind_method(D_METHOD("count_spotters_seeing", "position", "range_mult"),
+			&SwarmServer::count_spotters_seeing);
+	ClassDB::bind_method(D_METHOD("set_lures", "positions", "pull_radii", "body_radii"), &SwarmServer::set_lures);
+	ClassDB::bind_method(D_METHOD("get_commander_slots"), &SwarmServer::get_commander_slots);
+	ClassDB::bind_method(D_METHOD("find_nearest_of_tier", "center", "radius", "tier"),
+			&SwarmServer::find_nearest_of_tier);
+	ClassDB::bind_method(D_METHOD("is_enemy_buffed", "index"), &SwarmServer::is_enemy_buffed);
+	ClassDB::bind_method(D_METHOD("infect_in_radius", "center", "radius"), &SwarmServer::infect_in_radius);
+	ClassDB::bind_method(D_METHOD("find_nearest_uninfected", "center", "radius"), &SwarmServer::find_nearest_uninfected);
+	ClassDB::bind_method(D_METHOD("get_infected_count"), &SwarmServer::get_infected_count);
+	ClassDB::bind_method(D_METHOD("is_enemy_infected", "index"), &SwarmServer::is_enemy_infected);
 
 	ClassDB::bind_method(D_METHOD("set_capacity", "capacity"), &SwarmServer::set_capacity);
 	ClassDB::bind_method(D_METHOD("get_capacity"), &SwarmServer::get_capacity);
@@ -1109,4 +1486,9 @@ void SwarmServer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("enemy_died", PropertyInfo(Variant::STRING_NAME, "type_id"),
 			PropertyInfo(Variant::VECTOR3, "position"), PropertyInfo(Variant::BOOL, "rewarded")));
 	ADD_SIGNAL(MethodInfo("taln_contacted", PropertyInfo(Variant::FLOAT, "damage"), PropertyInfo(Variant::INT, "type")));
+	// A lure (by index in the last set_lures) took this much contact damage this step.
+	ADD_SIGNAL(MethodInfo("lure_contacted", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::FLOAT, "damage")));
+	// The disease took this enemy; its enemy_died (rewarded) follows at once.
+	ADD_SIGNAL(MethodInfo("enemy_blighted", PropertyInfo(Variant::STRING_NAME, "type_id"),
+			PropertyInfo(Variant::VECTOR3, "position")));
 }

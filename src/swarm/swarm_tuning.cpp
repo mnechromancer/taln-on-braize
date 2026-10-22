@@ -17,4 +17,15 @@ void SwarmTuning::_bind_methods() {
 	SWARM_BIND_PROPERTY(SwarmTuning, Variant::INT, flow_window_margin, PROPERTY_HINT_RANGE, "0,512,1,suffix:cells");
 	ADD_GROUP("Despawn", "despawn_");
 	SWARM_BIND_PROPERTY(SwarmTuning, Variant::FLOAT, despawn_distance, PROPERTY_HINT_RANGE, "0,500,1,suffix:m");
+	ADD_GROUP("Awareness", "");
+	SWARM_BIND_PROPERTY(SwarmTuning, Variant::FLOAT, wander_speed_ratio, PROPERTY_HINT_RANGE, "0,1,0.01");
+	ADD_GROUP("Commanders", "commander_");
+	SWARM_BIND_PROPERTY(SwarmTuning, Variant::FLOAT, commander_buff_linger, PROPERTY_HINT_RANGE, "0,10,0.1,suffix:s");
+	ADD_GROUP("Blight", "blight_");
+	SWARM_BIND_PROPERTY(SwarmTuning, Variant::FLOAT, blight_incubation, PROPERTY_HINT_RANGE, "0,60,0.1,suffix:s");
+	SWARM_BIND_PROPERTY(SwarmTuning, Variant::FLOAT, blight_dps, PROPERTY_HINT_RANGE, "0,1000,0.1,suffix:/s");
+	SWARM_BIND_PROPERTY(SwarmTuning, Variant::FLOAT, blight_spread_radius, PROPERTY_HINT_RANGE, "0,10,0.05,suffix:m");
+	SWARM_BIND_PROPERTY(SwarmTuning, Variant::FLOAT, blight_spread_rate, PROPERTY_HINT_RANGE, "0,10,0.01,suffix:/s");
+	SWARM_BIND_PROPERTY(SwarmTuning, Variant::FLOAT, blight_speed_mult, PROPERTY_HINT_RANGE, "0,5,0.05");
+	SWARM_BIND_PROPERTY(SwarmTuning, Variant::FLOAT, blight_damage_mult, PROPERTY_HINT_RANGE, "0,5,0.05");
 }

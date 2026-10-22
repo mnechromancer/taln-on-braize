@@ -37,6 +37,8 @@ func _run() -> void:
 	await _ticks(2)
 	meta = Meta.state()
 	meta.redirect(CHECKS_META)
+	# These checks are the gate build's: Stroke + Settle, Anchored and Fracture (P2-11 gave Earthshaper its own kit).
+	Cycle.director().tuning.default_aspect = load("res://data/aspects/gate_build.tres")
 	meta.wipe()
 	ash = load(ASH_WALKER)
 	hunter = load(NOTICE_HUNTER)

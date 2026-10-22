@@ -46,7 +46,9 @@ static func analyze(cycle: Dictionary) -> Dictionary:
 	var header: Dictionary = cycle.header
 	var stations: int = int(header.stations)
 	var result: Dictionary = {"waves": [], "stations": [], "levels": [], "strain": [], "play_seconds": 0.0,
-			"fills": 0, "lull_kills": 0, "regions": [], "kit": [], "landings": 0, "impacts": 0, "impact_hits": 0}
+			"fills": 0, "lull_kills": 0, "regions": [], "kit": [], "landings": 0, "impacts": 0, "impact_hits": 0,
+			"commanders_spawned": 0, "commanders_killed": 0, "first_commander_kill": -1.0, "seen": [],
+			"unseen_seconds": 0.0, "structures": [], "fractures": 0, "infected_peak": 0}
 	for s in stations:
 		result.stations.append({"reached": false, "start": 0.0, "wave_seconds": 0.0, "kills": 0, "income": {},
 				"gross": 0.0, "fills": {}, "fill_count": 0, "returns": 0, "levels": 0})
@@ -121,12 +123,32 @@ static func analyze(cycle: Dictionary) -> Dictionary:
 				result.impact_hits += int(e.hits)
 			"kit_take":
 				result.kit.append({"t": t, "skill": String(e.skill)})
+			"commander":
+				result.commanders_spawned += 1
+			"commander_kill":
+				result.commanders_killed += 1
+				if result.first_commander_kill < 0.0:
+					result.first_commander_kill = t
+			"seen":
+				# Awareness (P2-13): time unseen is every stretch not in the seen state.
+				if not result.seen.is_empty() and result.seen[-1].state != "seen":
+					result.unseen_seconds += t - result.seen[-1].t
+				result.seen.append({"t": t, "state": String(e.state)})
+			"structure":
+				result.structures.append({"t": t, "kind": String(e.kind)})
+			"fracture":
+				if String(e.state) == "active":
+					result.fractures += 1
+			"snapshot":
+				result.infected_peak = maxi(result.infected_peak, int(e.get("infected", 0)))
 			"strain":
 				var value: float = float(e.value)
 				if result.strain.is_empty() or result.strain[-1].value != value:
 					result.strain.append({"t": t, "value": value})
 	if not cycle.finished:
 		_close_segment(w, result, last_t)
+	if not result.seen.is_empty() and result.seen[-1].state != "seen":
+		result.unseen_seconds += last_t - result.seen[-1].t
 	result.play_seconds = float(cycle.summary.get("time", last_t))
 	var starts: Array[float] = []
 	for st: Dictionary in result.stations:

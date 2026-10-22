@@ -11,6 +11,11 @@ uniform float eye_energy = 3.0;
 // the eyes dim to this fraction of eye_energy.
 uniform vec3 stone_color : source_color = vec3(0.353, 0.337, 0.310);
 uniform float rooted_eye_scale = 0.2;
+// A commander's buff: the eyes burn brighter in this color. The disease:
+// the body sickens toward blight_color.
+uniform vec3 buff_eye_color : source_color = vec3(1.0, 0.55, 0.15);
+uniform float buff_eye_scale = 2.5;
+uniform vec3 blight_color : source_color = vec3(0.48, 0.60, 0.23);
 // Eye band height above the feet, and how far each eye sits off center.
 uniform float eye_band_bottom = 1.0;
 uniform float eye_band_top = 1.1;
@@ -25,13 +30,18 @@ uniform float base_offset = 0.65;
 
 varying vec3 local_position;
 varying vec4 custom;
+// 1 while a commander's buff holds, 2 while infected, 3 for both.
+varying float flags;
 
 void vertex() {
 	VERTEX.y += base_offset;
 	local_position = VERTEX;
 	// Rooted enemies stop bobbing.
-	VERTEX.y += (sin(TIME * bob_speed + INSTANCE_CUSTOM.x) * 0.5 + 0.5) * bob_height * (1.0 - INSTANCE_CUSTOM.w);
 	custom = INSTANCE_CUSTOM;
+	// Unpack the flags from the rooted amount.
+	flags = floor(custom.w / 10.0 + 0.001);
+	custom.w -= flags * 10.0;
+	VERTEX.y += (sin(TIME * bob_speed + custom.x) * 0.5 + 0.5) * bob_height * (1.0 - custom.w);
 }
 
 void fragment() {
@@ -40,11 +50,15 @@ void fragment() {
 			* step(eye_inner, side) * step(side, eye_outer) * step(0.0, local_position.z);
 	float flash = clamp(custom.y, 0.0, 1.0);
 	float rooted = clamp(custom.w, 0.0, 1.0);
+	float buffed = step(0.5, mod(flags, 2.0));
+	float sick = step(1.5, flags);
 	vec3 gray = vec3(dot(body_color, vec3(0.2126, 0.7152, 0.0722)));
 	vec3 stone = mix(gray, stone_color, 0.5);
-	ALBEDO = mix(mix(body_color, stone, rooted), vec3(1.0), flash);
+	vec3 body = mix(body_color, blight_color, sick * 0.7);
+	ALBEDO = mix(mix(body, stone, rooted), vec3(1.0), flash);
 	ROUGHNESS = 1.0;
-	EMISSION = eye_color * eye_energy * mix(1.0, rooted_eye_scale, rooted) * eye + vec3(flash * flash_energy);
+	vec3 eyes = mix(eye_color, buff_eye_color, buffed) * eye_energy * mix(1.0, buff_eye_scale, buffed);
+	EMISSION = eyes * mix(1.0, rooted_eye_scale, rooted) * eye + vec3(flash * flash_energy);
 	// Dithered fade-in keeps enemies in the opaque pass.
 	ALPHA = clamp(custom.z / fade_in_time, 0.0, 1.0);
 	ALPHA_HASH_SCALE = 1.0;

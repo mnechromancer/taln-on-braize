@@ -26,6 +26,14 @@ public:
 	SWARM_ACCESSORS(int, flow_window_margin)
 	SWARM_ACCESSORS(double, despawn_distance)
 	SWARM_ACCESSORS(double, contact_height)
+	SWARM_ACCESSORS(double, wander_speed_ratio)
+	SWARM_ACCESSORS(double, commander_buff_linger)
+	SWARM_ACCESSORS(double, blight_incubation)
+	SWARM_ACCESSORS(double, blight_dps)
+	SWARM_ACCESSORS(double, blight_spread_radius)
+	SWARM_ACCESSORS(double, blight_spread_rate)
+	SWARM_ACCESSORS(double, blight_speed_mult)
+	SWARM_ACCESSORS(double, blight_damage_mult)
 
 protected:
 	static void _bind_methods();
@@ -65,4 +73,20 @@ private:
 	// vertical distance of his feet: a launched Taln passes over the swarm
 	// (P2-12). 0 ignores height.
 	double contact_height = 0.0;
+	// Awareness (spec v1.4 #6, P2-13): with no known position, enemies drift
+	// at this share of their speed in random directions; 0 stands them still.
+	double wander_speed_ratio = 0.0;
+	// A commander's buff lasts this long after an enemy leaves its aura.
+	double commander_buff_linger = 0.0;
+	// The Ashynite disease (spec v1.4 #8, P2-15). An infected enemy is buffed
+	// (speed and contact damage multiplied) from infection; after
+	// blight_incubation it takes blight_dps Blight damage per second until it
+	// dies, and every second spreads to each neighbor within
+	// blight_spread_radius with probability blight_spread_rate.
+	double blight_incubation = 0.0;
+	double blight_dps = 0.0;
+	double blight_spread_radius = 0.0;
+	double blight_spread_rate = 0.0;
+	double blight_speed_mult = 1.0;
+	double blight_damage_mult = 1.0;
 };

@@ -44,6 +44,7 @@ func _run() -> void:
 	await _check_air_steering()
 	await _check_ledge_drop()
 	await _check_impact()
+	await _check_mass()
 	await _check_contact_height()
 	await _check_pad()
 	await _check_ridge()
@@ -250,6 +251,24 @@ func _check_impact() -> void:
 	var dead: int = slots.filter(func(s: int) -> bool: return not swarm.is_enemy_alive(s)).size()
 	_check("A Heave landing among six ash walkers strikes them all and kills them", struck.size() == 1
 			and struck[0][1] == 6 and dead == 6, "impacts %s, %d of 6 dead" % [struck, dead])
+
+
+func _check_mass() -> void:
+	await _fresh()
+	var impact: Impact = taln.loadout.get_behavior(&"impact")
+	var heave: Heave = _heave()
+	var light: float = taln.mass
+	var reach_light: float = Vector2(heave.launch_velocity(Vector3.FORWARD, 1.0).x, heave.launch_velocity(Vector3.FORWARD, 1.0).z).length()
+	impact.set_level(9)
+	var heavy: float = taln.mass
+	var reach_heavy: float = Vector2(heave.launch_velocity(Vector3.FORWARD, 1.0).x, heave.launch_velocity(Vector3.FORWARD, 1.0).z).length()
+	var hard: Vector2 = impact.strike_for(13.0)
+	# Level 9: 72 + 7 per m/s over 6, times mass 1.4.
+	_check("Mass (spec v1.7 #1): Impact's levels take Taln from 1.0 to 1.4; a level-9 landing at 13 m/s hits (72 + 49) × 1.4, and a Heave throws him 1.4× less far",
+			light == 1.0 and is_equal_approx(heavy, 1.4) and is_equal_approx(hard.x, 121.0 * 1.4)
+			and absf(reach_light / reach_heavy - 1.4) < 0.01, "mass %.2f → %.2f, strike %.1f, reach %.2f → %.2f"
+			% [light, heavy, hard.x, reach_light, reach_heavy])
+	impact.set_level(1)
 
 
 func _check_contact_height() -> void:

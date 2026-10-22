@@ -1,0 +1,117 @@
+[gd_resource type="Resource" script_class="SkillDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/skill_def.gd" id="1_skill"]
+[ext_resource type="PackedScene" path="res://scenes/skills/sentinel.tscn" id="2_behavior"]
+
+[resource]
+script = ExtResource("1_skill")
+id = &"sentinel"
+display_name = "Sentinel"
+kind = 1
+tree = 0
+tags = Array[StringName]([&"cohesion", &"tower", &"structure", &"kinetic"])
+investiture_cost = 35.0
+cooldown = 7.0
+routing = 1
+; P2-11 PLACEHOLDER numbers until the Content List.
+level_params = Array[Dictionary]([{
+"body_radius": 0.8,
+"burst_radius": 1.2,
+"damage": 14.0,
+"distance": 5.0,
+"duration": 25.0,
+"hp": 220.0,
+"interval": 0.8,
+"max": 3.0,
+"pull_radius": 7.0,
+"range": 10.0
+}, {
+"body_radius": 0.8,
+"burst_radius": 1.2,
+"damage": 17.0,
+"distance": 5.0,
+"duration": 28.0,
+"hp": 250.0,
+"interval": 0.8,
+"max": 3.0,
+"pull_radius": 7.0,
+"range": 10.0
+}, {
+"body_radius": 0.8,
+"burst_radius": 1.2,
+"damage": 20.0,
+"distance": 5.0,
+"duration": 31.0,
+"hp": 280.0,
+"interval": 0.8,
+"max": 3.0,
+"pull_radius": 7.0,
+"range": 10.0
+}, {
+"body_radius": 0.8,
+"burst_radius": 1.2,
+"damage": 23.0,
+"distance": 5.0,
+"duration": 34.0,
+"hp": 310.0,
+"interval": 0.8,
+"max": 3.0,
+"pull_radius": 7.0,
+"range": 10.0
+}, {
+"body_radius": 0.8,
+"burst_radius": 1.2,
+"damage": 26.0,
+"distance": 5.0,
+"duration": 37.0,
+"hp": 340.0,
+"interval": 0.8,
+"max": 3.0,
+"pull_radius": 7.0,
+"range": 10.0
+}, {
+"body_radius": 0.8,
+"burst_radius": 1.2,
+"damage": 29.0,
+"distance": 5.0,
+"duration": 40.0,
+"hp": 370.0,
+"interval": 0.8,
+"max": 3.0,
+"pull_radius": 7.0,
+"range": 10.0
+}, {
+"body_radius": 0.8,
+"burst_radius": 1.2,
+"damage": 32.0,
+"distance": 5.0,
+"duration": 43.0,
+"hp": 400.0,
+"interval": 0.8,
+"max": 3.0,
+"pull_radius": 7.0,
+"range": 10.0
+}, {
+"body_radius": 0.8,
+"burst_radius": 1.2,
+"damage": 35.0,
+"distance": 5.0,
+"duration": 46.0,
+"hp": 430.0,
+"interval": 0.8,
+"max": 3.0,
+"pull_radius": 7.0,
+"range": 10.0
+}, {
+"body_radius": 0.8,
+"burst_radius": 1.2,
+"damage": 38.0,
+"distance": 5.0,
+"duration": 49.0,
+"hp": 460.0,
+"interval": 0.8,
+"max": 3.0,
+"pull_radius": 7.0,
+"range": 10.0
+}])
+behavior = ExtResource("2_behavior")

@@ -1,0 +1,45 @@
+[gd_resource type="Resource" script_class="SkillDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/skill_def.gd" id="1_skill"]
+[ext_resource type="PackedScene" path="res://scenes/skills/spore_burst.tscn" id="2_behavior"]
+
+[resource]
+script = ExtResource("1_skill")
+id = &"spore_burst"
+display_name = "Spore Burst"
+kind = 1
+tree = 2
+tags = Array[StringName]([&"blight", &"infect"])
+investiture_cost = 20.0
+cooldown = 8.0
+routing = 0
+; P2-15 PLACEHOLDER numbers until the Content List. Routing through Toa'uma is for confirmation (spec v1.7).
+level_params = Array[Dictionary]([{
+"distance": 5.0,
+"radius": 6.0
+}, {
+"distance": 5.0,
+"radius": 6.5
+}, {
+"distance": 5.0,
+"radius": 7.0
+}, {
+"distance": 5.0,
+"radius": 7.5
+}, {
+"distance": 5.0,
+"radius": 8.0
+}, {
+"distance": 5.0,
+"radius": 8.5
+}, {
+"distance": 5.0,
+"radius": 9.0
+}, {
+"distance": 5.0,
+"radius": 9.5
+}, {
+"distance": 5.0,
+"radius": 10.0
+}])
+behavior = ExtResource("2_behavior")

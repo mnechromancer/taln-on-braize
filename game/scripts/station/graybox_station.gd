@@ -44,6 +44,9 @@ var lull_left: float = 0.0
 @onready var _motes: MoteServer = $MoteServer
 @onready var _catalysis: Catalysis = $Catalysis
 @onready var _well: Well = $Well
+## P2-11 and P2-13; the gray-box station has neither.
+@onready var _structures: Structures = get_node_or_null("Structures")
+@onready var _awareness: Awareness = get_node_or_null("Awareness")
 
 
 func _ready() -> void:
@@ -56,6 +59,15 @@ func _ready() -> void:
 	_swarm.target_radius = _taln.tuning.capsule_radius
 	_swarm.set_target(_taln)
 	_taln.loadout.swarm = _swarm
+	_taln.loadout.structures = _structures
+	_taln.loadout.awareness = _awareness
+	if _awareness:
+		# What the swarm hears (spec v1.4 #6): Voidlight through the gem, hard landings.
+		_taln.toauma.used.connect(func(_draw: bool, _effect: Toauma.Effect) -> void:
+			_awareness.make_noise(_taln.global_position, _awareness.tuning.voidlight_noise_radius))
+		_taln.landed.connect(func(speed: float, at: Vector3) -> void:
+			if speed >= _awareness.tuning.landing_noise_min_speed:
+				_awareness.make_noise(at, _awareness.tuning.landing_noise_radius))
 	_swarm.set_mote_server(_motes)
 	_motes.set_target(_taln)
 	_motes.mote_collected.connect(_on_mote_collected)
@@ -106,6 +118,10 @@ func reset_for_cycle() -> void:
 	_taln.agony.reset()
 	_taln.fracture.reset()
 	_taln.health.refill()
+	if _structures:
+		_structures.clear_all()
+	if _awareness:
+		_awareness.reset()
 	_context.station_index = 0
 	_spawner.begin_station(0)
 	kills = 0

@@ -5,7 +5,8 @@ extends SurgeBehavior
 ## toward the densest cluster, so he lands in the crowd. Only from the
 ## ground: the ground throws him, he never jumps (spec v1.4 #3). The arc
 ## peaks apex meters up and comes down distance meters out on level ground;
-## Overcharge stretches the distance by the magnitude.
+## Overcharge stretches the distance by the magnitude, and Taln's mass
+## (Impact's levels) shortens it.
 ##
 ## level_params keys: distance (m), apex (m).
 
@@ -68,7 +69,7 @@ func launch_velocity(direction: Vector3, magnitude: float) -> Vector3:
 	var up: float = sqrt(2.0 * g * p.apex)
 	var flight: float = 2.0 * up / g
 	var flat := Vector3(direction.x, 0.0, direction.z).normalized()
-	return flat * (p.distance * magnitude / flight) + Vector3.UP * up
+	return flat * (p.distance * magnitude / maxf(taln.mass, 0.01) / flight) + Vector3.UP * up
 
 
 func _fire(origin: Vector3, direction: Vector3, _through_toa_uma: bool, magnitude: float) -> int:

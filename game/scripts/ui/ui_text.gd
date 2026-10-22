@@ -23,6 +23,12 @@ const SIEGE := "Siege  %d s"
 const SEALS_OPEN := "Seals open: Tier %d ahead"
 ## Direction to a point relative to the camera, clockwise from straight ahead.
 const ARROWS: Array[String] = ["↑", "↗", "→", "↘", "↓", "↙", "←", "↖"]
+# Awareness (P2-13), by Awareness.State; then the nearest commander, standing
+# structures and the infected, shown when there are any.
+const AWARENESS: Array[String] = ["Unseen", "Seen", "Searching"]
+const COMMANDER := "Commander  %d m  %s"
+const STRUCTURES := "Standing %d"
+const INFECTED := "Infected %d"
 const READY := "ready"
 const SECONDS := "%.1f s"
 const COST := "%d"

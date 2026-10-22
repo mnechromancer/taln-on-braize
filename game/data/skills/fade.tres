@@ -1,0 +1,45 @@
+[gd_resource type="Resource" script_class="SkillDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/skill_def.gd" id="1_skill"]
+[ext_resource type="PackedScene" path="res://scenes/skills/fade.tscn" id="2_behavior"]
+
+[resource]
+script = ExtResource("1_skill")
+id = &"fade"
+display_name = "Fade"
+kind = 1
+tree = 2
+tags = Array[StringName]([&"blight", &"stealth"])
+investiture_cost = 15.0
+cooldown = 12.0
+routing = 1
+; P2-15 PLACEHOLDER numbers until the Content List.
+level_params = Array[Dictionary]([{
+"duration": 4.0,
+"speed_mult": 1.4
+}, {
+"duration": 4.5,
+"speed_mult": 1.45
+}, {
+"duration": 5.0,
+"speed_mult": 1.5
+}, {
+"duration": 5.5,
+"speed_mult": 1.55
+}, {
+"duration": 6.0,
+"speed_mult": 1.6
+}, {
+"duration": 6.5,
+"speed_mult": 1.65
+}, {
+"duration": 7.0,
+"speed_mult": 1.7
+}, {
+"duration": 7.5,
+"speed_mult": 1.75
+}, {
+"duration": 8.0,
+"speed_mult": 1.8
+}])
+behavior = ExtResource("2_behavior")

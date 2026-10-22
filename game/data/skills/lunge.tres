@@ -1,0 +1,72 @@
+[gd_resource type="Resource" script_class="SkillDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/skill_def.gd" id="1_skill"]
+[ext_resource type="PackedScene" path="res://scenes/skills/lunge.tscn" id="2_behavior"]
+
+[resource]
+script = ExtResource("1_skill")
+id = &"lunge"
+display_name = "Lunge"
+kind = 1
+tree = 0
+tags = Array[StringName]([&"tension", &"launch", &"kinetic", &"hunt"])
+investiture_cost = 20.0
+cooldown = 4.0
+routing = 1
+; P2-14 PLACEHOLDER numbers until the Content List.
+level_params = Array[Dictionary]([{
+"apex": 1.2,
+"damage": 30.0,
+"distance": 8.0,
+"hunt_range": 30.0,
+"radius": 2.0
+}, {
+"apex": 1.2,
+"damage": 36.0,
+"distance": 8.5,
+"hunt_range": 30.0,
+"radius": 2.0
+}, {
+"apex": 1.2,
+"damage": 42.0,
+"distance": 9.0,
+"hunt_range": 30.0,
+"radius": 2.0
+}, {
+"apex": 1.2,
+"damage": 48.0,
+"distance": 9.5,
+"hunt_range": 30.0,
+"radius": 2.0
+}, {
+"apex": 1.2,
+"damage": 54.0,
+"distance": 10.0,
+"hunt_range": 30.0,
+"radius": 2.0
+}, {
+"apex": 1.2,
+"damage": 60.0,
+"distance": 10.5,
+"hunt_range": 30.0,
+"radius": 2.0
+}, {
+"apex": 1.2,
+"damage": 66.0,
+"distance": 11.0,
+"hunt_range": 30.0,
+"radius": 2.0
+}, {
+"apex": 1.2,
+"damage": 72.0,
+"distance": 11.5,
+"hunt_range": 30.0,
+"radius": 2.0
+}, {
+"apex": 1.2,
+"damage": 78.0,
+"distance": 12.0,
+"hunt_range": 30.0,
+"radius": 2.0
+}])
+behavior = ExtResource("2_behavior")

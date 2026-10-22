@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="AspectDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/aspect/aspect_def.gd" id="1_aspect"]
+[ext_resource type="Resource" path="res://data/skills/breaking_stroke.tres" id="2_stroke"]
+[ext_resource type="Resource" path="res://data/skills/settle.tres" id="3_settle"]
+
+; The Phase 2 gate build's loop (P2-01 to P2-08): what Earthshaper was before P2-11 gave it its own kit.
+; Not offered in play (it isn't in cycle_tuning.aspects); the P2-03 to P2-08 checks and the economy bot pin it.
+[resource]
+script = ExtResource("1_aspect")
+id = &"gate_build"
+display_name = "Gate build"
+starting_skills = Array[Resource]([ExtResource("2_stroke"), ExtResource("3_settle")])
+anchored = true
+fracture = true
