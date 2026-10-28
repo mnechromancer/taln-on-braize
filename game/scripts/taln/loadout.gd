@@ -21,6 +21,10 @@ var swarm: SwarmServer
 ## that raise stone or hide; set with swarm, null until then.
 var structures: Structures
 var awareness: Awareness
+## Bargains (P2-16): every manual Surge cast's magnitude is multiplied by
+## this, and adds this much Strain on top of the routing's.
+var surge_magnitude_mult: float = 1.0
+var surge_strain_add: float = 0.0
 ## Whether Taln holds the Honorblade this cycle (spec §5.1). Its Special Room
 ## comes later; until then Blade-eligible Surges route through Toa'uma.
 var honorblade_held: bool = false

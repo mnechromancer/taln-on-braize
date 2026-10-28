@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="BoonDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/boons/boon_def.gd" id="1_boon"]
+
+[resource]
+script = ExtResource("1_boon")
+id = &"patient_culture"
+display_name = "Patient Culture"
+source = 1
+line = "The disease takes half again as fast and spreads half again as far. Every hit on you lands a quarter harder."
+tags = Array[StringName]([&"blight"])
+; P2-16 PLACEHOLDER numbers until the Content List.
+effects = {
+"blight_dps_mult": 1.5,
+"blight_spread_mult": 1.5
+}
+bane = {
+"damage_taken_mult": 1.25
+}

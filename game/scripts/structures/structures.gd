@@ -14,6 +14,9 @@ signal struck(kind: StringName, hits: int, damage: float)
 @export var swarm: SwarmServer
 @export var ground: StationGround
 
+## A bargain's multiplier on every structure's Health (P2-16).
+var hp_mult: float = 1.0
+
 ## The lures handed to the swarm last frame, by index.
 var _lured: Array[Structure] = []
 
@@ -46,6 +49,7 @@ func add(structure: Structure, at: Vector3, max_count: int) -> Structure:
 	structure.taln = taln
 	structure.swarm = swarm
 	structure.ground = ground
+	structure.max_hp *= hp_mult
 	structure.hp = structure.max_hp
 	structure.position = at
 	structure.crumbled.connect(_on_crumbled)

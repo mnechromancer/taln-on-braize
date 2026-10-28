@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="BoonDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/boons/boon_def.gd" id="1_boon"]
+
+[resource]
+script = ExtResource("1_boon")
+id = &"deeper_draw"
+display_name = "Deeper Draw"
+source = 0
+line = "The Draw gives half again as much; it carries half again as far."
+tags = Array[StringName]([&"draw", &"noise"])
+; P2-16 PLACEHOLDER numbers until the Content List.
+effects = {
+"draw_mult": 1.5,
+"noise_mult": 1.5
+}

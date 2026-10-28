@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="BoonDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/boons/boon_def.gd" id="1_boon"]
+
+[resource]
+script = ExtResource("1_boon")
+id = &"rot_in_the_stone"
+display_name = "Rot in the Stone"
+source = 1
+line = "What touches your stone sickens. The stone stands with three quarters of its Health."
+tags = Array[StringName]([&"blight", &"structure"])
+; P2-16 PLACEHOLDER numbers until the Content List.
+effects = {
+"lure_infects": 1.0
+}
+bane = {
+"structure_hp_mult": 0.75
+}

@@ -30,6 +30,11 @@ func _init() -> void:
 
 
 func _run() -> void:
+	await process_frame
+	Meta.state().redirect("user://checks_meta.json")
+	Meta.state().wipe()
+	# These checks are the gate build's: Stroke + Settle, Anchored and Fracture (P2-11 gave Earthshaper its own kit).
+	Cycle.director().tuning.default_aspect = load("res://data/aspects/gate_build.tres")
 	station = (load(STATION) as PackedScene).instantiate()
 	root.add_child(station)
 	ground = station.get_node("StationGround")

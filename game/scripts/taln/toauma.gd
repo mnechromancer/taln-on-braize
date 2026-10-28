@@ -29,6 +29,8 @@ var last_effect: Effect = Effect.NONE
 var last_effect_msec: int = 0
 var last_effect_from_draw: bool = false
 var _noticed: Dictionary[float, bool] = {}
+## Multipliers on what a Draw gives, by source (a bargain); they multiply together.
+var draw_mults: Dictionary[StringName, float] = {}
 var _lurch_left: float = 0.0
 
 @onready var _taln: Taln = get_parent()
@@ -74,6 +76,8 @@ func draw() -> bool:
 	used.emit(true, effect)
 	add_strain(tuning.draw_strain)
 	var amount: float = tuning.draw_investiture
+	for mult: float in draw_mults.values():
+		amount *= mult
 	if effect == Effect.OVERCHARGE:
 		amount *= tuning.overcharge_mult
 	_taln.investiture.add(amount, &"draw")

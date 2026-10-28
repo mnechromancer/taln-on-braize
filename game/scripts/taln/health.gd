@@ -12,6 +12,8 @@ signal depleted
 
 var current: float = 0.0
 var _armor_bonuses: Dictionary[StringName, float] = {}
+## Multipliers on damage taken by source (a culture bargain's bane); they multiply together.
+var _damage_mults: Dictionary[StringName, float] = {}
 var _invulnerable_sources: Dictionary[StringName, bool] = {}
 ## Time left on the global invulnerability that follows every hit (spec §6.2).
 var _hit_invulnerable_left: float = 0.0
@@ -34,7 +36,7 @@ func damage(raw: float, type: Damage.Type, ignore_invulnerability: bool = false)
 	if raw <= 0.0 or (is_invulnerable() and not ignore_invulnerability):
 		return 0.0
 	# Past 0 nothing more is lost (so Agony counts only real Health).
-	var taken: float = minf(raw * 100.0 / (100.0 + get_armor()), current)
+	var taken: float = minf(raw * get_damage_mult() * 100.0 / (100.0 + get_armor()), current)
 	_hit_invulnerable_left = tuning.hit_invulnerability_time
 	var was_up: bool = current > 0.0
 	_set_current(current - taken)
@@ -62,6 +64,21 @@ func get_armor() -> float:
 	for bonus: float in _armor_bonuses.values():
 		armor += bonus
 	return armor
+
+
+func get_damage_mult() -> float:
+	var mult: float = 1.0
+	for value: float in _damage_mults.values():
+		mult *= value
+	return mult
+
+
+func set_damage_mult(source: StringName, value: float) -> void:
+	_damage_mults[source] = value
+
+
+func clear_damage_mult(source: StringName) -> void:
+	_damage_mults.erase(source)
 
 
 func set_armor_bonus(source: StringName, amount: float) -> void:

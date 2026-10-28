@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="BoonDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/boons/boon_def.gd" id="1_boon"]
+
+[resource]
+script = ExtResource("1_boon")
+id = &"carrier"
+display_name = "Carrier"
+source = 1
+line = "One blow in ten seeds the culture. It clings to you: seen from a quarter further."
+tags = Array[StringName]([&"blight", &"weapon"])
+; P2-16 PLACEHOLDER numbers until the Content List.
+effects = {
+"hit_infect_chance": 0.1
+}
+bane = {
+"detection_mult": 1.25
+}

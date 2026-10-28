@@ -155,6 +155,9 @@ func _on_cycle_ended(outcome: Cycle.Outcome, summary: Dictionary) -> void:
 	out["structures_lost_to_swarm"] = _structures_lost_to_swarm
 	out["structure_damage"] = _as_strings(_structure_damage)
 	out["structure_hits"] = _as_ints(_structure_hits)
+	var boons: Boons = _station.get_node_or_null("Boons")
+	if boons:
+		out["boons"] = boons.owned.map(func(b: BoonDef) -> String: return String(b.id))
 	out["blight_kills"] = _blight_kills
 	out["infected_peak"] = _infected_peak
 	_write(out)
@@ -204,6 +207,13 @@ func _hook() -> void:
 		_connect(slice.commander_spawned, func(_slot: int, escort: Array[int]) -> void:
 			_write({"ev": "commander", "escort": escort.size()}))
 		_connect(slice.commander_killed, func(_at: Vector3) -> void: _write({"ev": "commander_kill"}))
+	# P2-16: bargains offered and taken.
+	var boons: Boons = _station.get_node_or_null("Boons")
+	if boons:
+		_connect(boons.offered, func(offer: Array[BoonDef]) -> void:
+			_write({"ev": "boon_offer", "offer": offer.map(func(b: BoonDef) -> StringName: return b.id)}))
+		_connect(boons.taken, func(boon: BoonDef) -> void:
+			_write({"ev": "boon_take", "boon": boon.id, "source": BoonDef.Source.keys()[boon.source].to_lower()}))
 	# P2-13: whether the swarm sees Taln, on every change.
 	var awareness: Awareness = _station.get_node_or_null("Awareness")
 	if awareness:

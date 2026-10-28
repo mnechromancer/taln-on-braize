@@ -1,65 +1,68 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://scripts/map/braize_slice.gd" id="1_sdsey"]
-[ext_resource type="Resource" path="res://data/tuning/region_tuning.tres" id="2_x3o1r"]
-[ext_resource type="Script" path="res://scripts/station/station_ground.gd" id="3_wdr84"]
-[ext_resource type="Resource" path="res://data/tuning/station_ground_tuning.tres" id="4_ivaf6"]
-[ext_resource type="PackedScene" path="res://scenes/well_pool.tscn" id="5_tain0"]
-[ext_resource type="Resource" path="res://data/tuning/well_pool_tuning.tres" id="7_nlrgm"]
-[ext_resource type="PackedScene" path="res://scenes/taln.tscn" id="8_q2ucb"]
-[ext_resource type="PackedScene" path="res://scenes/camera_rig.tscn" id="11_6x8e3"]
-[ext_resource type="SwarmTuning" path="res://data/tuning/swarm_tuning.tres" id="14_a1x2i"]
-[ext_resource type="Script" path="res://scripts/swarm/spawn_director.gd" id="15_lwyk3"]
-[ext_resource type="Resource" path="res://data/tuning/spawn_tuning.tres" id="16_albml"]
-[ext_resource type="SwarmType" path="res://data/swarm/ash_walker.tres" id="17_wjarj"]
-[ext_resource type="Script" path="res://scripts/station/station_context.gd" id="18_asmhr"]
-[ext_resource type="Resource" path="res://data/tuning/investiture_tuning.tres" id="19_7axc3"]
-[ext_resource type="MoteTuning" path="res://data/tuning/mote_tuning.tres" id="20_ig05b"]
-[ext_resource type="SphereMesh" path="res://data/motes/mote_mesh.tres" id="21_uwo1f"]
-[ext_resource type="Material" path="res://data/motes/mote_material.tres" id="22_hmu7m"]
-[ext_resource type="Script" path="res://scripts/station/well.gd" id="23_yo6od"]
-[ext_resource type="Script" path="res://scripts/agony/catalysis.gd" id="24_472am"]
-[ext_resource type="Resource" path="res://data/tuning/agony_tuning.tres" id="25_5r3i5"]
-[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="26_g4fqa"]
-[ext_resource type="Script" path="res://scripts/ui/level_up_menu.gd" id="27_yp0m7"]
-[ext_resource type="Script" path="res://scripts/ui/catalyze_ui.gd" id="28_wl0yg"]
-[ext_resource type="Script" path="res://scripts/cycle/return_sequence.gd" id="29_lymfe"]
-[ext_resource type="Resource" path="res://data/tuning/return_tuning.tres" id="30_4kvmm"]
-[ext_resource type="Script" path="res://scripts/ui/between_run_screen.gd" id="31_ix8lb"]
-[ext_resource type="Script" path="res://scripts/skills/skill_def.gd" id="32_t0ynj"]
-[ext_resource type="Resource" path="res://data/skills/breaking_stroke.tres" id="33_vclxd"]
-[ext_resource type="Resource" path="res://data/skills/settle.tres" id="34_x6j0o"]
-[ext_resource type="Resource" path="res://data/skills/bearer_of_agonies.tres" id="35_gcmcl"]
-[ext_resource type="Resource" path="res://data/skills/bulwark.tres" id="36_jdxd3"]
-[ext_resource type="Resource" path="res://data/skills/sentinel.tres" id="37_onsmg"]
-[ext_resource type="Resource" path="res://data/skills/warden.tres" id="38_k44cl"]
-[ext_resource type="Resource" path="res://data/skills/impact.tres" id="39_ehkd6"]
-[ext_resource type="Resource" path="res://data/skills/heave.tres" id="40_0ly0f"]
-[ext_resource type="Resource" path="res://data/skills/rend.tres" id="41_kyo71"]
-[ext_resource type="Resource" path="res://data/skills/lunge.tres" id="42_t75kf"]
-[ext_resource type="Resource" path="res://data/skills/culture.tres" id="43_smn1h"]
-[ext_resource type="Resource" path="res://data/skills/spore_burst.tres" id="44_3x2yr"]
-[ext_resource type="Resource" path="res://data/skills/fade.tres" id="45_1j3ux"]
-[ext_resource type="Resource" path="res://data/skills/shardfall.tres" id="46_ivuf8"]
-[ext_resource type="Resource" path="res://data/skills/tremor.tres" id="47_88yu5"]
-[ext_resource type="Resource" path="res://data/skills/upheave.tres" id="48_xmnvi"]
-[ext_resource type="Resource" path="res://data/skills/stone_skin.tres" id="49_hhc8t"]
-[ext_resource type="Resource" path="res://data/skills/second_wind.tres" id="50_pcays"]
-[ext_resource type="Script" path="res://scripts/map/gate_def.gd" id="51_5c36q"]
-[ext_resource type="Resource" path="res://data/map/shortcut_gate.tres" id="52_lxnve"]
-[ext_resource type="PackedScene" path="res://scenes/debug_overlay.tscn" id="53_2sf7j"]
-[ext_resource type="Script" path="res://scripts/map/region.gd" id="55_0wrip"]
-[ext_resource type="Script" path="res://scripts/map/breaker_site.gd" id="56_dnk4t"]
-[ext_resource type="Script" path="res://scripts/map/gate.gd" id="57_q22rh"]
-[ext_resource type="Script" path="res://scripts/structures/structures.gd" id="58_15iem"]
-[ext_resource type="Script" path="res://scripts/swarm/awareness.gd" id="59_rokvp"]
-[ext_resource type="Resource" path="res://data/tuning/awareness_tuning.tres" id="60_t7qwd"]
-[ext_resource type="Script" path="res://scripts/map/launch_pad.gd" id="61_4ac7v"]
-[ext_resource type="Resource" path="res://data/tuning/launch_tuning.tres" id="62_wnmfd"]
-[ext_resource type="Script" path="res://scripts/ui/start_screen.gd" id="63_1xc7q"]
-[ext_resource type="Script" path="res://scripts/ui/kit_offer_menu.gd" id="64_buruy"]
+[ext_resource type="Script" path="res://scripts/map/braize_slice.gd" id="1_ivaf6"]
+[ext_resource type="Resource" path="res://data/tuning/region_tuning.tres" id="2_tain0"]
+[ext_resource type="Script" path="res://scripts/station/station_ground.gd" id="3_7x3oa"]
+[ext_resource type="Resource" path="res://data/tuning/station_ground_tuning.tres" id="4_nlrgm"]
+[ext_resource type="PackedScene" path="res://scenes/well_pool.tscn" id="5_q2ucb"]
+[ext_resource type="Resource" path="res://data/tuning/well_pool_tuning.tres" id="7_i0ebv"]
+[ext_resource type="PackedScene" path="res://scenes/taln.tscn" id="8_6x8e3"]
+[ext_resource type="PackedScene" path="res://scenes/camera_rig.tscn" id="11_a1x2i"]
+[ext_resource type="SwarmTuning" path="res://data/tuning/swarm_tuning.tres" id="14_wjarj"]
+[ext_resource type="Script" path="res://scripts/swarm/spawn_director.gd" id="15_asmhr"]
+[ext_resource type="Resource" path="res://data/tuning/spawn_tuning.tres" id="16_7axc3"]
+[ext_resource type="SwarmType" path="res://data/swarm/ash_walker.tres" id="17_ig05b"]
+[ext_resource type="Script" path="res://scripts/station/station_context.gd" id="18_uwo1f"]
+[ext_resource type="Resource" path="res://data/tuning/investiture_tuning.tres" id="19_hmu7m"]
+[ext_resource type="MoteTuning" path="res://data/tuning/mote_tuning.tres" id="20_yo6od"]
+[ext_resource type="SphereMesh" path="res://data/motes/mote_mesh.tres" id="21_472am"]
+[ext_resource type="Material" path="res://data/motes/mote_material.tres" id="22_5r3i5"]
+[ext_resource type="Script" path="res://scripts/station/well.gd" id="23_g4fqa"]
+[ext_resource type="Script" path="res://scripts/agony/catalysis.gd" id="24_yp0m7"]
+[ext_resource type="Resource" path="res://data/tuning/agony_tuning.tres" id="25_wl0yg"]
+[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="26_lymfe"]
+[ext_resource type="Script" path="res://scripts/ui/level_up_menu.gd" id="27_4kvmm"]
+[ext_resource type="Script" path="res://scripts/ui/catalyze_ui.gd" id="28_ix8lb"]
+[ext_resource type="Script" path="res://scripts/cycle/return_sequence.gd" id="29_t0ynj"]
+[ext_resource type="Resource" path="res://data/tuning/return_tuning.tres" id="30_vclxd"]
+[ext_resource type="Script" path="res://scripts/ui/between_run_screen.gd" id="31_x6j0o"]
+[ext_resource type="Script" path="res://scripts/skills/skill_def.gd" id="32_gcmcl"]
+[ext_resource type="Resource" path="res://data/skills/breaking_stroke.tres" id="33_jdxd3"]
+[ext_resource type="Resource" path="res://data/skills/settle.tres" id="34_onsmg"]
+[ext_resource type="Resource" path="res://data/skills/bearer_of_agonies.tres" id="35_k44cl"]
+[ext_resource type="Resource" path="res://data/skills/bulwark.tres" id="36_ehkd6"]
+[ext_resource type="Resource" path="res://data/skills/sentinel.tres" id="37_0ly0f"]
+[ext_resource type="Resource" path="res://data/skills/warden.tres" id="38_kyo71"]
+[ext_resource type="Resource" path="res://data/skills/impact.tres" id="39_t75kf"]
+[ext_resource type="Resource" path="res://data/skills/heave.tres" id="40_smn1h"]
+[ext_resource type="Resource" path="res://data/skills/rend.tres" id="41_3x2yr"]
+[ext_resource type="Resource" path="res://data/skills/lunge.tres" id="42_1j3ux"]
+[ext_resource type="Resource" path="res://data/skills/culture.tres" id="43_ivuf8"]
+[ext_resource type="Resource" path="res://data/skills/spore_burst.tres" id="44_88yu5"]
+[ext_resource type="Resource" path="res://data/skills/fade.tres" id="45_xmnvi"]
+[ext_resource type="Resource" path="res://data/skills/shardfall.tres" id="46_hhc8t"]
+[ext_resource type="Resource" path="res://data/skills/tremor.tres" id="47_pcays"]
+[ext_resource type="Resource" path="res://data/skills/upheave.tres" id="48_5c36q"]
+[ext_resource type="Resource" path="res://data/skills/stone_skin.tres" id="49_lxnve"]
+[ext_resource type="Resource" path="res://data/skills/second_wind.tres" id="50_2sf7j"]
+[ext_resource type="Script" path="res://scripts/map/gate_def.gd" id="51_fmfo0"]
+[ext_resource type="Resource" path="res://data/map/shortcut_gate.tres" id="52_0wrip"]
+[ext_resource type="PackedScene" path="res://scenes/debug_overlay.tscn" id="53_dnk4t"]
+[ext_resource type="Script" path="res://scripts/map/region.gd" id="55_15iem"]
+[ext_resource type="Script" path="res://scripts/map/breaker_site.gd" id="56_rokvp"]
+[ext_resource type="Script" path="res://scripts/map/gate.gd" id="57_t7qwd"]
+[ext_resource type="Script" path="res://scripts/structures/structures.gd" id="58_4ac7v"]
+[ext_resource type="Script" path="res://scripts/swarm/awareness.gd" id="59_wnmfd"]
+[ext_resource type="Resource" path="res://data/tuning/awareness_tuning.tres" id="60_1xc7q"]
+[ext_resource type="Script" path="res://scripts/boons/boons.gd" id="61_buruy"]
+[ext_resource type="Resource" path="res://data/tuning/boon_tuning.tres" id="62_2y5th"]
+[ext_resource type="Script" path="res://scripts/map/launch_pad.gd" id="63_jiwit"]
+[ext_resource type="Resource" path="res://data/tuning/launch_tuning.tres" id="64_ynrxg"]
+[ext_resource type="Script" path="res://scripts/ui/start_screen.gd" id="65_qwd0l"]
+[ext_resource type="Script" path="res://scripts/ui/kit_offer_menu.gd" id="66_5fmrv"]
+[ext_resource type="Script" path="res://scripts/ui/boon_offer_menu.gd" id="67_4vl5u"]
 
-[sub_resource type="Environment" id="Environment_2y5th"]
+[sub_resource type="Environment" id="Environment_iwjaj"]
 background_mode = 1
 background_color = Color(0.043137256, 0.043137256, 0.05490196, 1)
 ambient_light_source = 2
@@ -69,263 +72,263 @@ fog_enabled = true
 fog_light_color = Color(0, 0, 0, 1)
 fog_density = 0.02
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jiwit"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wvm34"]
 albedo_color = Color(0.16470589, 0.15686275, 0.14509805, 1)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ynrxg"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ois5a"]
 albedo_color = Color(0.3529412, 0.3372549, 0.30980393, 1)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_qwd0l"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_vhm4b"]
 size = Vector3(258, 20, 1)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_5fmrv"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_kr8sv"]
 size = Vector3(258, 20, 1)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_4vl5u"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_t38wx"]
 size = Vector3(1, 20, 258)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_iwjaj"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_xwfjk"]
 size = Vector3(1, 20, 258)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wvm34"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_45lq7"]
 albedo_color = Color(0.22745098, 0.18431373, 0.2901961, 1)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ois5a"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_x72i4"]
 albedo_color = Color(0.22745098, 0.18431373, 0.2901961, 1)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vhm4b"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mdlsi"]
 albedo_color = Color(0.22745098, 0.18431373, 0.2901961, 1)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kr8sv"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ma53h"]
 albedo_color = Color(0.41960785, 0.24705882, 0.627451, 1)
 
-[node name="BraizeSlice" type="Node3D" unique_id=676269565]
-script = ExtResource("1_sdsey")
-region_tuning = ExtResource("2_x3o1r")
+[node name="BraizeSlice" type="Node3D" unique_id=2101428005]
+script = ExtResource("1_ivaf6")
+region_tuning = ExtResource("2_tain0")
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1657012396]
-environment = SubResource("Environment_2y5th")
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1354465204]
+environment = SubResource("Environment_iwjaj")
 
-[node name="InspectLight" type="DirectionalLight3D" parent="." unique_id=1211661603]
+[node name="InspectLight" type="DirectionalLight3D" parent="." unique_id=1318481994]
 transform = Transform3D(0.8660254, -0.38302222, 0.32139382, 0, 0.64278764, 0.76604444, -0.5, -0.66341394, 0.5566704, 0, 0, 0)
 visible = false
 shadow_enabled = true
 
-[node name="StationGround" type="StaticBody3D" parent="." unique_id=1219890832]
-script = ExtResource("3_wdr84")
+[node name="StationGround" type="StaticBody3D" parent="." unique_id=1454858687]
+script = ExtResource("3_7x3oa")
 size_m = 256
-material = SubResource("StandardMaterial3D_jiwit")
-tuning = ExtResource("4_ivaf6")
+material = SubResource("StandardMaterial3D_wvm34")
+tuning = ExtResource("4_nlrgm")
 
-[node name="RaisedGeometry" type="CSGCombiner3D" parent="." unique_id=1895195082]
-material_override = SubResource("StandardMaterial3D_ynrxg")
+[node name="RaisedGeometry" type="CSGCombiner3D" parent="." unique_id=119217895]
+material_override = SubResource("StandardMaterial3D_ois5a")
 use_collision = true
 
-[node name="RidgeI0" type="CSGBox3D" parent="RaisedGeometry" unique_id=589896251 groups=["wall_block"]]
+[node name="RidgeI0" type="CSGBox3D" parent="RaisedGeometry" unique_id=1745744277 groups=["wall_block"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -66, 6, 43)
 size = Vector3(124, 12, 2)
 
-[node name="RidgeI1" type="CSGBox3D" parent="RaisedGeometry" unique_id=1762171358 groups=["wall_block"]]
+[node name="RidgeI1" type="CSGBox3D" parent="RaisedGeometry" unique_id=2054879319 groups=["wall_block"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 66, 6, 43)
 size = Vector3(124, 12, 2)
 
-[node name="RidgeII0" type="CSGBox3D" parent="RaisedGeometry" unique_id=46377465 groups=["wall_block"]]
+[node name="RidgeII0" type="CSGBox3D" parent="RaisedGeometry" unique_id=1437402292 groups=["wall_block"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -120, 6, -43)
 size = Vector3(16, 12, 2)
 
-[node name="RidgeII1" type="CSGBox3D" parent="RaisedGeometry" unique_id=1103892 groups=["wall_block"]]
+[node name="RidgeII1" type="CSGBox3D" parent="RaisedGeometry" unique_id=998323802 groups=["wall_block"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34, 6, -43)
 size = Vector3(140, 12, 2)
 
-[node name="RidgeII2" type="CSGBox3D" parent="RaisedGeometry" unique_id=1609909566 groups=["wall_block"]]
+[node name="RidgeII2" type="CSGBox3D" parent="RaisedGeometry" unique_id=1072757462 groups=["wall_block"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 86, 6, -43)
 size = Vector3(84, 12, 2)
 
-[node name="ShelfPlateau" type="CSGPolygon3D" parent="RaisedGeometry" unique_id=875879331]
+[node name="ShelfPlateau" type="CSGPolygon3D" parent="RaisedGeometry" unique_id=1306678666]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 20, 0, 80)
 polygon = PackedVector2Array(4.104242, 11.276312, 10.392304, 6, 11.817693, -2.0837781, 7.7134514, -9.1925335, 1.4695276e-15, -12, -7.7134514, -9.1925335, -11.817693, -2.0837781, -10.392304, 6, -4.104242, 11.276312)
 depth = 1.5
 
-[node name="ShelfPlateauRamp0" type="CSGPolygon3D" parent="RaisedGeometry" unique_id=287076181]
+[node name="ShelfPlateauRamp0" type="CSGPolygon3D" parent="RaisedGeometry" unique_id=1055245797]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 18, 0, 91.27631)
 polygon = PackedVector2Array(-0.2, 0, 4.1212163, 0, 0, 1.5, -0.2, 1.5)
 depth = 4.0
 
-[node name="ShelfPlateauRamp3" type="CSGPolygon3D" parent="RaisedGeometry" unique_id=11197309]
+[node name="ShelfPlateauRamp3" type="CSGPolygon3D" parent="RaisedGeometry" unique_id=567803769]
 transform = Transform3D(0.8660254, 0, 0.5, 0, 1, 0, -0.5, 0, 0.8660254, 30.765572, 0, 76.093895)
 polygon = PackedVector2Array(-0.2, 0, 4.1212163, 0, 0, 1.5, -0.2, 1.5)
 depth = 4.0
 
-[node name="ShelfPlateauRamp6" type="CSGPolygon3D" parent="RaisedGeometry" unique_id=1707606203]
+[node name="ShelfPlateauRamp6" type="CSGPolygon3D" parent="RaisedGeometry" unique_id=398944042]
 transform = Transform3D(-0.8660254, 0, 0.5, 0, 1, 0, -0.5, 0, -0.8660254, 11.234427, 0, 72.6298)
 polygon = PackedVector2Array(-0.2, 0, 4.1212163, 0, 0, 1.5, -0.2, 1.5)
 depth = 4.0
 
-[node name="ShelfLedge" type="CSGBox3D" parent="RaisedGeometry" unique_id=55211541]
+[node name="ShelfLedge" type="CSGBox3D" parent="RaisedGeometry" unique_id=1123703526]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30, 1.5, 100)
 size = Vector3(10, 3, 10)
 
-[node name="ShelfLedgeRamp" type="CSGPolygon3D" parent="RaisedGeometry" unique_id=1627014764]
+[node name="ShelfLedgeRamp" type="CSGPolygon3D" parent="RaisedGeometry" unique_id=284608161]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25, 0, 102)
 polygon = PackedVector2Array(-0.2, 0, 8.242433, 0, 0, 3, -0.2, 3)
 depth = 4.0
 
-[node name="ShelfWallA" type="CSGBox3D" parent="RaisedGeometry" unique_id=1993913183 groups=["wall_block"]]
+[node name="ShelfWallA" type="CSGBox3D" parent="RaisedGeometry" unique_id=1209483699 groups=["wall_block"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 1.5, 60)
 size = Vector3(12, 3, 1)
 
-[node name="ShelfWallB" type="CSGBox3D" parent="RaisedGeometry" unique_id=541359785 groups=["wall_block"]]
+[node name="ShelfWallB" type="CSGBox3D" parent="RaisedGeometry" unique_id=649631715 groups=["wall_block"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 85, 1.5, 60)
 size = Vector3(1, 3, 10)
 
-[node name="DescentPlateau" type="CSGPolygon3D" parent="RaisedGeometry" unique_id=1357100947]
+[node name="DescentPlateau" type="CSGPolygon3D" parent="RaisedGeometry" unique_id=1583740616]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -40, 0, 0)
 polygon = PackedVector2Array(4.7882824, 13.155697, 12.124355, 7, 13.787308, -2.4310746, 8.999027, -10.724622, 1.7144489e-15, -14, -8.999027, -10.724622, -13.787308, -2.4310746, -12.124355, 7, -4.7882824, 13.155697)
 depth = 3.0
 
-[node name="DescentPlateauRamp0" type="CSGPolygon3D" parent="RaisedGeometry" unique_id=699485371]
+[node name="DescentPlateauRamp0" type="CSGPolygon3D" parent="RaisedGeometry" unique_id=292473697]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -42, 0, 13.155697)
 polygon = PackedVector2Array(-0.2, 0, 8.242433, 0, 0, 3, -0.2, 3)
 depth = 4.0
 
-[node name="DescentPlateauRamp4" type="CSGPolygon3D" parent="RaisedGeometry" unique_id=2110266295]
+[node name="DescentPlateauRamp4" type="CSGPolygon3D" parent="RaisedGeometry" unique_id=66322482]
 transform = Transform3D(0.34202015, 0, 0.9396926, 0, 1, 0, -0.9396926, 0, 0.34202015, -33.6211, 0, -11.678271)
 polygon = PackedVector2Array(-0.2, 0, 8.242433, 0, 0, 3, -0.2, 3)
 depth = 4.0
 
-[node name="DescentLedge" type="CSGBox3D" parent="RaisedGeometry" unique_id=1693764718]
+[node name="DescentLedge" type="CSGBox3D" parent="RaisedGeometry" unique_id=560625776]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 2.25, 20)
 size = Vector3(10, 4.5, 10)
 
-[node name="DescentLedgeRamp" type="CSGPolygon3D" parent="RaisedGeometry" unique_id=772733879]
+[node name="DescentLedgeRamp" type="CSGPolygon3D" parent="RaisedGeometry" unique_id=1139344083]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 28, 0, 25)
 polygon = PackedVector2Array(-0.2, 0, 12.363648, 0, 0, 4.5, -0.2, 4.5)
 depth = 4.0
 
-[node name="DescentWallA" type="CSGBox3D" parent="RaisedGeometry" unique_id=525218532 groups=["wall_block"]]
+[node name="DescentWallA" type="CSGBox3D" parent="RaisedGeometry" unique_id=15090999 groups=["wall_block"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -20)
 size = Vector3(16, 3, 1)
 
-[node name="DescentWallB" type="CSGBox3D" parent="RaisedGeometry" unique_id=1224428213 groups=["wall_block"]]
+[node name="DescentWallB" type="CSGBox3D" parent="RaisedGeometry" unique_id=1243460104 groups=["wall_block"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 95, 1.5, 15)
 size = Vector3(1, 3, 14)
 
-[node name="CountPlateau" type="CSGPolygon3D" parent="RaisedGeometry" unique_id=1836966734]
+[node name="CountPlateau" type="CSGPolygon3D" parent="RaisedGeometry" unique_id=307435458]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 60, 0, -90)
 polygon = PackedVector2Array(4.104242, 11.276312, 10.392304, 6, 11.817693, -2.0837781, 7.7134514, -9.1925335, 1.4695276e-15, -12, -7.7134514, -9.1925335, -11.817693, -2.0837781, -10.392304, 6, -4.104242, 11.276312)
 depth = 1.5
 
-[node name="CountPlateauRamp2" type="CSGPolygon3D" parent="RaisedGeometry" unique_id=1584200342]
+[node name="CountPlateauRamp2" type="CSGPolygon3D" parent="RaisedGeometry" unique_id=400384360]
 transform = Transform3D(0.9848077, 0, -0.17364818, 0, 1, 0, 0.17364818, 0, 0.9848077, 70.7577, 0, -86.07227)
 polygon = PackedVector2Array(-0.2, 0, 4.1212163, 0, 0, 1.5, -0.2, 1.5)
 depth = 4.0
 
-[node name="CountPlateauRamp5" type="CSGPolygon3D" parent="RaisedGeometry" unique_id=1350795475]
+[node name="CountPlateauRamp5" type="CSGPolygon3D" parent="RaisedGeometry" unique_id=391149791]
 transform = Transform3D(-0.34202015, 0, 0.9396926, 0, 1, 0, -0.9396926, 0, -0.34202015, 58.02266, 0, -101.28031)
 polygon = PackedVector2Array(-0.2, 0, 4.1212163, 0, 0, 1.5, -0.2, 1.5)
 depth = 4.0
 
-[node name="CountPlateauRamp8" type="CSGPolygon3D" parent="RaisedGeometry" unique_id=383568305]
+[node name="CountPlateauRamp8" type="CSGPolygon3D" parent="RaisedGeometry" unique_id=1316403445]
 transform = Transform3D(-0.64278764, 0, -0.76604444, 0, 1, 0, 0.76604444, 0, -0.64278764, 51.219635, 0, -82.64742)
 polygon = PackedVector2Array(-0.2, 0, 4.1212163, 0, 0, 1.5, -0.2, 1.5)
 depth = 4.0
 
-[node name="CountWallA" type="CSGBox3D" parent="RaisedGeometry" unique_id=744909787 groups=["wall_block"]]
+[node name="CountWallA" type="CSGBox3D" parent="RaisedGeometry" unique_id=1326210798 groups=["wall_block"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30, 1.5, -80)
 size = Vector3(1, 3, 16)
 
-[node name="CountWallB" type="CSGBox3D" parent="RaisedGeometry" unique_id=511673765 groups=["wall_block"]]
+[node name="CountWallB" type="CSGBox3D" parent="RaisedGeometry" unique_id=1052014631 groups=["wall_block"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 1.5, -112)
 size = Vector3(16, 3, 1)
 
-[node name="BoundaryWalls" type="StaticBody3D" parent="." unique_id=1944210622]
+[node name="BoundaryWalls" type="StaticBody3D" parent="." unique_id=65862770]
 
-[node name="North" type="CollisionShape3D" parent="BoundaryWalls" unique_id=631844584]
+[node name="North" type="CollisionShape3D" parent="BoundaryWalls" unique_id=1361005321]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, -128.5)
-shape = SubResource("BoxShape3D_qwd0l")
+shape = SubResource("BoxShape3D_vhm4b")
 
-[node name="South" type="CollisionShape3D" parent="BoundaryWalls" unique_id=814628754]
+[node name="South" type="CollisionShape3D" parent="BoundaryWalls" unique_id=225329369]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 128.5)
-shape = SubResource("BoxShape3D_5fmrv")
+shape = SubResource("BoxShape3D_kr8sv")
 
-[node name="West" type="CollisionShape3D" parent="BoundaryWalls" unique_id=518777469]
+[node name="West" type="CollisionShape3D" parent="BoundaryWalls" unique_id=1770209856]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -128.5, 10, 0)
-shape = SubResource("BoxShape3D_4vl5u")
+shape = SubResource("BoxShape3D_t38wx")
 
-[node name="East" type="CollisionShape3D" parent="BoundaryWalls" unique_id=646271657]
+[node name="East" type="CollisionShape3D" parent="BoundaryWalls" unique_id=968994963]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 128.5, 10, 0)
-shape = SubResource("BoxShape3D_iwjaj")
+shape = SubResource("BoxShape3D_xwfjk")
 
-[node name="WellPool1" type="Area3D" parent="." unique_id=1469397906 instance=ExtResource("5_tain0")]
+[node name="WellPool1" type="Area3D" parent="." unique_id=415426845 instance=ExtResource("5_q2ucb")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0, 98)
 
-[node name="WellPool2" type="Area3D" parent="." unique_id=1798336545 instance=ExtResource("5_tain0")]
+[node name="WellPool2" type="Area3D" parent="." unique_id=446369661 instance=ExtResource("5_q2ucb")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 112)
 
-[node name="WellPool3" type="Area3D" parent="." unique_id=568792018 instance=ExtResource("5_tain0")]
+[node name="WellPool3" type="Area3D" parent="." unique_id=1418711678 instance=ExtResource("5_q2ucb")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 70, 0, 66)
 
-[node name="TalnSpawn" type="Marker3D" parent="." unique_id=2003816429]
+[node name="TalnSpawn" type="Marker3D" parent="." unique_id=634618240]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0, 112)
 
-[node name="Taln" type="CharacterBody3D" parent="." unique_id=701224075 groups=["taln"] instance=ExtResource("8_q2ucb")]
+[node name="Taln" type="CharacterBody3D" parent="." unique_id=1880317357 groups=["taln"] instance=ExtResource("8_6x8e3")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0, 112)
 
-[node name="CameraRig" type="Node3D" parent="." unique_id=1273394294 node_paths=PackedStringArray("target") instance=ExtResource("11_6x8e3")]
+[node name="CameraRig" type="Node3D" parent="." unique_id=1978796318 node_paths=PackedStringArray("target") instance=ExtResource("11_a1x2i")]
 top_level = true
 target = NodePath("../Taln")
 
-[node name="SwarmServer" type="SwarmServer" parent="." unique_id=818310597]
-tuning = ExtResource("14_a1x2i")
+[node name="SwarmServer" type="SwarmServer" parent="." unique_id=546570546]
+tuning = ExtResource("14_wjarj")
 
-[node name="SpawnDirector" type="Node" parent="." unique_id=1494017788 node_paths=PackedStringArray("swarm", "ground", "target")]
-script = ExtResource("15_lwyk3")
-tuning = ExtResource("16_albml")
-swarm_type = ExtResource("17_wjarj")
+[node name="SpawnDirector" type="Node" parent="." unique_id=1655875142 node_paths=PackedStringArray("swarm", "ground", "target")]
+script = ExtResource("15_asmhr")
+tuning = ExtResource("16_7axc3")
+swarm_type = ExtResource("17_ig05b")
 swarm = NodePath("../SwarmServer")
 ground = NodePath("../StationGround")
 target = NodePath("../Taln")
 
-[node name="StationContext" type="Node" parent="." unique_id=1390538831]
-script = ExtResource("18_asmhr")
-tuning = ExtResource("19_7axc3")
+[node name="StationContext" type="Node" parent="." unique_id=1728068306]
+script = ExtResource("18_uwo1f")
+tuning = ExtResource("19_hmu7m")
 
-[node name="MoteServer" type="MoteServer" parent="." unique_id=551288684]
-tuning = ExtResource("20_ig05b")
-mesh = ExtResource("21_uwo1f")
-material = ExtResource("22_hmu7m")
+[node name="MoteServer" type="MoteServer" parent="." unique_id=1170532770]
+tuning = ExtResource("20_yo6od")
+mesh = ExtResource("21_472am")
+material = ExtResource("22_5r3i5")
 
-[node name="Well" type="Node" parent="." unique_id=656071872 node_paths=PackedStringArray("taln", "spawner", "ground")]
-script = ExtResource("23_yo6od")
-tuning = ExtResource("7_nlrgm")
+[node name="Well" type="Node" parent="." unique_id=1478876629 node_paths=PackedStringArray("taln", "spawner", "ground")]
+script = ExtResource("23_g4fqa")
+tuning = ExtResource("7_i0ebv")
 taln = NodePath("../Taln")
 spawner = NodePath("../SpawnDirector")
 ground = NodePath("../StationGround")
 
-[node name="Catalysis" type="Node" parent="." unique_id=1183049856 node_paths=PackedStringArray("taln", "menu", "camera_rig")]
-script = ExtResource("24_472am")
-tuning = ExtResource("25_5r3i5")
+[node name="Catalysis" type="Node" parent="." unique_id=1933136264 node_paths=PackedStringArray("taln", "menu", "camera_rig")]
+script = ExtResource("24_yp0m7")
+tuning = ExtResource("25_wl0yg")
 taln = NodePath("../Taln")
 menu = NodePath("../LevelUpMenu")
 camera_rig = NodePath("../CameraRig")
 
-[node name="Hud" type="CanvasLayer" parent="." unique_id=1458261000 node_paths=PackedStringArray("taln", "spawner", "catalysis")]
-script = ExtResource("26_g4fqa")
+[node name="Hud" type="CanvasLayer" parent="." unique_id=748030682 node_paths=PackedStringArray("taln", "spawner", "catalysis")]
+script = ExtResource("26_lymfe")
 taln = NodePath("../Taln")
 spawner = NodePath("../SpawnDirector")
 catalysis = NodePath("../Catalysis")
 
-[node name="LevelUpMenu" type="CanvasLayer" parent="." unique_id=541042333 node_paths=PackedStringArray("taln")]
-script = ExtResource("27_yp0m7")
+[node name="LevelUpMenu" type="CanvasLayer" parent="." unique_id=736419486 node_paths=PackedStringArray("taln")]
+script = ExtResource("27_4kvmm")
 taln = NodePath("../Taln")
 
-[node name="CatalyzeUi" type="CanvasLayer" parent="." unique_id=429799361 node_paths=PackedStringArray("catalysis")]
-script = ExtResource("28_wl0yg")
+[node name="CatalyzeUi" type="CanvasLayer" parent="." unique_id=232773861 node_paths=PackedStringArray("catalysis")]
+script = ExtResource("28_ix8lb")
 catalysis = NodePath("../Catalysis")
 
-[node name="ReturnSequence" type="CanvasLayer" parent="." unique_id=1403454158 node_paths=PackedStringArray("taln", "swarm", "motes", "spawner", "well", "catalysis", "menu", "ground")]
-script = ExtResource("29_lymfe")
-tuning = ExtResource("30_4kvmm")
+[node name="ReturnSequence" type="CanvasLayer" parent="." unique_id=1701847479 node_paths=PackedStringArray("taln", "swarm", "motes", "spawner", "well", "catalysis", "menu", "ground")]
+script = ExtResource("29_t0ynj")
+tuning = ExtResource("30_vclxd")
 taln = NodePath("../Taln")
 swarm = NodePath("../SwarmServer")
 motes = NodePath("../MoteServer")
@@ -335,163 +338,180 @@ catalysis = NodePath("../Catalysis")
 menu = NodePath("../LevelUpMenu")
 ground = NodePath("../StationGround")
 
-[node name="BetweenRunScreen" type="CanvasLayer" parent="." unique_id=649860997]
-script = ExtResource("31_ix8lb")
-cap_skills = Array[ExtResource("32_t0ynj")]([ExtResource("33_vclxd"), ExtResource("34_x6j0o"), ExtResource("35_gcmcl"), ExtResource("36_jdxd3"), ExtResource("37_onsmg"), ExtResource("38_k44cl"), ExtResource("39_ehkd6"), ExtResource("40_0ly0f"), ExtResource("41_kyo71"), ExtResource("42_t75kf"), ExtResource("43_smn1h"), ExtResource("44_3x2yr"), ExtResource("45_1j3ux"), ExtResource("46_ivuf8"), ExtResource("47_88yu5"), ExtResource("48_xmnvi"), ExtResource("49_hhc8t"), ExtResource("50_pcays")])
-gates = Array[ExtResource("51_5c36q")]([ExtResource("52_lxnve")])
+[node name="BetweenRunScreen" type="CanvasLayer" parent="." unique_id=1150413003]
+script = ExtResource("31_x6j0o")
+cap_skills = Array[ExtResource("32_gcmcl")]([ExtResource("33_jdxd3"), ExtResource("34_onsmg"), ExtResource("35_k44cl"), ExtResource("36_ehkd6"), ExtResource("37_0ly0f"), ExtResource("38_kyo71"), ExtResource("39_t75kf"), ExtResource("40_smn1h"), ExtResource("41_3x2yr"), ExtResource("42_1j3ux"), ExtResource("43_ivuf8"), ExtResource("44_88yu5"), ExtResource("45_xmnvi"), ExtResource("46_hhc8t"), ExtResource("47_pcays"), ExtResource("48_5c36q"), ExtResource("49_lxnve"), ExtResource("50_2sf7j")])
+gates = Array[ExtResource("51_fmfo0")]([ExtResource("52_0wrip")])
 
-[node name="DebugOverlay" type="CanvasLayer" parent="." unique_id=1770758910 node_paths=PackedStringArray("taln", "camera_rig", "swarm", "spawner") instance=ExtResource("53_2sf7j")]
+[node name="DebugOverlay" type="CanvasLayer" parent="." unique_id=551685083 node_paths=PackedStringArray("taln", "camera_rig", "swarm", "spawner") instance=ExtResource("53_dnk4t")]
 layer = 10
 taln = NodePath("../Taln")
 camera_rig = NodePath("../CameraRig")
 swarm = NodePath("../SwarmServer")
 spawner = NodePath("../SpawnDirector")
-agony_tuning = ExtResource("25_5r3i5")
+agony_tuning = ExtResource("25_wl0yg")
 
-[node name="TheShelf" type="Node3D" parent="." unique_id=1919933068]
-script = ExtResource("55_0wrip")
+[node name="TheShelf" type="Node3D" parent="." unique_id=1968879688]
+script = ExtResource("55_15iem")
 id = &"the_shelf"
 display_name = "The Shelf"
 bounds = Rect2(-128, 44, 256, 84)
 
-[node name="BreakerSite" type="Node3D" parent="TheShelf" unique_id=732138988]
+[node name="BreakerSite" type="Node3D" parent="TheShelf" unique_id=1257219417]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -80, 0, 80)
-script = ExtResource("56_dnk4t")
-tuning = ExtResource("2_x3o1r")
+script = ExtResource("56_rokvp")
+tuning = ExtResource("2_tain0")
 
-[node name="Seals" type="Node3D" parent="TheShelf" unique_id=342572546]
+[node name="Seals" type="Node3D" parent="TheShelf" unique_id=1156016940]
 
-[node name="Seal" type="CSGBox3D" parent="TheShelf/Seals" unique_id=1849061387 groups=["wall_block"]]
+[node name="Seal" type="CSGBox3D" parent="TheShelf/Seals" unique_id=1566496904 groups=["wall_block"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6, 43)
-material_override = SubResource("StandardMaterial3D_wvm34")
+material_override = SubResource("StandardMaterial3D_45lq7")
 use_collision = true
 size = Vector3(8.4, 12, 2)
 
-[node name="NinefoldDescent" type="Node3D" parent="." unique_id=977646116]
-script = ExtResource("55_0wrip")
+[node name="NinefoldDescent" type="Node3D" parent="." unique_id=1178698421]
+script = ExtResource("55_15iem")
 id = &"ninefold_descent"
 display_name = "Ninefold Descent"
 tier = 2
 bounds = Rect2(-128, -42, 256, 84)
 
-[node name="BreakerSite" type="Node3D" parent="NinefoldDescent" unique_id=1594442240]
+[node name="BreakerSite" type="Node3D" parent="NinefoldDescent" unique_id=151409260]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 70, 0, -10)
-script = ExtResource("56_dnk4t")
-tuning = ExtResource("2_x3o1r")
+script = ExtResource("56_rokvp")
+tuning = ExtResource("2_tain0")
 
-[node name="Seals" type="Node3D" parent="NinefoldDescent" unique_id=1196845904]
+[node name="Seals" type="Node3D" parent="NinefoldDescent" unique_id=1531387731]
 
-[node name="SealWest" type="CSGBox3D" parent="NinefoldDescent/Seals" unique_id=289635900 groups=["wall_block"]]
+[node name="SealWest" type="CSGBox3D" parent="NinefoldDescent/Seals" unique_id=119512246 groups=["wall_block"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -108, 6, -43)
-material_override = SubResource("StandardMaterial3D_ois5a")
+material_override = SubResource("StandardMaterial3D_x72i4")
 use_collision = true
 size = Vector3(8.4, 12, 2)
 
-[node name="SealShortcut" type="CSGBox3D" parent="NinefoldDescent/Seals" unique_id=201885143 groups=["wall_block"]]
+[node name="SealShortcut" type="CSGBox3D" parent="NinefoldDescent/Seals" unique_id=1609161645 groups=["wall_block"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 6, -43)
-material_override = SubResource("StandardMaterial3D_vhm4b")
+material_override = SubResource("StandardMaterial3D_mdlsi")
 use_collision = true
 size = Vector3(8.4, 12, 2)
 
-[node name="WhereHeKeptTheCount" type="Node3D" parent="." unique_id=413448980]
-script = ExtResource("55_0wrip")
+[node name="WhereHeKeptTheCount" type="Node3D" parent="." unique_id=524701367]
+script = ExtResource("55_15iem")
 id = &"where_he_kept_the_count"
 display_name = "Where He Kept the Count"
 tier = 3
 bounds = Rect2(-128, -128, 256, 84)
 
-[node name="BreakerSite" type="Node3D" parent="WhereHeKeptTheCount" unique_id=1706108857]
+[node name="BreakerSite" type="Node3D" parent="WhereHeKeptTheCount" unique_id=1221608814]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -100)
-script = ExtResource("56_dnk4t")
-tuning = ExtResource("2_x3o1r")
+script = ExtResource("56_rokvp")
+tuning = ExtResource("2_tain0")
 
-[node name="Seals" type="Node3D" parent="WhereHeKeptTheCount" unique_id=1904491626]
+[node name="Seals" type="Node3D" parent="WhereHeKeptTheCount" unique_id=789409576]
 
-[node name="ShortcutGate" type="Node3D" parent="." unique_id=2081730761]
-script = ExtResource("57_q22rh")
-def = ExtResource("52_lxnve")
+[node name="ShortcutGate" type="Node3D" parent="." unique_id=1760746117]
+script = ExtResource("57_t7qwd")
+def = ExtResource("52_0wrip")
 
-[node name="Blocker" type="CSGBox3D" parent="ShortcutGate" unique_id=2105744711 groups=["wall_block"]]
+[node name="Blocker" type="CSGBox3D" parent="ShortcutGate" unique_id=731815834 groups=["wall_block"]]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 6, -44.5)
-material_override = SubResource("StandardMaterial3D_kr8sv")
+material_override = SubResource("StandardMaterial3D_ma53h")
 use_collision = true
 size = Vector3(8.4, 12, 1)
 
-[node name="Structures" type="Node3D" parent="." unique_id=1704454688 node_paths=PackedStringArray("taln", "swarm", "ground")]
-script = ExtResource("58_15iem")
+[node name="Structures" type="Node3D" parent="." unique_id=1165745257 node_paths=PackedStringArray("taln", "swarm", "ground")]
+script = ExtResource("58_4ac7v")
 taln = NodePath("../Taln")
 swarm = NodePath("../SwarmServer")
 ground = NodePath("../StationGround")
 
-[node name="Awareness" type="Node" parent="." unique_id=257724233 node_paths=PackedStringArray("taln", "swarm")]
-script = ExtResource("59_rokvp")
-tuning = ExtResource("60_t7qwd")
+[node name="Awareness" type="Node" parent="." unique_id=1545407898 node_paths=PackedStringArray("taln", "swarm")]
+script = ExtResource("59_wnmfd")
+tuning = ExtResource("60_1xc7q")
 taln = NodePath("../Taln")
 swarm = NodePath("../SwarmServer")
 
-[node name="LaunchPad1" type="Node3D" parent="." unique_id=1438472706]
+[node name="Boons" type="Node" parent="." unique_id=690065271 node_paths=PackedStringArray("taln", "swarm", "awareness", "structures", "slice")]
+script = ExtResource("61_buruy")
+tuning = ExtResource("62_2y5th")
+taln = NodePath("../Taln")
+swarm = NodePath("../SwarmServer")
+awareness = NodePath("../Awareness")
+structures = NodePath("../Structures")
+slice = NodePath("..")
+
+[node name="LaunchPad1" type="Node3D" parent="." unique_id=1227478748]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 0, 104)
-script = ExtResource("61_4ac7v")
-tuning = ExtResource("62_wnmfd")
+script = ExtResource("63_jiwit")
+tuning = ExtResource("64_ynrxg")
 target = Vector3(20, 1.5, 82)
 apex = 6.0
 
-[node name="LaunchPad2" type="Node3D" parent="." unique_id=1603228335]
+[node name="LaunchPad2" type="Node3D" parent="." unique_id=1824458037]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 0, 110)
-script = ExtResource("61_4ac7v")
-tuning = ExtResource("62_wnmfd")
+script = ExtResource("63_jiwit")
+tuning = ExtResource("64_ynrxg")
 target = Vector3(-30, 3, 100)
 apex = 6.0
 
-[node name="LaunchPad3" type="Node3D" parent="." unique_id=720840051]
+[node name="LaunchPad3" type="Node3D" parent="." unique_id=1086623641]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0, 52)
-script = ExtResource("61_4ac7v")
-tuning = ExtResource("62_wnmfd")
+script = ExtResource("63_jiwit")
+tuning = ExtResource("64_ynrxg")
 target = Vector3(-20, 0, 70)
 apex = 10.0
 
-[node name="LaunchPad4" type="Node3D" parent="." unique_id=515973198]
+[node name="LaunchPad4" type="Node3D" parent="." unique_id=780733585]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 35)
-script = ExtResource("61_4ac7v")
-tuning = ExtResource("62_wnmfd")
+script = ExtResource("63_jiwit")
+tuning = ExtResource("64_ynrxg")
 target = Vector3(-40, 3, 0)
 apex = 7.0
 
-[node name="LaunchPad5" type="Node3D" parent="." unique_id=1180679343]
+[node name="LaunchPad5" type="Node3D" parent="." unique_id=2066125123]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 60, 0, 30)
-script = ExtResource("61_4ac7v")
-tuning = ExtResource("62_wnmfd")
+script = ExtResource("63_jiwit")
+tuning = ExtResource("64_ynrxg")
 target = Vector3(30, 4.5, 18)
 apex = 7.0
 
-[node name="LaunchPad6" type="Node3D" parent="." unique_id=869221741]
+[node name="LaunchPad6" type="Node3D" parent="." unique_id=2079040626]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -90, 0, 0)
-script = ExtResource("61_4ac7v")
-tuning = ExtResource("62_wnmfd")
+script = ExtResource("63_jiwit")
+tuning = ExtResource("64_ynrxg")
 target = Vector3(-100, 0, -30)
 apex = 8.0
 
-[node name="LaunchPad7" type="Node3D" parent="." unique_id=1849288034]
+[node name="LaunchPad7" type="Node3D" parent="." unique_id=1981594642]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -100, 0, -60)
-script = ExtResource("61_4ac7v")
-tuning = ExtResource("62_wnmfd")
+script = ExtResource("63_jiwit")
+tuning = ExtResource("64_ynrxg")
 target = Vector3(-40, 0, -100)
 apex = 10.0
 
-[node name="LaunchPad8" type="Node3D" parent="." unique_id=2130578171]
+[node name="LaunchPad8" type="Node3D" parent="." unique_id=196614747]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, -60)
-script = ExtResource("61_4ac7v")
-tuning = ExtResource("62_wnmfd")
+script = ExtResource("63_jiwit")
+tuning = ExtResource("64_ynrxg")
 target = Vector3(60, 1.5, -90)
 apex = 7.0
 
-[node name="StartScreen" type="CanvasLayer" parent="." unique_id=1909820790 node_paths=PackedStringArray("slice")]
-script = ExtResource("63_1xc7q")
+[node name="StartScreen" type="CanvasLayer" parent="." unique_id=908746087 node_paths=PackedStringArray("slice")]
+script = ExtResource("65_qwd0l")
 slice = NodePath("..")
 
-[node name="KitOfferMenu" type="CanvasLayer" parent="." unique_id=726528501 node_paths=PackedStringArray("slice", "taln", "catalysis", "level_menu")]
-script = ExtResource("64_buruy")
+[node name="KitOfferMenu" type="CanvasLayer" parent="." unique_id=1794130552 node_paths=PackedStringArray("slice", "taln", "catalysis", "level_menu")]
+script = ExtResource("66_5fmrv")
 slice = NodePath("..")
 taln = NodePath("../Taln")
 catalysis = NodePath("../Catalysis")
 level_menu = NodePath("../LevelUpMenu")
+
+[node name="BoonOfferMenu" type="CanvasLayer" parent="." unique_id=1140501852 node_paths=PackedStringArray("boons", "taln", "catalysis", "level_menu", "kit_menu")]
+script = ExtResource("67_4vl5u")
+boons = NodePath("../Boons")
+taln = NodePath("../Taln")
+catalysis = NodePath("../Catalysis")
+level_menu = NodePath("../LevelUpMenu")
+kit_menu = NodePath("../KitOfferMenu")

@@ -82,6 +82,8 @@ func _fresh(at: Vector3 = OPEN) -> void:
 	spawner = station.get_node("SpawnDirector")
 	ground = station.get_node("StationGround")
 	awareness = station.get_node("Awareness")
+	# Commander kills offer bargains (P2-16), which would pause these checks: keep the offer menu shut.
+	(station.get_node("BoonOfferMenu") as Node).process_mode = Node.PROCESS_MODE_DISABLED
 	spawner.paused = true
 	await ground.ground_changed
 	_place(at)

@@ -552,9 +552,9 @@ void SwarmServer::_apply_blight(double p_dt) {
 		return;
 	}
 	const double incubation = tuning->get_blight_incubation();
-	const double dps = tuning->get_blight_dps();
+	const double dps = tuning->get_blight_dps() * blight_dps_mult;
 	const real_t spread = real_t(tuning->get_blight_spread_radius());
-	const double chance = std::clamp(tuning->get_blight_spread_rate() * p_dt, 0.0, 1.0);
+	const double chance = std::clamp(tuning->get_blight_spread_rate() * blight_spread_mult * p_dt, 0.0, 1.0);
 	std::uniform_real_distribution<double> roll(0.0, 1.0);
 	for (int i = 0; i < capacity; ++i) {
 		if (!alive[i] || !infected[i] || hp[i] <= 0.0) {
@@ -962,6 +962,9 @@ void SwarmServer::_step(double p_dt) {
 			if (contact_cooldown[i] <= 0.0) {
 				lure.damage += contact_damage(i);
 				contact_cooldown[i] = tuning->get_contact_cooldown();
+				if (lure_infects && !infected[i]) {
+					_infect(i);
+				}
 			}
 		});
 	}
@@ -1174,10 +1177,47 @@ void SwarmServer::_free(int p_index) {
 }
 
 void SwarmServer::_hit(int p_index, double p_amount, int p_type) {
-	hp[p_index] -= p_amount * types[type_index[p_index]].type->get_resist(p_type);
+	const Ref<SwarmType> &type = types[type_index[p_index]].type;
+	const int tier = std::clamp(type->get_tier(), 0, 1);
+	hp[p_index] -= p_amount * type->get_resist(p_type) * tier_damage_mult[tier];
 	hit_flash[p_index] = tuning.is_valid() ? tuning->get_hit_flash_time() : 0.0;
 	// A struck enemy dies of the blow, not the disease.
 	blight_kill[p_index] = 0;
+	if (hit_infect_chance > 0.0 && !infected[p_index] && hp[p_index] > 0.0 &&
+			std::uniform_real_distribution<double>(0.0, 1.0)(rng) < hit_infect_chance) {
+		_infect(p_index);
+	}
+}
+
+void SwarmServer::set_tier_damage_mult(int p_tier, double p_mult) {
+	ERR_FAIL_INDEX(p_tier, 2);
+	tier_damage_mult[p_tier] = p_mult;
+}
+
+double SwarmServer::get_tier_damage_mult(int p_tier) const {
+	ERR_FAIL_INDEX_V(p_tier, 2, 1.0);
+	return tier_damage_mult[p_tier];
+}
+
+void SwarmServer::set_hit_infect_chance(double p_chance) {
+	hit_infect_chance = std::clamp(p_chance, 0.0, 1.0);
+}
+
+double SwarmServer::get_hit_infect_chance() const {
+	return hit_infect_chance;
+}
+
+void SwarmServer::set_lure_infects(bool p_infects) {
+	lure_infects = p_infects;
+}
+
+bool SwarmServer::get_lure_infects() const {
+	return lure_infects;
+}
+
+void SwarmServer::set_blight_mults(double p_dps_mult, double p_spread_mult) {
+	blight_dps_mult = p_dps_mult;
+	blight_spread_mult = p_spread_mult;
 }
 
 bool SwarmServer::_in_cone(int p_index, const Vector3 &p_origin, const Vector2 &p_forward, real_t p_min_cos,
@@ -1468,6 +1508,13 @@ void SwarmServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_enemy_buffed", "index"), &SwarmServer::is_enemy_buffed);
 	ClassDB::bind_method(D_METHOD("infect_in_radius", "center", "radius"), &SwarmServer::infect_in_radius);
 	ClassDB::bind_method(D_METHOD("find_nearest_uninfected", "center", "radius"), &SwarmServer::find_nearest_uninfected);
+	ClassDB::bind_method(D_METHOD("set_tier_damage_mult", "tier", "mult"), &SwarmServer::set_tier_damage_mult);
+	ClassDB::bind_method(D_METHOD("get_tier_damage_mult", "tier"), &SwarmServer::get_tier_damage_mult);
+	ClassDB::bind_method(D_METHOD("set_hit_infect_chance", "chance"), &SwarmServer::set_hit_infect_chance);
+	ClassDB::bind_method(D_METHOD("get_hit_infect_chance"), &SwarmServer::get_hit_infect_chance);
+	ClassDB::bind_method(D_METHOD("set_lure_infects", "infects"), &SwarmServer::set_lure_infects);
+	ClassDB::bind_method(D_METHOD("get_lure_infects"), &SwarmServer::get_lure_infects);
+	ClassDB::bind_method(D_METHOD("set_blight_mults", "dps_mult", "spread_mult"), &SwarmServer::set_blight_mults);
 	ClassDB::bind_method(D_METHOD("get_infected_count"), &SwarmServer::get_infected_count);
 	ClassDB::bind_method(D_METHOD("is_enemy_infected", "index"), &SwarmServer::is_enemy_infected);
 

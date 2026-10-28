@@ -47,6 +47,8 @@ var lull_left: float = 0.0
 ## P2-11 and P2-13; the gray-box station has neither.
 @onready var _structures: Structures = get_node_or_null("Structures")
 @onready var _awareness: Awareness = get_node_or_null("Awareness")
+## P2-16; the gray-box station has none.
+@onready var _boons: Boons = get_node_or_null("Boons")
 
 
 func _ready() -> void:
@@ -122,6 +124,8 @@ func reset_for_cycle() -> void:
 		_structures.clear_all()
 	if _awareness:
 		_awareness.reset()
+	if _boons:
+		_boons.reset()
 	_context.station_index = 0
 	_spawner.begin_station(0)
 	kills = 0

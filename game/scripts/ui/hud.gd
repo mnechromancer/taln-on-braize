@@ -153,6 +153,9 @@ func _field_line(slice: BraizeSlice) -> String:
 	var infected: int = taln.loadout.swarm.get_infected_count() if taln.loadout.swarm else 0
 	if infected > 0:
 		parts.append(UiText.INFECTED % infected)
+	var boons: Boons = slice.get_node_or_null("Boons")
+	if boons and not boons.owned.is_empty():
+		parts.append(UiText.BARGAINS % ", ".join(boons.owned.map(func(b: BoonDef) -> String: return b.display_name)))
 	return "   ".join(parts)
 
 

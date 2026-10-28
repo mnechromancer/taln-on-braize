@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="BoonDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/boons/boon_def.gd" id="1_boon"]
+
+[resource]
+script = ExtResource("1_boon")
+id = &"overcharged_stone"
+display_name = "Overcharged Stone"
+source = 0
+line = "Surges hit 30% harder; each adds a quarter Strain."
+tags = Array[StringName]([&"surge", &"strain"])
+; P2-16 PLACEHOLDER numbers until the Content List.
+effects = {
+"surge_magnitude": 1.3,
+"surge_strain_add": 0.25
+}

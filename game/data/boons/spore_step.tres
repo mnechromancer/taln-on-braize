@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="BoonDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/boons/boon_def.gd" id="1_boon"]
+
+[resource]
+script = ExtResource("1_boon")
+id = &"spore_step"
+display_name = "Spore Step"
+source = 1
+line = "Landings seed the culture within 3 m. You bruise easier: 15 Armor less."
+tags = Array[StringName]([&"blight", &"landing"])
+; P2-16 PLACEHOLDER numbers until the Content List.
+effects = {
+"landing_infect_radius": 3.0
+}
+bane = {
+"armor_delta": -15.0
+}

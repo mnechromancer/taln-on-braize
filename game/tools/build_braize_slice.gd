@@ -183,6 +183,17 @@ func _add_extras() -> void:
 	awareness.set("taln", _root.get_node("Taln"))
 	awareness.set("swarm", _root.get_node("SwarmServer"))
 	_own(awareness, _root)
+	# P2-16: bargains, offered on commander kills.
+	var boons := Node.new()
+	boons.name = "Boons"
+	boons.set_script(load("res://scripts/boons/boons.gd"))
+	boons.set("tuning", load("res://data/tuning/boon_tuning.tres"))
+	boons.set("taln", _root.get_node("Taln"))
+	boons.set("swarm", _root.get_node("SwarmServer"))
+	boons.set("awareness", awareness)
+	boons.set("structures", structures)
+	boons.set("slice", _root)
+	_own(boons, _root)
 
 	var launch_tuning: LaunchTuning = load("res://data/tuning/launch_tuning.tres")
 	for i in LAUNCH_PADS.size():
@@ -209,6 +220,16 @@ func _add_extras() -> void:
 	kit_menu.set("catalysis", _root.get_node("Catalysis"))
 	kit_menu.set("level_menu", _root.get_node("LevelUpMenu"))
 	_own(kit_menu, _root)
+	# P2-16: the bargain offer waits behind the breaker drop.
+	var boon_menu := CanvasLayer.new()
+	boon_menu.name = "BoonOfferMenu"
+	boon_menu.set_script(load("res://scripts/ui/boon_offer_menu.gd"))
+	boon_menu.set("boons", boons)
+	boon_menu.set("taln", _root.get_node("Taln"))
+	boon_menu.set("catalysis", _root.get_node("Catalysis"))
+	boon_menu.set("level_menu", _root.get_node("LevelUpMenu"))
+	boon_menu.set("kit_menu", _root.get_node("KitOfferMenu"))
+	_own(boon_menu, _root)
 
 
 ## A ridge along x at z, with a PASSAGE_WIDTH gap at each passage center.

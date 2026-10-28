@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="BoonTuning" format=3]
+
+[ext_resource type="Script" path="res://scripts/tuning/boon_tuning.gd" id="1_boons"]
+[ext_resource type="Resource" path="res://data/boons/overcharged_stone.tres" id="2_overcharged_stone"]
+[ext_resource type="Resource" path="res://data/boons/loud_landing.tres" id="3_loud_landing"]
+[ext_resource type="Resource" path="res://data/boons/deeper_draw.tres" id="4_deeper_draw"]
+[ext_resource type="Resource" path="res://data/boons/hunters_mark.tres" id="5_hunters_mark"]
+[ext_resource type="Resource" path="res://data/boons/carrier.tres" id="6_carrier"]
+[ext_resource type="Resource" path="res://data/boons/rot_in_the_stone.tres" id="7_rot_in_the_stone"]
+[ext_resource type="Resource" path="res://data/boons/spore_step.tres" id="8_spore_step"]
+[ext_resource type="Resource" path="res://data/boons/patient_culture.tres" id="9_patient_culture"]
+
+[resource]
+script = ExtResource("1_boons")
+pool = Array[Resource]([ExtResource("2_overcharged_stone"), ExtResource("3_loud_landing"), ExtResource("4_deeper_draw"), ExtResource("5_hunters_mark"), ExtResource("6_carrier"), ExtResource("7_rot_in_the_stone"), ExtResource("8_spore_step"), ExtResource("9_patient_culture")])
+offer_size = 3
+offer_on_commander_kill = true
+landing_min_speed = 6.0

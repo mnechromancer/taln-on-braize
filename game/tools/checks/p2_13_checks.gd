@@ -94,6 +94,8 @@ func _fresh(at: Vector3 = OPEN) -> void:
 	spawner = station.get_node("SpawnDirector")
 	ground = station.get_node("StationGround")
 	awareness = station.get_node("Awareness")
+	# Commander kills offer bargains (P2-16), which would pause these checks: keep the offer menu shut.
+	(station.get_node("BoonOfferMenu") as Node).process_mode = Node.PROCESS_MODE_DISABLED
 	hud = station.get_node("Hud")
 	spawner.paused = true
 	# Taln's own weapon would kill the walkers these checks watch.

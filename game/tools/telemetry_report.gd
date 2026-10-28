@@ -79,6 +79,8 @@ func _report(c: Dictionary) -> void:
 				float(a.impact_hits) / maxf(a.impacts, 1)])
 	if not a.kit.is_empty():
 		print("Breaker drops taken: " + ", ".join(a.kit.map(func(k: Dictionary) -> String: return "%s at %s" % [k.skill, A.mmss(k.t)])))
+	if a.boon_offers > 0:
+		print("Bargains: %d offered, taken %s" % [a.boon_offers, ", ".join(a.boons.map(func(b: Dictionary) -> String: return "%s (%s) at %s" % [b.boon, b.source, A.mmss(b.t)]))])
 	if not a.seen.is_empty():
 		print("Awareness: unseen %s (%.0f%% of play); %d commanders came, %d killed%s" % [A.mmss(a.unseen_seconds),
 				a.unseen_seconds / maxf(a.play_seconds, 0.01) * 100.0, a.commanders_spawned, a.commanders_killed,

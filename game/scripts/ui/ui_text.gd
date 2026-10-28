@@ -29,6 +29,13 @@ const AWARENESS: Array[String] = ["Unseen", "Seen", "Searching"]
 const COMMANDER := "Commander  %d m  %s"
 const STRUCTURES := "Standing %d"
 const INFECTED := "Infected %d"
+# Bargains (P2-16): the HUD lists what Taln took; the offer names each one's source.
+const BARGAINS := "Bargains  %s"
+const BOON_TITLE := "Take one"
+const BOON_OPTION := "%d   %s   %s"
+const BOON_LINE := "      %s"
+## By BoonDef.Source.
+const BOON_SOURCES: Array[String] = ["Toa'uma", "The culture"]
 const READY := "ready"
 const SECONDS := "%.1f s"
 const COST := "%d"

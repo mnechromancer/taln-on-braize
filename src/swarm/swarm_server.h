@@ -144,6 +144,15 @@ public:
 	// The disease: infects every live enemy in the radius (returns how many
 	// were newly infected); counts and per-slot state.
 	int infect_in_radius(const Vector3 &p_center, double p_radius);
+	// Boon hooks (P2-16): damage to a tier is multiplied; a hit may infect;
+	// touching a lure infects; the disease's damage and spread are multiplied.
+	void set_tier_damage_mult(int p_tier, double p_mult);
+	double get_tier_damage_mult(int p_tier) const;
+	void set_hit_infect_chance(double p_chance);
+	double get_hit_infect_chance() const;
+	void set_lure_infects(bool p_infects);
+	bool get_lure_infects() const;
+	void set_blight_mults(double p_dps_mult, double p_spread_mult);
 	// The nearest live enemy in the radius that isn't infected yet (INF if none).
 	Vector3 find_nearest_uninfected(const Vector3 &p_center, double p_radius);
 	int get_infected_count() const;
@@ -310,6 +319,11 @@ private:
 	Vector3 known_position;
 	std::vector<Lure> lures;
 	int infected_count = 0;
+	double tier_damage_mult[2] = { 1.0, 1.0 };
+	double hit_infect_chance = 0.0;
+	bool lure_infects = false;
+	double blight_dps_mult = 1.0;
+	double blight_spread_mult = 1.0;
 
 	bool frozen = false;
 	double accumulator = 0.0;

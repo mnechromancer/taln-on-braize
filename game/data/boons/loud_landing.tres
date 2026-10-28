@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="BoonDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/boons/boon_def.gd" id="1_boon"]
+
+[resource]
+script = ExtResource("1_boon")
+id = &"loud_landing"
+display_name = "Loud Landing"
+source = 0
+line = "Landings burst with Voidlight (20 within 4 m); everything hears them twice as far."
+tags = Array[StringName]([&"landing", &"void", &"noise"])
+; P2-16 PLACEHOLDER numbers until the Content List.
+effects = {
+"landing_void_damage": 20.0,
+"landing_void_radius": 4.0,
+"noise_mult": 2.0
+}

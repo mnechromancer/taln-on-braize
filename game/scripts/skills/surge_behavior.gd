@@ -53,6 +53,10 @@ func try_cast() -> bool:
 	if effect == Toauma.Effect.MISFIRE:
 		direction = taln.toauma.misfire(direction)
 	var magnitude: float = taln.toauma.tuning.overcharge_mult if effect == Toauma.Effect.OVERCHARGE else 1.0
+	# A bargain's push on every Surge (P2-16), and the Strain it asks for.
+	magnitude *= taln.loadout.surge_magnitude_mult
+	if taln.loadout.surge_strain_add > 0.0:
+		taln.toauma.add_strain(taln.loadout.surge_strain_add)
 	var hits: int = _fire(taln.global_position, direction, through_toa_uma, magnitude)
 	if effect == Toauma.Effect.ECHO:
 		echo_left = taln.toauma.tuning.echo_delay

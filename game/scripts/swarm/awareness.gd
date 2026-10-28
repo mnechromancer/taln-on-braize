@@ -34,6 +34,10 @@ var enabled: bool = true:
 		if not value:
 			_set_state(State.SEEN)
 
+## Bargains' multipliers on how far Taln is seen and heard, by source.
+var detection_mults: Dictionary[StringName, float] = {}
+var noise_mults: Dictionary[StringName, float] = {}
+
 var _since_seen: float = 0.0
 var _noise_left: float = 0.0
 
@@ -69,7 +73,7 @@ func _physics_process(delta: float) -> void:
 func is_seen() -> bool:
 	if hidden_left > 0.0:
 		return false
-	var mult: float = taln.aspect.detection_mult if taln.aspect else 1.0
+	var mult: float = detection_mult()
 	var at: Vector3 = taln.global_position
 	if mult > 0.0 and swarm.query_count_in_radius(at, tuning.close_sight * mult) > 0:
 		return true
@@ -78,6 +82,7 @@ func is_seen() -> bool:
 
 ## A noise at at: if any enemy is within radius, the swarm heads there.
 func make_noise(at: Vector3, radius: float) -> void:
+	radius *= noise_mult()
 	if not enabled or radius <= 0.0 or swarm.query_count_in_radius(at, radius) == 0:
 		return
 	swarm.set_known_position(at)
@@ -86,6 +91,21 @@ func make_noise(at: Vector3, radius: float) -> void:
 	if state == State.UNSEEN:
 		_set_state(State.SEARCHING)
 	heard.emit(at, radius)
+
+
+## The Aspect's detection_mult times every bargain's.
+func detection_mult() -> float:
+	var mult: float = taln.aspect.detection_mult if taln.aspect else 1.0
+	for value: float in detection_mults.values():
+		mult *= value
+	return mult
+
+
+func noise_mult() -> float:
+	var mult: float = 1.0
+	for value: float in noise_mults.values():
+		mult *= value
+	return mult
 
 
 ## Hides Taln from every eye for seconds; the swarm loses him at once.

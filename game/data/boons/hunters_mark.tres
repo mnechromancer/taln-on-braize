@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="BoonDef" format=3]
+
+[ext_resource type="Script" path="res://scripts/boons/boon_def.gd" id="1_boon"]
+
+[resource]
+script = ExtResource("1_boon")
+id = &"hunters_mark"
+display_name = "Hunter's Mark"
+source = 0
+line = "Elites take half again the damage; they see you from further."
+tags = Array[StringName]([&"hunt", &"elite"])
+; P2-16 PLACEHOLDER numbers until the Content List.
+effects = {
+"detection_mult": 1.3,
+"elite_damage_mult": 1.5
+}
